@@ -1,2 +1,5 @@
-# aws-mobile-deepdish-events-sdk-ios
-iOS library files for Offline, Sync, Sigv4. Includes support for React Native.
+AWS Mobile Events SDK for iOS
+
+## License
+
+This library is licensed under the Amazon Software License.
