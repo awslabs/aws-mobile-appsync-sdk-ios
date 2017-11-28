@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "6EF152C53E8F39FB6C48AF9285DD3D14B4A81CFE",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "C4040456399D4D4B43992C78F2AD702EE726E16A" : 9223372036854775807,
+    "6EF152C53E8F39FB6C48AF9285DD3D14B4A81CFE" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "749CC790-83D4-46F6-96D7-7BC2CD204228",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "C4040456399D4D4B43992C78F2AD702EE726E16A" : "AWSiOSSDKv2\/",
+    "6EF152C53E8F39FB6C48AF9285DD3D14B4A81CFE" : "AWSDeepDishiOSClient\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "AWSDeepDishClient",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "AWSDeepDishClient.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/git.amazon.com:2222\/pkg\/AWSDeepDishiOSClient",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "6EF152C53E8F39FB6C48AF9285DD3D14B4A81CFE"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/git.amazon.com:2222\/pkg\/AWSiOSSDKv2",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C4040456399D4D4B43992C78F2AD702EE726E16A"
+    }
+  ]
+}

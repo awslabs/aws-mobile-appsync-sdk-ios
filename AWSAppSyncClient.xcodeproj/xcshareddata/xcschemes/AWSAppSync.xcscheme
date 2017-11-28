@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "0830"
+   version = "1.3">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "17DECF5D1F59F5FF004B0512"
+               BuildableName = "AWSAppSync.framework"
+               BlueprintName = "AWSAppSync"
+               ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "17DECF661F59F5FF004B0512"
+               BuildableName = "AWSDeepDishClientTests.xctest"
+               BlueprintName = "AWSDeepDishClientTests"
+               ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "17DECF5D1F59F5FF004B0512"
+            BuildableName = "AWSAppSync.framework"
+            BlueprintName = "AWSAppSync"
+            ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "17DECF5D1F59F5FF004B0512"
+            BuildableName = "AWSAppSync.framework"
+            BlueprintName = "AWSAppSync"
+            ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "17DECF5D1F59F5FF004B0512"
+            BuildableName = "AWSAppSync.framework"
+            BlueprintName = "AWSAppSync"
+            ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "set -e&#10;&#10;BUILD_INTERMEDIATES=&quot;${OBJROOT}&quot;&#10;BUILD_PRODUCTS=&quot;${SYMROOT}/../../../../Products&quot;&#10;DEVICE_BIN=&quot;${BUILD_INTERMEDIATES}/UninstalledProducts/iphoneos/${TARGET_NAME}.framework&quot;&#10;SIMULATOR_BIN=&quot;${BUILD_PRODUCTS}/Debug-iphonesimulator/${TARGET_NAME}.framework&quot;&#10;&#10;# Step 1: Clean and create _Archive folder&#10;ARCHIVE_PATH=&quot;${SRCROOT}/_Archive&quot;&#10;rm -rf &quot;${ARCHIVE_PATH}&quot;&#10;mkdir &quot;${ARCHIVE_PATH}&quot;&#10;&#10;# Step 2: Force build of iphonesimulator library to the default folder&#10;xcodebuild -project &quot;${SRCROOT}/${PROJECT_NAME}.xcodeproj&quot; -target &quot;${TARGET_NAME}&quot; -configuration &quot;Debug&quot; -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=&quot;${BUILD_PRODUCTS}&quot; build&#10;&#10;# Step 3:  Copy Release build to _Archive/Release&#10;if [ &quot;${CONFIGURATION}&quot; = &quot;Release&quot; ]; then&#10;if [ -d &quot;${DEVICE_BIN}&quot; ]; then&#10;DEVICE_PATH=&quot;${ARCHIVE_PATH}/Release&quot;&#10;mkdir &quot;${DEVICE_PATH}&quot;&#10;cp -r &quot;${DEVICE_BIN}&quot; &quot;${DEVICE_PATH}&quot;&#10;fi&#10;&#10;# Step 4: Copy Previous Simulator build to _Archive/Debug&#10;if [ -d &quot;${SIMULATOR_BIN}&quot; ]; then&#10;SIMULATOR_PATH=&quot;${ARCHIVE_PATH}/Debug&quot;&#10;mkdir &quot;${SIMULATOR_PATH}&quot;&#10;cp -r &quot;${SIMULATOR_BIN}&quot; &quot;${SIMULATOR_PATH}&quot;&#10;fi&#10;&#10;UNIVERSAL_PATH=&quot;${ARCHIVE_PATH}/Universal&quot;&#10;mkdir &quot;${UNIVERSAL_PATH}&quot;&#10;&#10;# Step 5: Copy Debug to _Archive/Universal&#10;cp -r &quot;${SIMULATOR_BIN}&quot; &quot;${UNIVERSAL_PATH}&quot;&#10;&#10;# Step 6: LIPO both binaries into a Universal framework&#10;lipo -create &quot;${DEVICE_BIN}/${TARGET_NAME}&quot; &quot;${SIMULATOR_BIN}/${TARGET_NAME}&quot; -output  &quot;${UNIVERSAL_PATH}/${TARGET_NAME}.framework/${TARGET_NAME}&quot;&#10;&#10;# Step 7: Copy Release *.swiftdoc and *.swiftmodule to the Universal framework&#10;cp -r &quot;${DEVICE_BIN}/Modules/${TARGET_NAME}.swiftmodule&quot; &quot;${UNIVERSAL_PATH}/${TARGET_NAME}.framework/Modules/&quot;&#10;&#10;# Step 8: Display system notification and open the framework folder&#10;osascript -e &quot;display notification \&quot;Universal framework has been built.\&quot; with title \&quot;${TARGET_NAME}\&quot;&quot;&#10;open &quot;${UNIVERSAL_PATH}&quot;&#10;&#10;fi&#10;&#10;exit 0;">
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
+   </ArchiveAction>
+</Scheme>
