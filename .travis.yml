@@ -1,0 +1,3 @@
+language: swift
+xcode_workspace: AWSAppSyncClient.xcworkspace 
+xcode_scheme: AWSAppSync
