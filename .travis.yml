@@ -1,3 +1,5 @@
 language: swift
 xcode_workspace: AWSAppSyncClient.xcworkspace 
 xcode_scheme: AWSAppSync
+before_install:
+- pod update
