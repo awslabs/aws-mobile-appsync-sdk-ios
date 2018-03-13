@@ -25,13 +25,11 @@ public extension GraphQLOperation {
 }
 
 public protocol GraphQLQuery: GraphQLOperation {}
-
 public extension GraphQLQuery {
   static var rootCacheKey: String { return "QUERY_ROOT" }
 }
 
 public protocol GraphQLMutation: GraphQLOperation {}
-
 public extension GraphQLMutation {
   static var rootCacheKey: String { return "MUTATION_ROOT" }
 }
