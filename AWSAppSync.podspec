@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
                      :tag => s.version}
   s.requires_arc = true
   s.ios.deployment_target = '9.0'
-  s.dependency 'AWSCore', '2.6.6'
+  s.dependency 'AWSCore', '~> 2.6.6'
   s.dependency 'SQLite.swift', '0.11.4'
   s.dependency 'ReachabilitySwift', '~> 4.0.0'
   s.source_files = 'AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/*.swift', 'AWSAppSyncClient/Apollo/Sources/Apollo/*.swift', 'AWSAppSyncClient/MQTTSDK/*.{h,m}', 'AWSAppSyncClient/MQTTSDK/MQTTSDK/*.{h,m}', 'AWSAppSyncClient/MQTTSDK/SocketRocket/*.{h,m}'
