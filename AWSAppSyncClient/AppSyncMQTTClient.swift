@@ -96,13 +96,24 @@ class AppSyncMQTTClient: MQTTClientDelegate {
         // This function should unsusbscribe from a topic ONLY if its the only watcher on a topic,
         // else this function should only remove the completion handler callback
         for topic in subscription.getTopics() {
-            //self.topicSubscribersDictionary[topic].remo
+            guard let _ = self.topicSubscribersDictionary[topic] else {
+                return
+            }
             if self.topicSubscribersDictionary[topic]!.count > 1 {
                 // do nothing if there are other subscribers on the same topic, just remove from the array  of callbacks
+                var watchersToRemove: [MQTTSubscritionWatcher] = []
                 for i in 0..<self.topicSubscribersDictionary[topic]!.count {
                     if self.topicSubscribersDictionary[topic]![i].getIdentifier() == subscription.getIdentifier() {
-                        // remove that watcher for no further notification
-                        self.topicSubscribersDictionary[topic]!.remove(at: i)
+                        // add to list of our subscribers to remove
+                        watchersToRemove.append(self.topicSubscribersDictionary[topic]![i])
+                    }
+                }
+                for watcherToRemove in watchersToRemove {
+                    for i in 0..<self.topicSubscribersDictionary[topic]!.count {
+                        if watcherToRemove.getIdentifier() == subscription.getIdentifier() {
+                            // remove that watcher for no further notification
+                            self.topicSubscribersDictionary[topic]!.remove(at: i)
+                        }
                     }
                 }
             } else {
