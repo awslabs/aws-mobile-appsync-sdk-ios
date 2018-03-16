@@ -4,4 +4,4 @@ xcode_scheme: AWSAppSync
 before_install:
     - pod update
 script:
-    - xcodebuild -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO
+    - xcodebuild -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync build
