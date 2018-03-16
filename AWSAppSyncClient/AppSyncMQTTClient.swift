@@ -91,29 +91,49 @@ class AppSyncMQTTClient: MQTTClientDelegate {
         mqttClientsWithTopics[mqttClient] = topicQueue
         mqttClient.connect(withClientId: subscriptionInfo.clientId, toHost: subscriptionInfo.url, statusCallback: nil)
     }
-
+    
     public func stopSubscription(subscription: MQTTSubscritionWatcher) {
-        // This function should unsusbscribe from a topic ONLY if its the only watcher on a topic,
-        // else this function should only remove the completion handler callback
-        for topic in subscription.getTopics() {
-            //self.topicSubscribersDictionary[topic].remo
-            if self.topicSubscribersDictionary[topic]!.count > 1 {
-                // do nothing if there are other subscribers on the same topic, just remove from the array  of callbacks
-                for i in 0..<self.topicSubscribersDictionary[topic]!.count {
-                    if self.topicSubscribersDictionary[topic]![i].getIdentifier() == subscription.getIdentifier() {
-                        // remove that watcher for no further notification
-                        self.topicSubscribersDictionary[topic]!.remove(at: i)
-                    }
-                }
-            } else {
-                for client in mqttClientsWithTopics {
-                    if client.value.contains(topic) {
-                        client.key.unsubscribeTopic(topic)
-                    }
-                }
-                // remove topic from dictionary if its the only subscriber
-                self.topicSubscribersDictionary.removeValue(forKey: topic)
-            }
+
+        topicSubscribersDictionary = updatedDictionary(topicSubscribersDictionary, usingCancelling: subscription)
+
+        topicSubscribersDictionary.filter({ $0.value.isEmpty })
+                                  .map({ $0.key })
+                                  .forEach(unsubscribeTopic)
+    }
+
+    
+    /// Returnes updated dictionary
+    /// it removes subscriber from the array
+    ///
+    /// - Parameters:
+    ///   - dictionary: [String: [MQTTSubscritionWatcher]]
+    ///   - subscription: MQTTSubscritionWatcher
+    /// - Returns: [String: [MQTTSubscritionWatcher]]
+    private func updatedDictionary(_ dictionary: [String: [MQTTSubscritionWatcher]] ,
+                                   usingCancelling subscription: MQTTSubscritionWatcher) -> [String: [MQTTSubscritionWatcher]] {
+        
+        return topicSubscribersDictionary.reduce(into: [:]) { (result, element) in
+            result[element.key] = removedSubscriber(array: element.value, of: subscription.getIdentifier())
         }
+    }
+    
+    
+    
+    /// Unsubscribe topic
+    ///
+    /// - Parameter topic: String
+    private func unsubscribeTopic(topic: String) {
+        mqttClientsWithTopics.filter({ $0.value.contains(topic) })
+                             .forEach({ $0.key.unsubscribeTopic(topic) })
+    }
+
+    /// Removes subscriber from the array using id
+    ///
+    /// - Parameters:
+    ///   - array: [MQTTSubscritionWatcher]
+    ///   - id: Int
+    /// - Returns: updated array [MQTTSubscritionWatcher]
+    private func removedSubscriber(array: [MQTTSubscritionWatcher], of id: Int) -> [MQTTSubscritionWatcher] {
+        return array.filter({$0.getIdentifier() != id })
     }
 }
