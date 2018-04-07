@@ -46,6 +46,10 @@ To use the AppSync SDK, you will need to use `aws-appsync-codegen` which helps g
 
 You can find a sample app which uses the AppSync SDK here: https://github.com/aws-samples/aws-mobile-appsync-events-starter-ios 
 
+## Documentation
+
+You can find a step by step walk through of setting up a backend and accessing it via the iOS client here: https://awslabs.github.io/aws-mobile-appsync-sdk-ios/
+
 ## License
 
 This library is licensed under the Amazon Software License.
