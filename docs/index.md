@@ -1,4 +1,5 @@
 # AWS AppSync - Building an iOS Client App
+{:.no_toc}
 
 AWS AppSync integrates with the [Apollo GraphQL
 client](https://github.com/apollographql/apollo-client) when building
@@ -6,6 +7,12 @@ client applications. AWS provides plugins for offline support,
 authorization, and subscription handshaking to make this process easier.
 You can choose to use the Apollo client directly, or with some client
 helpers provided in the AWS AppSync SDK when you get started.
+
+## Table of contents
+{:.no_toc}
+
+* Table of contents
+{:toc}
 
 ## Create an API
 
