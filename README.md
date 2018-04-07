@@ -5,6 +5,7 @@ AWS AppSync SDK for iOS
 [![CocoaPods](https://img.shields.io/cocoapods/v/AWSAppSync.svg)](https://github.com/CocoaPods/CocoaPods)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![Build Status](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios.png?branch=master)](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios)
+[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://awslabs.github.io/aws-mobile-appsync-sdk-ios/)
 [![Twitter Follow](https://img.shields.io/twitter/follow/AWSforMobile.svg?style=social&label=Follow)](https://twitter.com/AWSforMobile)
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations`, and `Subscriptions`. The SDK also includes support for offline operations.
