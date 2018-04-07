@@ -1,3 +1,3 @@
 theme: jekyll-theme-cayman
-title: [AWS AppSync SDK for iOS]
-description: [The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.]
+title: AWS AppSync SDK for iOS
+description: The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
