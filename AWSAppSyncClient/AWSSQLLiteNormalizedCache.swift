@@ -6,6 +6,15 @@
 import Foundation
 import SQLite
 
+/*
+ The "timeout" method is used to control how long the SQLite library will wait for locks to clear before giving up on a database transaction. The default timeout is 0 millisecond. (In other words, the default behavior is not to wait at all.)
+ 
+ The SQLite database allows multiple simultaneous readers or a single writer but not both. If any process is writing to the database no other process is allows to read or write. If any process is reading the database other processes are allowed to read but not write. The entire database shared a single lock.
+ 
+ When SQLite tries to open a database and finds that it is locked, it can optionally delay for a short while and try to open the file again. This process repeats until the query times out and SQLite returns a failure. The timeout is adjustable. It is set to 0 by default so that if the database is locked, the SQL statement fails immediately. But you can use the "timeout" method to change the timeout value to a positive number.
+ */
+
+internal let sqlBusyTimeoutConstant = 100.0 // Fix a sqllite busy time out of 100ms
 
 public protocol MutationCache {
     func saveMutation(body: Data) -> Int64
@@ -38,6 +47,7 @@ public final class AWSMutationCache {
     
     public init(fileURL: URL) throws {
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
+        db.busyTimeout = sqlBusyTimeoutConstant
         try createTableIfNeeded()
     }
     
@@ -72,15 +82,15 @@ public final class AWSMutationCache {
                                                 s3LocalUri <- s3Object.localUri,
                                                 s3MimeType <- s3Object.mimeType,
                                                 operationString <- record.operationString!)
-        try db.run(insert)
+            try db.run(insert)
         } else {
-        let insert = mutationRecords.insert(recordIdentifier <- record.recordIdentitifer,
-                                            data <- record.data!,
-                                            contentMap <- record.contentMap!.description,
-                                            recordState <- record.recordState.rawValue,
-                                            timestamp <- record.timestamp,
-                                            operationString <- record.operationString!)
-        try db.run(insert)
+            let insert = mutationRecords.insert(recordIdentifier <- record.recordIdentitifer,
+                                                data <- record.data!,
+                                                contentMap <- record.contentMap!.description,
+                                                recordState <- record.recordState.rawValue,
+                                                timestamp <- record.timestamp,
+                                                operationString <- record.operationString!)
+            try db.run(insert)
         }
         
     }
@@ -126,6 +136,7 @@ public final class AWSSQLLiteNormalizedCache: NormalizedCache {
     
     public init(fileURL: URL) throws {
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
+        db.busyTimeout = sqlBusyTimeoutConstant
         try createTableIfNeeded()
     }
     
