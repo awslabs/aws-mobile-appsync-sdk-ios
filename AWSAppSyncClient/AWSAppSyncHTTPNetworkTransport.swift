@@ -15,12 +15,13 @@ enum AuthType {
 public class AWSAppSyncHTTPNetworkTransport: NetworkTransport {
     let url: URL
     let session: URLSession
-    let region: AWSRegionType?
+    var region: AWSRegionType? = nil
     let serializationFormat = JSONSerializationFormat.self
-    let credentialsProvider:AWSCredentialsProvider?
-    let apiKeyAuthProvider: AWSAPIKeyAuthProvider?
-    let userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider?
-    let endpoint:AWSEndpoint?
+    var credentialsProvider:AWSCredentialsProvider? = nil
+    var apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil
+    var userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil
+    var oidcAuthProvider: AWSOIDCAuthProvider? = nil
+    var endpoint:AWSEndpoint? = nil
     let authType: AuthType
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -41,8 +42,6 @@ public class AWSAppSyncHTTPNetworkTransport: NetworkTransport {
         self.region = region
         self.endpoint = AWSEndpoint(region: region, serviceName: "appsync", url: url)
         self.authType = .awsIAM
-        self.apiKeyAuthProvider = nil
-        self.userPoolsAuthProvider = nil
     }
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -61,10 +60,6 @@ public class AWSAppSyncHTTPNetworkTransport: NetworkTransport {
         self.sendOperationIdentifiers = sendOperationIdentifiers
         self.apiKeyAuthProvider = apiKeyAuthProvider
         self.authType = .apiKey
-        self.userPoolsAuthProvider = nil
-        self.credentialsProvider = nil
-        self.endpoint = nil
-        self.region = nil
     }
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -83,21 +78,39 @@ public class AWSAppSyncHTTPNetworkTransport: NetworkTransport {
         self.sendOperationIdentifiers = sendOperationIdentifiers
         self.userPoolsAuthProvider = userPoolsAuthProvider
         self.authType = .oidcToken
-        self.apiKeyAuthProvider = nil
-        self.credentialsProvider = nil
-        self.endpoint = nil
-        self.region = nil
+    }
+    
+    /// Creates a network transport with the specified server URL and session configuration.
+    ///
+    /// - Parameters:
+    ///   - url: The URL of a GraphQL server to connect to.
+    ///   - oidcAuthProvider: An implementation of `AWSOIDCAuthProvider` protocol.
+    ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
+    ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
+    public init(url: URL,
+                oidcAuthProvider: AWSOIDCAuthProvider,
+                configuration: URLSessionConfiguration = URLSessionConfiguration.default,
+                sendOperationIdentifiers: Bool = false) {
+        self.url = url
+        self.session = URLSession(configuration: configuration)
+        self.sendOperationIdentifiers = sendOperationIdentifiers
+        self.oidcAuthProvider = oidcAuthProvider
+        self.authType = .oidcToken
     }
     
     func initRequest(request: inout URLRequest) {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("aws-sdk-ios/2.6.7 AppSyncClient", forHTTPHeaderField: "User-Agent")
+        request.setValue("aws-sdk-ios/2.6.16 AppSyncClient", forHTTPHeaderField: "User-Agent")
         if self.authType == .apiKey {
             request.setValue(self.apiKeyAuthProvider!.getAPIKey(), forHTTPHeaderField: "x-api-key")
         } else if self.authType == .oidcToken {
-            request.setValue(self.userPoolsAuthProvider!.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+            if self.userPoolsAuthProvider != nil {
+                request.setValue(self.userPoolsAuthProvider!.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+            } else if self.oidcAuthProvider != nil {
+                request.setValue(self.oidcAuthProvider!.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+            }
         }
     }
     
