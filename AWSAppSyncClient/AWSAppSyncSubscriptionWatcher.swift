@@ -59,7 +59,11 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         self.store = store
         self.subscription = subscription
         self.handlerQueue = handlerQueue
-        self.resultHandler = resultHandler
+        self.resultHandler = { (result, transaction, error) in
+            handlerQueue.async {
+                resultHandler(result, transaction, error)
+            }
+        }
         // start the subscriptionr request process on a background thread
         DispatchQueue.global(qos: .userInitiated).async {
             self.startSubscription()
