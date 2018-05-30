@@ -4,26 +4,15 @@
 //
 
 import Foundation
-import Reachability
 
 class AppSyncMQTTClient: MQTTClientDelegate {
     
-    var mqttClient = MQTTClient<AnyObject, AnyObject>()
     var mqttClients = Set<MQTTClient<AnyObject, AnyObject>>()
     var mqttClientsWithTopics = [MQTTClient<AnyObject, AnyObject>: Set<String>]()
-    var reachability: Reachability?
-    var hostURL: String?
-    var clientId: String?
     var topicSubscribersDictionary = [String: [MQTTSubscritionWatcher]]()
-    var initialConnection = true
-    var shouldSubscribe = true
     var allowCellularAccess = true
-    var shouldReconnect = false
-    var previousAttempt: Date = Date()
-   
-    init() {
-        self.mqttClient.clientDelegate = self
-    }
+    var scheduledSubscription: DispatchSourceTimer?
+    var subscriptionsQueue = DispatchQueue.global(qos: .userInitiated)
     
     func receivedMessageData(_ data: Data!, onTopic topic: String!) {
         let topics = topicSubscribersDictionary[topic]
@@ -64,6 +53,20 @@ class AppSyncMQTTClient: MQTTClientDelegate {
     }
     
     func startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo]) {
+        func createTimer(_ interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
+            let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
+            timer.schedule(deadline: .now() + .seconds(interval))
+            timer.setEventHandler(handler: block)
+            timer.resume()
+            return timer
+        }
+        
+        self.scheduledSubscription = createTimer(1, queue: subscriptionsQueue, block: { [weak self] in
+            self?.resetAndStartSubscriptions(subscriptionInfo: subscriptionInfo)
+        })
+    }
+    
+    private func resetAndStartSubscriptions(subscriptionInfo: [AWSSubscriptionInfo]){
         for client in mqttClients {
             client.clientDelegate = nil
             client.disconnect()
@@ -76,7 +79,7 @@ class AppSyncMQTTClient: MQTTClientDelegate {
         }
     }
     
-    func startNewSubscription(subscriptionInfo: AWSSubscriptionInfo) {
+    private func startNewSubscription(subscriptionInfo: AWSSubscriptionInfo) {
         let interestedTopics = subscriptionInfo.topics.filter({ topicSubscribersDictionary[$0] != nil })
         
         guard !interestedTopics.isEmpty else {
