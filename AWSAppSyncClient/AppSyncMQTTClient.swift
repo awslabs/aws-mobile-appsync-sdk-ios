@@ -55,7 +55,11 @@ class AppSyncMQTTClient: MQTTClientDelegate {
     func startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo]) {
         func createTimer(_ interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
             let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
+            #if swift(>=4)
             timer.schedule(deadline: .now() + .seconds(interval))
+            #else
+            timer.scheduleOneshot(deadline: .now() + .seconds(interval))
+            #endif
             timer.setEventHandler(handler: block)
             timer.resume()
             return timer
