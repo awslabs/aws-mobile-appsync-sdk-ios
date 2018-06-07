@@ -341,9 +341,19 @@ public class AWSAppSyncHTTPNetworkTransport: NetworkTransport {
     }
     
     private class AWSAppSyncHTTPNetworkTransportOperation: Cancellable {
-        var dataTask: URLSessionDataTask? = nil
+        
+        private var cancelled: Bool = false
+        
+        var dataTask: URLSessionDataTask? = nil {
+            didSet {
+                if self.cancelled {
+                    dataTask?.cancel()
+                }
+            }
+        }
         
         func cancel() {
+            self.cancelled = true
             self.dataTask?.cancel()
         }
     }
