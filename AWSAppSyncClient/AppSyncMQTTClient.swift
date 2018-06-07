@@ -9,13 +9,12 @@ import Reachability
 class AppSyncMQTTClient: MQTTClientDelegate {
     
     var mqttClient = MQTTClient<AnyObject, AnyObject>()
-    var mqttClients = [MQTTClient<AnyObject, AnyObject>]()
-    var mqttClientsWithTopics = [MQTTClient<AnyObject, AnyObject>: [String]]()
+    var mqttClients = Set<MQTTClient<AnyObject, AnyObject>>()
+    var mqttClientsWithTopics = [MQTTClient<AnyObject, AnyObject>: Set<String>]()
     var reachability: Reachability?
     var hostURL: String?
     var clientId: String?
     var topicSubscribersDictionary = [String: [MQTTSubscritionWatcher]]()
-    var topicQueue = NSMutableSet()
     var initialConnection = true
     var shouldSubscribe = true
     var allowCellularAccess = true
@@ -38,7 +37,6 @@ class AppSyncMQTTClient: MQTTClientDelegate {
             for topic in mqttClientsWithTopics[mqttClient]! {
                 mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
             }
-            self.topicQueue = NSMutableSet()
         } else if status.rawValue >= 3  {
             for topic in mqttClientsWithTopics[mqttClient]! {
                 let subscribers = topicSubscribersDictionary[topic]
@@ -69,8 +67,8 @@ class AppSyncMQTTClient: MQTTClientDelegate {
             client.clientDelegate = nil
             client.disconnect()
         }
-        mqttClients = []
-        mqttClientsWithTopics = [:]
+        mqttClients.removeAll()
+        mqttClientsWithTopics.removeAll()
         
         for subscription in subscriptionInfo {
             startNewSubscription(subscriptionInfo: subscription)
@@ -78,17 +76,17 @@ class AppSyncMQTTClient: MQTTClientDelegate {
     }
     
     func startNewSubscription(subscriptionInfo: AWSSubscriptionInfo) {
-        var topicQueue = [String]()
+        let interestedTopics = subscriptionInfo.topics.filter({ topicSubscribersDictionary[$0] != nil })
+        
+        guard !interestedTopics.isEmpty else {
+            return
+        }
+        
         let mqttClient = MQTTClient<AnyObject, AnyObject>()
         mqttClient.clientDelegate = self
-        for topic in subscriptionInfo.topics {
-            if topicSubscribersDictionary[topic] != nil {
-                // if the client wants subscriptions and is allowed we add it to list of subscribe
-                topicQueue.append(topic)
-            }
-        }
-        mqttClients.append(mqttClient)
-        mqttClientsWithTopics[mqttClient] = topicQueue
+        
+        mqttClients.insert(mqttClient)
+        mqttClientsWithTopics[mqttClient] = Set(interestedTopics)
         mqttClient.connect(withClientId: subscriptionInfo.clientId, toHost: subscriptionInfo.url, statusCallback: nil)
     }
 
@@ -99,6 +97,12 @@ class AppSyncMQTTClient: MQTTClientDelegate {
         topicSubscribersDictionary.filter({ $0.value.isEmpty })
                                   .map({ $0.key })
                                   .forEach(unsubscribeTopic)
+        
+        for (client, _) in mqttClientsWithTopics.filter({ $0.value.isEmpty }) {
+            client.disconnect()
+            mqttClientsWithTopics[client] = nil
+            mqttClients.remove(client)
+        }
     }
     
     
@@ -123,8 +127,10 @@ class AppSyncMQTTClient: MQTTClientDelegate {
     ///
     /// - Parameter topic: String
     private func unsubscribeTopic(topic: String) {
-        mqttClientsWithTopics.filter({ $0.value.contains(topic) })
-                             .forEach({ $0.key.unsubscribeTopic(topic) })
+        for (client, _)  in mqttClientsWithTopics.filter({ $0.value.contains(topic) }) {
+            client.unsubscribeTopic(topic)
+            mqttClientsWithTopics[client]?.remove(topic)
+        }
     }
     
     /// Removes subscriber from the array using id
