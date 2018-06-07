@@ -524,20 +524,44 @@ public struct AWSAppSyncClientInfoError: Error, LocalizedError {
     }
 }
 
-public struct AWSAppSyncClientError: Error, LocalizedError {
-    
-    /// The body of the response.
-    public let body: Data?
-    /// Information about the response as provided by the server.
-    public let response: HTTPURLResponse?
-    let isInternalError: Bool
-    let additionalInfo: String?
+public enum AWSAppSyncClientError: Error, LocalizedError {
+    case requestFailed(Data?, HTTPURLResponse?, Error?)
+    case noData(HTTPURLResponse)
+    case parseError(Data, HTTPURLResponse, Error?)
+    case authenticationError(Error)
     
     public var errorDescription: String? {
-        if (isInternalError) {
-            return additionalInfo
+        let underlyingError: Error?
+        var message: String
+        let errorResponse: HTTPURLResponse?
+        switch self {
+        case .requestFailed(_, let response, let error):
+            errorResponse = response
+            underlyingError = error
+            message = "Did not receive a successful HTTP code."
+        case .noData(let response):
+            errorResponse = response
+            underlyingError = nil
+            message = "No Data received in response."
+        case .parseError(_, let response, let error):
+            underlyingError = error
+            errorResponse = response
+            message = "Could not parse response data."
+        case .authenticationError(let error):
+            underlyingError = error
+            errorResponse = nil
+            message = "Failed to authenticate request."
         }
-        return "(\(response!.statusCode) \(response!.statusCodeDescription)) \(additionalInfo ?? "")"
+        
+        if let error = underlyingError {
+            message += " Error: \(error)"
+        }
+        
+        if let unwrappedResponse = errorResponse {
+            return "(\(unwrappedResponse.statusCode) \(unwrappedResponse.statusCodeDescription)) \(message)"
+        } else {
+            return "\(message)"
+        }
     }
 }
 

@@ -15,17 +15,33 @@ internal class AWSAppSyncRetryHandler {
     
     /// Returns if a request should be retried
     ///
-    /// - Parameter errorResponse: The error response returned by the service.
+    /// - Parameter error: The error returned by the service.
     /// - Returns: If the request should be retried and if yes, after how much time.
-    func shouldRetryRequest(httpResponse: HTTPURLResponse, body: Data) -> (Bool, Int?) {
+    func shouldRetryRequest(for error: AWSAppSyncClientError) -> (Bool, Int?) {
+        let httpResponse: HTTPURLResponse?
+        switch error {
+        case .requestFailed(_, let reponse, _):
+            httpResponse = reponse
+        case .noData(let response):
+            httpResponse = response
+        case .parseError(_, let response, _):
+            httpResponse = response
+        case .authenticationError(_):
+            httpResponse = nil
+        }
+        
+        guard let unwrappedResponse = httpResponse  else {
+            return (false, nil)
+        }
+        
         currentAttemptNumber += 1
-        let waitTime = httpResponse.allHeaderFields["Retry-After"] as? Int
+        let waitTime = unwrappedResponse.allHeaderFields["Retry-After"] as? Int
         if let waitTime = waitTime {
             let waitMillis = waitTime * 1000
             return (true, waitMillis)
         }
         
-        switch httpResponse.statusCode {
+        switch unwrappedResponse.statusCode {
         case 500 ... 599, 429:
             let waitMillis = Int(Double(pow(2.0, currentAttemptNumber) as NSNumber) * 100.0 + Double(getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
             if (waitMillis > AWSAppSyncRetryHandler.MAX_RETRY_WAIT_MILLIS) {
