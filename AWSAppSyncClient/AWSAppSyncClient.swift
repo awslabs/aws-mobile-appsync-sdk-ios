@@ -87,12 +87,7 @@ public class AWSAppSyncClientConfiguration {
     fileprivate var region: AWSRegionType
     fileprivate var store: ApolloStore
     fileprivate var networkTransport: AWSNetworkTransport
-//    fileprivate var urlSessionConfiguration: URLSessionConfiguration
-
-//    fileprivate var credentialsProvider: AWSCredentialsProvider? = nil
     fileprivate var databaseURL: URL?
-//    fileprivate var apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil
-//    fileprivate var userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil
     fileprivate var oidcAuthProvider: AWSOIDCAuthProvider? = nil
     fileprivate var snapshotController: SnapshotProcessController? = nil
     fileprivate var s3ObjectManager: AWSS3ObjectManager? = nil
