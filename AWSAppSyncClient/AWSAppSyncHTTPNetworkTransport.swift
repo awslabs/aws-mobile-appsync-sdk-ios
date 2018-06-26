@@ -12,7 +12,7 @@ enum AuthType {
     case oidcToken
 }
 
-public class AWSAppSyncHTTPNetworkTransport: NetworkTransport {
+public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     let url: URL
     let session: URLSession
     var region: AWSRegionType? = nil

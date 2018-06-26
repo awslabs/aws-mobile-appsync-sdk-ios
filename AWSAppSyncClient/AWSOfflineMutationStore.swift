@@ -138,7 +138,7 @@ class MutationExecutor: NetworkConnectionNotification {
     
     let isExecutingDispatchGroup = DispatchGroup()
     var currentMutation: AWSAppSyncMutationRecord?
-    var networkClient: AWSAppSyncHTTPNetworkTransport
+    var networkClient: AWSNetworkTransport
     var appSyncClient: AWSAppSyncClient
     var handlerQueue = DispatchQueue.main
     var store: ApolloStore?
@@ -147,7 +147,7 @@ class MutationExecutor: NetworkConnectionNotification {
     private var persistentCache: AWSMutationCache?
     var snapshotProcessController: SnapshotProcessController
     
-    init(networkClient: AWSAppSyncHTTPNetworkTransport,
+    init(networkClient: AWSNetworkTransport,
          appSyncClient: AWSAppSyncClient,
          snapshotProcessController: SnapshotProcessController,
          fileURL: URL? = nil) {

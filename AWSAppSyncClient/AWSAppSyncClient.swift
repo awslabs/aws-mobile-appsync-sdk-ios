@@ -86,12 +86,13 @@ public class AWSAppSyncClientConfiguration {
     fileprivate var url: URL
     fileprivate var region: AWSRegionType
     fileprivate var store: ApolloStore
-    fileprivate var urlSessionConfiguration: URLSessionConfiguration
-    
-    fileprivate var credentialsProvider: AWSCredentialsProvider? = nil
+    fileprivate var networkTransport: AWSNetworkTransport
+//    fileprivate var urlSessionConfiguration: URLSessionConfiguration
+
+//    fileprivate var credentialsProvider: AWSCredentialsProvider? = nil
     fileprivate var databaseURL: URL?
-    fileprivate var apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil
-    fileprivate var userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil
+//    fileprivate var apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil
+//    fileprivate var userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil
     fileprivate var oidcAuthProvider: AWSOIDCAuthProvider? = nil
     fileprivate var snapshotController: SnapshotProcessController? = nil
     fileprivate var s3ObjectManager: AWSS3ObjectManager? = nil
@@ -122,10 +123,13 @@ public class AWSAppSyncClientConfiguration {
                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
         self.url = url
         self.region = serviceRegion
-        self.credentialsProvider = credentialsProvider
-        self.urlSessionConfiguration = urlSessionConfiguration
         self.databaseURL = databaseURL
         self.store = ApolloStore(cache: InMemoryNormalizedCache())
+        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                                                               configuration: urlSessionConfiguration,
+                                                               region: region,
+                                                               credentialsProvider: credentialsProvider)
+
         self.connectionStateChangeHandler = connectionStateChangeHandler
         if let databaseURL = databaseURL {
             do {
@@ -160,10 +164,11 @@ public class AWSAppSyncClientConfiguration {
                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
         self.url = url
         self.region = serviceRegion
-        self.apiKeyAuthProvider = apiKeyAuthProvider
-        self.urlSessionConfiguration = urlSessionConfiguration
         self.databaseURL = databaseURL
         self.store = ApolloStore(cache: InMemoryNormalizedCache())
+        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                                                               apiKeyAuthProvider: apiKeyAuthProvider,
+                                                               configuration: urlSessionConfiguration)
         if let databaseURL = databaseURL {
             do {
                 self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
@@ -197,10 +202,11 @@ public class AWSAppSyncClientConfiguration {
                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
         self.url = url
         self.region = serviceRegion
-        self.userPoolsAuthProvider = userPoolsAuthProvider
-        self.urlSessionConfiguration = urlSessionConfiguration
         self.databaseURL = databaseURL
         self.store = ApolloStore(cache: InMemoryNormalizedCache())
+        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                                                               userPoolsAuthProvider: userPoolsAuthProvider,
+                                                               configuration: urlSessionConfiguration)
         if let databaseURL = databaseURL {
             do {
                 self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
@@ -234,10 +240,45 @@ public class AWSAppSyncClientConfiguration {
                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
         self.url = url
         self.region = serviceRegion
-        self.oidcAuthProvider = oidcAuthProvider
-        self.urlSessionConfiguration = urlSessionConfiguration
         self.databaseURL = databaseURL
         self.store = ApolloStore(cache: InMemoryNormalizedCache())
+        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                                                               oidcAuthProvider: oidcAuthProvider,
+                                                               configuration: urlSessionConfiguration)
+        if let databaseURL = databaseURL {
+            do {
+                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
+            } catch {
+                // Use in memory cache incase database init fails
+            }
+        }
+        self.s3ObjectManager = s3ObjectManager
+        self.presignedURLClient = presignedURLClient
+        self.connectionStateChangeHandler = connectionStateChangeHandler
+    }
+
+    /// Creates a configuration object for the `AWSAppSyncClient`.
+    ///
+    /// - Parameters:
+    ///   - url: The endpoint url for Appsync endpoint.
+    ///   - serviceRegion: The service region for Appsync.
+    ///   - networkTransport: The Network Transport used to communicate with the server.
+    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
+    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
+    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
+    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    public init(url: URL,
+                serviceRegion: AWSRegionType,
+                networkTransport: AWSNetworkTransport,
+                databaseURL: URL? = nil,
+                connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
+                s3ObjectManager: AWSS3ObjectManager? = nil,
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+        self.url = url
+        self.region = serviceRegion
+        self.databaseURL = databaseURL
+        self.store = ApolloStore(cache: InMemoryNormalizedCache())
+        self.networkTransport = networkTransport
         if let databaseURL = databaseURL {
             do {
                 self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
@@ -306,7 +347,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     
     private var networkStatusWatchers: [NetworkConnectionNotification] = []
     private var appSyncConfiguration: AWSAppSyncClientConfiguration
-    internal var httpTransport: AWSAppSyncHTTPNetworkTransport?
+    internal var httpTransport: AWSNetworkTransport?
     private var offlineMuationCacheClient : AWSAppSyncOfflineMutationCache?
     private var offlineMutationExecutor: MutationExecutor?
     private var autoSubmitOfflineMutations: Bool = false
@@ -328,25 +369,8 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         self.appSyncMQTTClient.allowCellularAccess = self.appSyncConfiguration.allowsCellularAccess
         self.presignedURLClient = appSyncConfig.presignedURLClient
         self.s3ObjectManager = appSyncConfig.s3ObjectManager
-        
-        if let apiKeyAuthProvider = appSyncConfig.apiKeyAuthProvider {
-            self.httpTransport = AWSAppSyncHTTPNetworkTransport(url: self.appSyncConfiguration.url,
-                                                                      apiKeyAuthProvider: apiKeyAuthProvider,
-                                                               configuration: self.appSyncConfiguration.urlSessionConfiguration)
-        } else if let userPoolsAuthProvider = appSyncConfig.userPoolsAuthProvider {
-            self.httpTransport = AWSAppSyncHTTPNetworkTransport(url: self.appSyncConfiguration.url,
-                                                                      userPoolsAuthProvider: userPoolsAuthProvider,
-                                                                      configuration: self.appSyncConfiguration.urlSessionConfiguration)
-        } else if let oidcAuthProvider = appSyncConfig.oidcAuthProvider {
-            self.httpTransport = AWSAppSyncHTTPNetworkTransport(url: self.appSyncConfiguration.url,
-                                                                oidcAuthProvider: oidcAuthProvider,
-                                                                configuration: self.appSyncConfiguration.urlSessionConfiguration)
-        } else {
-            self.httpTransport = AWSAppSyncHTTPNetworkTransport(url: self.appSyncConfiguration.url,
-                                                                      configuration: self.appSyncConfiguration.urlSessionConfiguration,
-                                                                      region: self.appSyncConfiguration.region,
-                                                                      credentialsProvider: self.appSyncConfiguration.credentialsProvider!)
-        }
+
+        self.httpTransport = appSyncConfig.networkTransport
         self.apolloClient = ApolloClient(networkTransport: self.httpTransport!, store: self.appSyncConfiguration.store)
         
         try self.offlineMuationCacheClient = AWSAppSyncOfflineMutationCache()
