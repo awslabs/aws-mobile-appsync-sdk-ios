@@ -364,8 +364,10 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         self.appSyncMQTTClient.allowCellularAccess = self.appSyncConfiguration.allowsCellularAccess
         self.presignedURLClient = appSyncConfig.presignedURLClient
         self.s3ObjectManager = appSyncConfig.s3ObjectManager
-
+        
         self.httpTransport = appSyncConfig.networkTransport
+        self.connectionStateChangeHandler = appSyncConfiguration.connectionStateChangeHandler
+        
         self.apolloClient = ApolloClient(networkTransport: self.httpTransport!, store: self.appSyncConfiguration.store)
         
         try self.offlineMuationCacheClient = AWSAppSyncOfflineMutationCache()
@@ -379,6 +381,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         
         self.offlineMutationExecutor = MutationExecutor(networkClient: self.httpTransport!, appSyncClient: self, snapshotProcessController: SnapshotProcessController(endpointURL:self.appSyncConfiguration.url), fileURL: self.appSyncConfiguration.databaseURL)
         networkStatusWatchers.append(self.offlineMutationExecutor!)
+        networkStatusWatchers.append(self)
         
         
         NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
@@ -522,7 +525,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     func onNetworkAvailabilityStatusChanged(isEndpointReachable: Bool) {
         var accessState: ClientNetworkAccessState = .Offline
         if (isEndpointReachable) {
-            accessState = .Offline
+            accessState = .Online
         }
         self.connectionStateChangeHandler?.stateChanged(networkState: accessState)
     }

@@ -85,7 +85,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                 if let response = response {
                     do {
                         let subscriptionResult = try AWSGraphQLSubscriptionResponseParser(body: response).parseResult()
-                        if let subscriptionInfo = subscriptionResult.subscrptionInfo {
+                        if let subscriptionInfo = subscriptionResult.subscriptionInfo {
                             self.subscriptionTopic = subscriptionResult.newTopics
                             self.client?.addWatcher(watcher: self, topics: subscriptionResult.newTopics!, identifier: self.uniqueIdentifier)
                             self.client?.startSubscriptions(subscriptionInfo: subscriptionInfo)

@@ -127,51 +127,55 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         let body = data
         request.httpBody = body
         
+        func sendRequest(request: URLRequest) {
+            let dataTask = self.session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
+                
+                if error != nil {
+                    completionHandler?(nil, error)
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    fatalError("Response should be an HTTPURLResponse")
+                }
+                
+                if (!httpResponse.isSuccessful) {
+                    let err = AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Did not receive a successful HTTP code.")
+                    completionHandler?(nil, err)
+                    return
+                }
+                
+                guard let data = data else {
+                    let err = AWSAppSyncClientError(body: nil, response: httpResponse, isInternalError: false, additionalInfo: "No Data received in response.")
+                    completionHandler?(nil, err)
+                    return
+                }
+                
+                do {
+                    guard let body =  try self.serializationFormat.deserialize(data: data) as? JSONObject else {
+                        throw AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Could not parse response data.")
+                    }
+                    completionHandler?(body, error)
+                } catch {
+                    completionHandler?(nil, error)
+                }
+            })
+            
+            dataTask.resume()
+        }
+        
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         
         if self.authType == .awsIAM {
             let signer:AWSSignatureV4Signer = AWSSignatureV4Signer(credentialsProvider: self.credentialsProvider, endpoint: self.endpoint)
-            signer.interceptRequest(mutableRequest).continueWith { (task: AWSTask<AnyObject>) -> Any? in
-                
+            signer.interceptRequest(mutableRequest).continueWith { _ in
                 return nil
-                }.waitUntilFinished()
+                }.continueWith { _ in
+                    sendRequest(request: mutableRequest as URLRequest)
+            }
+        } else {
+            sendRequest(request: mutableRequest as URLRequest)
         }
-        
-        let task = self.session.dataTask(with: mutableRequest  as URLRequest, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
-            
-            if error != nil {
-                completionHandler?(nil, error)
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                fatalError("Response should be an HTTPURLResponse")
-            }
-            
-            if (!httpResponse.isSuccessful) {
-                let err = AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Did not receive a successful HTTP code.")
-                completionHandler?(nil, err)
-                return
-            }
-            
-            guard let data = data else {
-                let err = AWSAppSyncClientError(body: nil, response: httpResponse, isInternalError: false, additionalInfo: "No Data received in response.")
-                completionHandler?(nil, err)
-                return
-            }
-            
-            do {
-                guard let body =  try self.serializationFormat.deserialize(data: data) as? JSONObject else {
-                    throw AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Could not parse response data.")
-                }
-                completionHandler?(body, error)
-            } catch {
-                completionHandler?(nil, error)
-            }
-            
-        })
-        
-        task.resume()
     }
     
     
@@ -185,6 +189,48 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     /// - Returns: An object that can be used to cancel an in progress request.
     public func sendSubscriptionRequest<Operation: GraphQLOperation>(operation: Operation, completionHandler: @escaping (JSONObject?, Error?) -> Void) throws -> Cancellable {
         
+        let networkTransportOperation = AWSAppSyncHTTPNetworkTransportOperation()
+    
+        func sendRequest(request: URLRequest) {
+            let dataTask = self.session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
+                
+                if error != nil {
+                    completionHandler(nil, error)
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    fatalError("Response should be an HTTPURLResponse")
+                }
+                
+                if (!httpResponse.isSuccessful) {
+                    let err = AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Did not receive a successful HTTP code.")
+                    completionHandler(nil, err)
+                    return
+                }
+                
+                guard let data = data else {
+                    let err = AWSAppSyncClientError(body: nil, response: httpResponse, isInternalError: false, additionalInfo: "No Data received in response.")
+                    completionHandler(nil, err)
+                    return
+                }
+                
+                do {
+                    guard let body =  try self.serializationFormat.deserialize(data: data) as? JSONObject else {
+                        throw AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Could not parse response data.")
+                    }
+                    
+                    completionHandler(body, nil)
+                } catch {
+                    completionHandler(nil, error)
+                }
+            })
+            
+            networkTransportOperation.dataTask = dataTask
+            
+            dataTask.resume()
+        }
+        
         var request = URLRequest(url: url)
         initRequest(request: &request)
         
@@ -195,50 +241,16 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         if self.authType == .awsIAM {
             let signer:AWSSignatureV4Signer = AWSSignatureV4Signer(credentialsProvider: self.credentialsProvider, endpoint: self.endpoint)
-            signer.interceptRequest(mutableRequest).continueWith { (task: AWSTask<AnyObject>) -> Any? in
-                
+            signer.interceptRequest(mutableRequest).continueWith { _ in
                 return nil
-                }.waitUntilFinished()
+                }.continueWith { _ in
+                    sendRequest(request: mutableRequest as URLRequest)
+            }
+        } else {
+            sendRequest(request: mutableRequest as URLRequest)
         }
         
-        let task = self.session.dataTask(with: mutableRequest  as URLRequest, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
-            
-            if error != nil {
-                completionHandler(nil, error)
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                fatalError("Response should be an HTTPURLResponse")
-            }
-            
-            if (!httpResponse.isSuccessful) {
-                let err = AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Did not receive a successful HTTP code.")
-                completionHandler(nil, err)
-                return
-            }
-            
-            guard let data = data else {
-                let err = AWSAppSyncClientError(body: nil, response: httpResponse, isInternalError: false, additionalInfo: "No Data received in response.")
-                completionHandler(nil, err)
-                return
-            }
-            
-            do {
-                guard let body =  try self.serializationFormat.deserialize(data: data) as? JSONObject else {
-                    throw AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Could not parse response data.")
-                }
-                
-                completionHandler(body, nil)
-            } catch {
-                completionHandler(nil, error)
-            }
-            
-        })
-        
-        task.resume()
-        
-        return task
+        return networkTransportOperation
     }
 
     
@@ -252,6 +264,48 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     /// - Returns: An object that can be used to cancel an in progress request.
     public func send<Operation>(operation: Operation, completionHandler: @escaping (GraphQLResponse<Operation>?, Error?) -> Void) -> Cancellable {
         
+        let networkTransportOperation = AWSAppSyncHTTPNetworkTransportOperation()
+        
+        func sendRequest(request: URLRequest) {
+            let dataTask = self.session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
+                
+                if error != nil {
+                    completionHandler(nil, error)
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    fatalError("Response should be an HTTPURLResponse")
+                }
+                
+                if (!httpResponse.isSuccessful) {
+                    let err = AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Did not receive a successful HTTP code.")
+                    completionHandler(nil, err)
+                    return
+                }
+                
+                guard let data = data else {
+                    let err = AWSAppSyncClientError(body: nil, response: httpResponse, isInternalError: false, additionalInfo: "No Data received in response.")
+                    completionHandler(nil, err)
+                    return
+                }
+                
+                do {
+                    guard let body =  try self.serializationFormat.deserialize(data: data) as? JSONObject else {
+                        throw AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Could not parse response data.")
+                    }
+                    let response = GraphQLResponse(operation: operation, body: body)
+                    completionHandler(response, nil)
+                } catch {
+                    completionHandler(nil, error)
+                }
+            })
+            
+            networkTransportOperation.dataTask = dataTask
+            
+            dataTask.resume()
+        }
+        
         var request = URLRequest(url: url)
         initRequest(request: &request)
         
@@ -262,50 +316,16 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         if self.authType == .awsIAM {
             let signer:AWSSignatureV4Signer = AWSSignatureV4Signer(credentialsProvider: self.credentialsProvider, endpoint: self.endpoint)
-            signer.interceptRequest(mutableRequest).continueWith { (task: AWSTask<AnyObject>) -> Any? in
-                
+            signer.interceptRequest(mutableRequest).continueWith { _ in
                 return nil
-                }.waitUntilFinished()
+                }.continueWith { _ in
+                    sendRequest(request: mutableRequest as URLRequest)
+            }
+        } else {
+            sendRequest(request: mutableRequest as URLRequest)
         }
         
-        let task = self.session.dataTask(with: mutableRequest  as URLRequest, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
-            
-            if error != nil {
-                completionHandler(nil, error)
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                fatalError("Response should be an HTTPURLResponse")
-            }
-            
-            if (!httpResponse.isSuccessful) {
-                let err = AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Did not receive a successful HTTP code.")
-                completionHandler(nil, err)
-                return
-            }
-            
-            guard let data = data else {
-                let err = AWSAppSyncClientError(body: nil, response: httpResponse, isInternalError: false, additionalInfo: "No Data received in response.")
-                completionHandler(nil, err)
-                return
-            }
-            
-            do {
-                guard let body =  try self.serializationFormat.deserialize(data: data) as? JSONObject else {
-                    throw AWSAppSyncClientError(body: data, response: httpResponse, isInternalError: false, additionalInfo: "Could not parse response data.")
-                }
-                let response = GraphQLResponse(operation: operation, body: body)
-                completionHandler(response, nil)
-            } catch {
-                completionHandler(nil, error)
-            }
-
-        })
-        
-        task.resume()
-        
-        return task
+        return networkTransportOperation
     }
 
     private let sendOperationIdentifiers: Bool
@@ -318,5 +338,23 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             return ["id": operationIdentifier, "variables": operation.variables]
         }
         return ["query": type(of: operation).requestString, "variables": operation.variables]
+    }
+    
+    private class AWSAppSyncHTTPNetworkTransportOperation: Cancellable {
+        
+        private var cancelled: Bool = false
+        
+        var dataTask: URLSessionDataTask? = nil {
+            didSet {
+                if self.cancelled {
+                    dataTask?.cancel()
+                }
+            }
+        }
+        
+        func cancel() {
+            self.cancelled = true
+            self.dataTask?.cancel()
+        }
     }
 }
