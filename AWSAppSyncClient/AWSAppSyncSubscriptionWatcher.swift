@@ -75,9 +75,13 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     
     func startSubscription()  {
         self.subscriptionsQueue.async { [weak self] in
+            guard let `self` = self else {
+                return
+            }
+
             let semaphore = DispatchSemaphore(value: 0)
             
-            self?.performSubscriptionRequest(completionHandler: { (success, error) in
+            self.performSubscriptionRequest(completionHandler: { [weak self] (success, error) in
                 if let error = error {
                     self?.resultHandler(nil, nil, error)
                 }
