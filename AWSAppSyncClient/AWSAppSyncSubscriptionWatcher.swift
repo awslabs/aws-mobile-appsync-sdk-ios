@@ -45,7 +45,7 @@ class SubscriptionsOrderHelper {
 public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscription>: MQTTSubscritionWatcher, Cancellable {
     
     weak var client: AppSyncMQTTClient?
-    weak var httpClient: AWSAppSyncHTTPNetworkTransport?
+    weak var httpClient: AWSNetworkTransport?
     let subscription: Subscription?
     let handlerQueue: DispatchQueue
     let resultHandler: SubscriptionResultHandler<Subscription>
@@ -53,7 +53,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     let store: ApolloStore
     public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
     
-    init(client: AppSyncMQTTClient, httpClient: AWSAppSyncHTTPNetworkTransport, store: ApolloStore, subscription: Subscription, handlerQueue: DispatchQueue, resultHandler: @escaping SubscriptionResultHandler<Subscription>) {
+    init(client: AppSyncMQTTClient, httpClient: AWSNetworkTransport, store: ApolloStore, subscription: Subscription, handlerQueue: DispatchQueue, resultHandler: @escaping SubscriptionResultHandler<Subscription>) {
         self.client = client
         self.httpClient = httpClient
         self.store = store
