@@ -48,7 +48,6 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     weak var httpClient: AWSNetworkTransport?
     let subscription: Subscription?
     let handlerQueue: DispatchQueue
-    let subscriptionsQueue: DispatchQueue
     let resultHandler: SubscriptionResultHandler<Subscription>
     internal var subscriptionTopic: [String]?
     let store: ApolloStore
@@ -65,31 +64,26 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                 resultHandler(result, transaction, error)
             }
         }
-        self.subscriptionsQueue = subscriptionsQueue
-        self.startSubscription()
+        subscriptionsQueue.async { [weak self] in
+            self?.startSubscription()
+        }
     }
     
     func getIdentifier() -> Int {
         return uniqueIdentifier
     }
     
-    func startSubscription()  {
-        self.subscriptionsQueue.async { [weak self] in
-            guard let `self` = self else {
-                return
+    private func startSubscription()  {
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        self.performSubscriptionRequest(completionHandler: { [weak self] (success, error) in
+            if let error = error {
+                self?.resultHandler(nil, nil, error)
             }
-
-            let semaphore = DispatchSemaphore(value: 0)
-            
-            self.performSubscriptionRequest(completionHandler: { [weak self] (success, error) in
-                if let error = error {
-                    self?.resultHandler(nil, nil, error)
-                }
-                semaphore.signal()
-            })
-            
-            semaphore.wait()
-        }
+            semaphore.signal()
+        })
+        
+        semaphore.wait()
     }
     
     private func performSubscriptionRequest(completionHandler: @escaping (Bool, Error?) -> Void) {

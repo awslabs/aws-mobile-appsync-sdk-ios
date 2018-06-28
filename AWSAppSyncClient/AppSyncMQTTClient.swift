@@ -15,39 +15,53 @@ class AppSyncMQTTClient: MQTTClientDelegate {
     var subscriptionsQueue = DispatchQueue.global(qos: .userInitiated)
     
     func receivedMessageData(_ data: Data!, onTopic topic: String!) {
-        let topics = topicSubscribersDictionary[topic]
-        for subscribedTopic in topics! {
-            subscribedTopic.messageCallbackDelegate(data: data)
+        self.subscriptionsQueue.async { [weak self] in
+            guard let `self` = self, let topics = self.topicSubscribersDictionary[topic] else {
+                return
+            }
+            
+            for subscribedTopic in topics {
+                subscribedTopic.messageCallbackDelegate(data: data)
+            }
         }
     }
     
     func connectionStatusChanged(_ status: MQTTStatus, client mqttClient: MQTTClient<AnyObject, AnyObject>) {
-        if status.rawValue == 2 {
-            for topic in mqttClientsWithTopics[mqttClient]! {
-                mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
+        self.subscriptionsQueue.async { [weak self] in
+            guard let `self` = self, let topics = self.mqttClientsWithTopics[mqttClient] else {
+                return
             }
-        } else if status.rawValue >= 3  {
-            guard mqttClientsWithTopics[mqttClient] != nil else {return}
-            for topic in mqttClientsWithTopics[mqttClient]! {
-                let subscribers = topicSubscribersDictionary[topic]
-                for subscriber in subscribers! {
-                    let error = AWSAppSyncSubscriptionError(additionalInfo: "Subscription Terminated.", errorDetails:  [
-                        "recoverySuggestion" : "Restart subscription request.",
-                        "failureReason" : "Disconnected from service."])
-                    
-                    subscriber.disconnectCallbackDelegate(error: error)
+            
+            if status.rawValue == 2 {
+                for topic in topics {
+                    mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
                 }
+            } else if status.rawValue >= 3  {
+                let error = AWSAppSyncSubscriptionError(additionalInfo: "Subscription Terminated.", errorDetails:  [
+                    "recoverySuggestion" : "Restart subscription request.",
+                    "failureReason" : "Disconnected from service."])
+                
+                topics.map({ self.topicSubscribersDictionary[$0] })
+                      .flatMap({$0})
+                      .flatMap({$0})
+                      .forEach({$0.disconnectCallbackDelegate(error: error)})
             }
         }
     }
     
     func addWatcher(watcher: MQTTSubscritionWatcher, topics: [String], identifier: Int) {
-        for topic in topics {
-            if var topicsDict = self.topicSubscribersDictionary[topic] {
-                topicsDict.append(watcher)
-                self.topicSubscribersDictionary[topic] = topicsDict
-            } else {
-                self.topicSubscribersDictionary[topic] = [watcher]
+        self.subscriptionsQueue.async { [weak self] in
+            guard let `self` = self else {
+                return
+            }
+            
+            for topic in topics {
+                if var topicsDict = self.topicSubscribersDictionary[topic] {
+                    topicsDict.append(watcher)
+                    self.topicSubscribersDictionary[topic] = topicsDict
+                } else {
+                    self.topicSubscribersDictionary[topic] = [watcher]
+                }
             }
         }
     }
@@ -99,22 +113,23 @@ class AppSyncMQTTClient: MQTTClientDelegate {
     }
 
     public func stopSubscription(subscription: MQTTSubscritionWatcher) {
-        
-        topicSubscribersDictionary = updatedDictionary(topicSubscribersDictionary, usingCancelling: subscription)
-        
-        topicSubscribersDictionary.filter({ $0.value.isEmpty })
-                                  .map({ $0.key })
-                                  .forEach(unsubscribeTopic)
-        
-        for (client, _) in mqttClientsWithTopics.filter({ $0.value.isEmpty }) {
-            DispatchQueue.global(qos: .userInitiated).async {
-                client.disconnect()
+        self.subscriptionsQueue.async { [weak self] in
+            guard let `self` = self else {
+                return
             }
-            mqttClientsWithTopics[client] = nil
-            mqttClients.remove(client)
+            self.topicSubscribersDictionary = self.updatedDictionary(self.topicSubscribersDictionary, usingCancelling: subscription)
+        
+            self.topicSubscribersDictionary.filter({ $0.value.isEmpty })
+                                           .map({ $0.key })
+                                           .forEach(self.unsubscribeTopic)
+        
+            for (client, _) in self.mqttClientsWithTopics.filter({ $0.value.isEmpty }) {
+                client.disconnect()
+                self.mqttClientsWithTopics[client] = nil
+                self.mqttClients.remove(client)
+            }
         }
     }
-    
     
     /// Returnes updated dictionary
     /// it removes subscriber from the array
