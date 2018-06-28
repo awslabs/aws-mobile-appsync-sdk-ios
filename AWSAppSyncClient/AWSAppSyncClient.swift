@@ -563,6 +563,47 @@ public enum AWSAppSyncClientError: Error, LocalizedError {
             return "\(message)"
         }
     }
+    
+    @available(*, deprecated, message: "use the enum pattern matching instead")
+    public var body: Data? {
+        switch self {
+        case .parseError(let data, _, _):
+            return data
+        case .requestFailed(let data, _, _):
+            return data
+        case .noData:
+            return nil
+        }
+    }
+    
+    @available(*, deprecated, message: "use the enum pattern matching instead")
+    public var response: HTTPURLResponse? {
+        switch self {
+        case .parseError(_, let response, _):
+            return response as? HTTPURLResponse
+        case .requestFailed(_, let response, _):
+            return response as? HTTPURLResponse
+        case .noData:
+            return nil
+        }
+    }
+    
+    @available(*, deprecated)
+    var isInternalError: Bool {
+        return false
+    }
+    
+    @available(*, deprecated, message: "use errorDescription instead")
+    var additionalInfo: String? {
+        switch self {
+        case .parseError(_, _, _):
+            return "Could not parse response data."
+        case .requestFailed(_, _, _):
+            return "Did not receive a successful HTTP code."
+        case .noData:
+            return "No Data received in response."
+        }
+    }
 }
 
 public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
