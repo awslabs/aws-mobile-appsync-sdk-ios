@@ -38,6 +38,7 @@ class AppSyncMQTTClient: MQTTClientDelegate {
                 mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
             }
         } else if status.rawValue >= 3  {
+            guard mqttClientsWithTopics[mqttClient] != nil else {return}
             for topic in mqttClientsWithTopics[mqttClient]! {
                 let subscribers = topicSubscribersDictionary[topic]
                 for subscriber in subscribers! {
@@ -99,7 +100,9 @@ class AppSyncMQTTClient: MQTTClientDelegate {
                                   .forEach(unsubscribeTopic)
         
         for (client, _) in mqttClientsWithTopics.filter({ $0.value.isEmpty }) {
-            client.disconnect()
+            DispatchQueue.global(qos: .userInitiated).async {
+                client.disconnect()
+            }
             mqttClientsWithTopics[client] = nil
             mqttClients.remove(client)
         }
