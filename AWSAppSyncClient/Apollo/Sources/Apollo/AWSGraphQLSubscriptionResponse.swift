@@ -10,11 +10,11 @@ public struct AWSGraphQLSubscriptionResponse {
     /// A list of errors, or `nil` if the operation completed without encountering any errors.
     public let errors: [GraphQLError]?
     public let newTopics: [String]?
-    public let subscrptionInfo: [AWSSubscriptionInfo]?
+    public let subscriptionInfo: [AWSSubscriptionInfo]?
     
-    init(errors: [GraphQLError]?, newTopics: [String]?, subscrptionInfo: [AWSSubscriptionInfo]?) {
+    init(errors: [GraphQLError]?, newTopics: [String]?, subscriptionInfo: [AWSSubscriptionInfo]?) {
         self.errors = errors
-        self.subscrptionInfo = subscrptionInfo
+        self.subscriptionInfo = subscriptionInfo
         self.newTopics = newTopics
     }
 }
@@ -72,7 +72,7 @@ public final class AWSGraphQLSubscriptionResponseParser {
                         newTopics.append((newSubscriptions[key]! as! JSONObject)["topic"]! as! String)
                     }
                     
-                    return AWSGraphQLSubscriptionResponse(errors: errors, newTopics: newTopics, subscrptionInfo: allSubscriptionsInfo)
+                    return AWSGraphQLSubscriptionResponse(errors: errors, newTopics: newTopics, subscriptionInfo: allSubscriptionsInfo)
                 }
             }
         }
@@ -81,6 +81,6 @@ public final class AWSGraphQLSubscriptionResponseParser {
             throw GraphQLError.init("Invalid response")
         }
         
-        return AWSGraphQLSubscriptionResponse(errors: errors, newTopics: nil, subscrptionInfo: nil)
+        return AWSGraphQLSubscriptionResponse(errors: errors, newTopics: nil, subscriptionInfo: nil)
     }
 }
