@@ -33,7 +33,7 @@ extension AWSAppSyncClient {
             }
         }
         
-        return self.httpTransport!.send(operation: operation) { (response, error) in
+        return self.httpTransport.send(operation: operation) { (response, error) in
             guard let response = response else {
                 notifyResultHandler(result: nil, error: error)
                 return

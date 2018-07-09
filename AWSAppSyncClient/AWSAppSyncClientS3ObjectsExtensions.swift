@@ -24,7 +24,7 @@ extension AWSAppSyncClient {
 
         self.s3ObjectManager!.upload(s3Object: s3Object) { (isSuccessful, error) in
             if (isSuccessful) {
-                self.httpTransport?.send(data: data) { (result, error) in
+                self.httpTransport.send(data: data) { (result, error) in
                 }
             } else {
                 if let resultHandler = resultHandler {
