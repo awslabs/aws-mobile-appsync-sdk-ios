@@ -299,7 +299,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     
     public let apolloClient: ApolloClient?
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
-    public let store: ApolloStore?
+    public let store: ApolloStore
     public let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
     public let s3ObjectManager: AWSS3ObjectManager?
     
@@ -417,7 +417,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         
         return AWSAppSyncSubscriptionWatcher(client: self.appSyncMQTTClient,
                                               httpClient: self.httpTransport,
-                                              store: self.store!,
+                                              store: self.store,
                                               subscription: subscription,
                                               handlerQueue: queue,
                                               resultHandler: resultHandler)
@@ -441,7 +441,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
                                                                       resultHandler: OperationResultHandler<Mutation>? = nil) -> PerformMutationOperation<Mutation>? {
         if let optimisticUpdate = optimisticUpdate {
             do {
-                let _ = try self.store?.withinReadWriteTransaction { transaction in
+                let _ = try self.store.withinReadWriteTransaction { transaction in
                     optimisticUpdate(transaction)
                     }.await()
             } catch {
