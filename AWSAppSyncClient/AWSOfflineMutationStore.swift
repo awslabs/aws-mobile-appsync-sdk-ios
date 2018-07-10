@@ -139,21 +139,24 @@ class MutationExecutor: NetworkConnectionNotification {
     let isExecutingDispatchGroup = DispatchGroup()
     var currentMutation: AWSAppSyncMutationRecord?
     var networkClient: AWSNetworkTransport
-    var appSyncClient: AWSAppSyncClient
     var handlerQueue = DispatchQueue.main
     var store: ApolloStore?
     var apolloClient: ApolloClient?
     var autoSubmitOfflineMutations: Bool = true
     private var persistentCache: AWSMutationCache?
     var snapshotProcessController: SnapshotProcessController
+    var s3ObjectManager: AWSS3ObjectManager?
+    weak var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
     
     init(networkClient: AWSNetworkTransport,
-         appSyncClient: AWSAppSyncClient,
          snapshotProcessController: SnapshotProcessController,
+         offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?,
+         s3ObjectManager: AWSS3ObjectManager?,
          fileURL: URL? = nil) {
         self.networkClient = networkClient
-        self.appSyncClient = appSyncClient
+        self.offlineMutationDelegate = offlineMutationDelegate
         self.snapshotProcessController = snapshotProcessController
+        self.s3ObjectManager = s3ObjectManager
         if let fileURL = fileURL {
         do {
             self.persistentCache = try AWSMutationCache(fileURL: fileURL)
@@ -190,8 +193,8 @@ class MutationExecutor: NetworkConnectionNotification {
         }
 
         // if the record is just queued and we are online, immediately submit the record
-        if (snapshotProcessController.shouldExecuteOperation(operation: .mutation)
-            && self.listAllMuationRecords().count == 1) {
+        if snapshotProcessController.shouldExecuteOperation(operation: .mutation)
+            && self.listAllMuationRecords().count == 1 {
             self.mutationQueue.removeFirst()
             mutation.inmemoryExecutor?.performMutation(dispatchGroup: dispatchGroup)
             do  {
@@ -232,7 +235,7 @@ class MutationExecutor: NetworkConnectionNotification {
         func notifyResultHandler(record: AWSAppSyncMutationRecord, result: JSONObject?, success: Bool, error: Error?) {
             handlerQueue.async {
                 // call master delegate
-                self.appSyncClient.offlineMutationDelegate?.mutationCallback(recordIdentifier: record.recordIdentitifer, operationString: record.operationString!, snapshot: result, error: error)
+                self.offlineMutationDelegate?.mutationCallback(recordIdentifier: record.recordIdentitifer, operationString: record.operationString!, snapshot: result, error: error)
             }
         }
         
@@ -261,16 +264,17 @@ class MutationExecutor: NetworkConnectionNotification {
         }
         
         dispatchGroup.enter()
-        if let s3Object = mutation.s3ObjectInput {
-            
-            self.appSyncClient.s3ObjectManager!.upload(s3Object: s3Object) { (isSuccessful, error) in
-                if (isSuccessful) {
-                    sendDataRequest(mutation: mutation)
-                } else {
-                    // give customer error callback with S3 as the error
+
+
+        if let s3Object = mutation.s3ObjectInput,
+            let manager = s3ObjectManager {
+            manager.upload(s3Object: s3Object) { (isSuccessful, error) in
+                guard isSuccessful else {
                     deleteMutationRecord()
                     notifyResultHandler(record: mutation, result: nil, success: false, error: error)
+                    return
                 }
+                sendDataRequest(mutation: mutation)
             }
         } else {
             sendDataRequest(mutation: mutation)

@@ -31,12 +31,12 @@ enum AWSAppSyncGraphQLOperation {
 class SnapshotProcessController {
     let endpointURL: URL
     var reachability: Reachability
-    private var networkStatusWatchers: [NetworkConnectionNotification] = []
+    var networkStatusWatchers = NSHashTable<NetworkConnectionNotification>.weakObjects()
     
-    init?(endpointURL: URL, allowsCellularAccess: Bool = true){
+    init(endpointURL: URL, allowsCellularAccess: Bool = true){
         guard let host = endpointURL.host,
             let reachability = Reachability(hostname: host) else {
-            return nil
+                preconditionFailure("Failed to create reachability client when creating SnapshotProcessController")
         }
         
         reachability.allowsCellularConnection = allowsCellularAccess
@@ -53,7 +53,7 @@ class SnapshotProcessController {
         }
 
         let isReachable = reachability.connection != .none
-        networkStatusWatchers.forEach {
+        networkStatusWatchers.allObjects.forEach {
             $0.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
         }
     }
@@ -80,7 +80,7 @@ public class AWSAppSyncClientConfiguration {
     fileprivate let s3ObjectManager: AWSS3ObjectManager?
     fileprivate let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
     fileprivate let connectionStateChangeHandler: ConnectionStateChangeHandler?
-    fileprivate var snapshotController: SnapshotProcessController? = nil
+    fileprivate let snapshotController: SnapshotProcessController
     
     fileprivate var allowsCellularAccess: Bool = true
     fileprivate var autoSubmitOfflineMutations: Bool = true
@@ -110,6 +110,7 @@ public class AWSAppSyncClientConfiguration {
         self.s3ObjectManager = s3ObjectManager
         self.presignedURLClient = presignedURLClient
         self.connectionStateChangeHandler = connectionStateChangeHandler
+        self.snapshotController = SnapshotProcessController(endpointURL: url)
 
         if let databaseURL = databaseURL,
             let dbStore = try? ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL)) {
@@ -151,8 +152,6 @@ public class AWSAppSyncClientConfiguration {
                   connectionStateChangeHandler: connectionStateChangeHandler,
                   s3ObjectManager: s3ObjectManager,
                   presignedURLClient: presignedURLClient)
-
-        self.snapshotController = SnapshotProcessController(endpointURL: url)
     }
 
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -286,30 +285,27 @@ public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
     }
 }
 
-protocol NetworkConnectionNotification {
+@objc
+protocol NetworkConnectionNotification: AnyObject {
     func onNetworkAvailabilityStatusChanged(isEndpointReachable: Bool)
 }
 
-public protocol AWSAppSyncOfflineMutationDelegate {
+public protocol AWSAppSyncOfflineMutationDelegate: AnyObject {
     func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?) -> Void
 }
 
 // The client for making `Mutation`, `Query` and `Subscription` requests.
 public class AWSAppSyncClient: NetworkConnectionNotification {
-    
-    public let apolloClient: ApolloClient?
+    public let apolloClient: ApolloClient
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
     public let store: ApolloStore
     public let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
     public let s3ObjectManager: AWSS3ObjectManager?
-    
-    var reachability: Reachability?
-    
-    private var networkStatusWatchers: [NetworkConnectionNotification] = []
+
     private var appSyncConfiguration: AWSAppSyncClientConfiguration
     internal var httpTransport: AWSNetworkTransport
     private var offlineMuationCacheClient : AWSAppSyncOfflineMutationCache?
-    private var offlineMutationExecutor: MutationExecutor?
+    private var offlineMutationExecutor: MutationExecutor
     private var autoSubmitOfflineMutations: Bool = false
     private var mqttClient = MQTTClient<AnyObject, AnyObject>()
     private var appSyncMQTTClient = AppSyncMQTTClient()
@@ -322,8 +318,6 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     ///   - appSyncConfig: The `AWSAppSyncClientConfiguration` object.
     public init(appSyncConfig: AWSAppSyncClientConfiguration) throws {
         self.appSyncConfiguration = appSyncConfig
-        
-        reachability = Reachability(hostname: self.appSyncConfiguration.url.host!)
         self.autoSubmitOfflineMutations = self.appSyncConfiguration.autoSubmitOfflineMutations
         self.store = appSyncConfig.store
         self.appSyncMQTTClient.allowCellularAccess = self.appSyncConfiguration.allowsCellularAccess
@@ -344,44 +338,18 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
             }
         }
 
-        guard let snapshotProcessController = SnapshotProcessController(endpointURL:self.appSyncConfiguration.url) else {
-            return
-        }
+        let snapshotProcessController = appSyncConfig.snapshotController
 
-        self.offlineMutationExecutor = MutationExecutor(networkClient: self.httpTransport, appSyncClient: self, snapshotProcessController: snapshotProcessController, fileURL: self.appSyncConfiguration.databaseURL)
-        networkStatusWatchers.append(self.offlineMutationExecutor!)
-        networkStatusWatchers.append(self)
-        
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
-        do{
-            try reachability?.startNotifier()
-        } catch {
-        }
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(AWSAppSyncClient.checkForReachability), name: NSNotification.Name(rawValue: kAWSDefaultNetworkReachabilityChangedNotification), object: nil)
-        
-    }
-    
-    @objc func checkForReachability(note: Notification) {
-        
-        let reachability = note.object as! Reachability
-        var isReachable = false
+        self.offlineMutationExecutor = MutationExecutor(
+            networkClient: httpTransport,
+            snapshotProcessController: snapshotProcessController,
+            offlineMutationDelegate: offlineMutationDelegate,
+            s3ObjectManager: s3ObjectManager,
+            fileURL: appSyncConfiguration.databaseURL
+        )
 
-        switch reachability.connection {
-            case .wifi:
-                isReachable = true
-            case .cellular:
-                if (self.appSyncConfiguration.allowsCellularAccess) {
-                    isReachable = true
-                }
-            case .none:
-                print("")
-        }
-        
-        for watchers in networkStatusWatchers {
-            watchers.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
-        }
+        snapshotProcessController.networkStatusWatchers.add(self.offlineMutationExecutor)
+        snapshotProcessController.networkStatusWatchers.add(self)
     }
     
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
@@ -395,7 +363,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     ///   - error: An error that indicates why the fetch failed, or `nil` if the fetch was succesful.
     /// - Returns: An object that can be used to cancel an in progress fetch.
     @discardableResult public func fetch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: OperationResultHandler<Query>? = nil) -> Cancellable {
-        return apolloClient!.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+        return apolloClient.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
     
     /// Watches a query by first fetching an initial result from the server or from the local cache, depending on the current contents of the cache and the specified cache policy. After the initial fetch, the returned query watcher object will get notified whenever any of the data the query result depends on changes in the local cache, and calls the result handler again with the new result.
@@ -410,7 +378,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     /// - Returns: A query watcher object that can be used to control the watching behavior.
     public func watch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping OperationResultHandler<Query>) -> GraphQLQueryWatcher<Query> {
         
-        return apolloClient!.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+        return apolloClient.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
     
     public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
@@ -472,7 +440,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         record.recordState = .inQueue
         record.operationString = Mutation.operationString
         
-        return PerformMutationOperation(offlineMutationRecord: record, client: self.apolloClient!, appSyncClient: self, offlineExecutor: self.offlineMutationExecutor!, mutation: mutation, handlerQueue: queue, mutationConflictHandler: conflictResolutionBlock, resultHandler: resultHandler)
+        return PerformMutationOperation(offlineMutationRecord: record, client: self.apolloClient, appSyncClient: self, offlineExecutor: self.offlineMutationExecutor, mutation: mutation, handlerQueue: queue, mutationConflictHandler: conflictResolutionBlock, resultHandler: resultHandler)
     }
     
     private func checkAndFetchS3Object(variables:GraphQLMap?) -> (bucket: String, key: String, region: String, contentType: String, localUri: String)? {
