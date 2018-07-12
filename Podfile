@@ -9,4 +9,8 @@ target 'AWSAppSync' do
   pod 'AWSCore', '~> 2.6.6'
   pod 'SQLite.swift', '0.11.4'
   pod 'ReachabilitySwift', '~> 4.0.0'
+
+
+  target 'AWSAppSyncTests' do
+  end
 end

@@ -5,7 +5,7 @@
 
 import Dispatch
 
-protocol MQTTSubscritionWatcher {
+@objc protocol MQTTSubscritionWatcher: AnyObject {
     func getIdentifier() -> Int
     func getTopics() -> [String]
     func messageCallbackDelegate(data: Data)
