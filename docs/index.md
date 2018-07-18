@@ -76,8 +76,6 @@ The AppSync iOS client generates a strongly typed API for your backend based on 
 To interact with AWS AppSync, your client needs to define GraphQL
 queries, mutations and subscriptions which are converted to strongly typed `Swift` objects.
 
-Save the  We will use this folder for storing our `GraphQL` related files.
-
 This can be done by creating a `posts.graphql` file in a folder with name like `GraphQLOperations.` Put the following operations in `posts.graphql`:
 
 ```javascript
