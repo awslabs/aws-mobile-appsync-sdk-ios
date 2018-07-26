@@ -16,10 +16,10 @@
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
 #import <AWSCore/AWSCore.h>
-#import "WebSocketOutputStream.h"
+#import "AWSIoTWebSocketOutputStream.h"
 #import "AWSSRWebSocket.h"
 
-@interface WebSocketOutputStreamFactory()
+@interface AWSIoTWebSocketOutputStreamFactory()
 
 @property (nonatomic, strong) NSOutputStream *actualDelegate;
 @property (nonatomic, strong) AWSSRWebSocket *webSocket;
@@ -28,11 +28,11 @@
 
 #pragma mark create instances
 
-@implementation WebSocketOutputStreamFactory
+@implementation AWSIoTWebSocketOutputStreamFactory
 
-+ (WebSocketOutputStream *)createWebSocketOutputStreamWithWebSocket:(AWSSRWebSocket *)webSocket
++ (AWSIoTWebSocketOutputStream *)createAWSIoTWebSocketOutputStreamWithWebSocket:(AWSSRWebSocket *)webSocket
 {
-    return (WebSocketOutputStream *) [[self alloc] initToMemoryWithWebSocket:webSocket];
+    return (AWSIoTWebSocketOutputStream *) [[self alloc] initToMemoryWithWebSocket:webSocket];
 }
 
 #pragma mark initialization

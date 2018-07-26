@@ -13,13 +13,11 @@
 // permissions and limitations under the License.
 //
 
-#import <AWSCore/AWSCore.h>
-#import "MQTTDecoder.h"
+#import "AWSCocoaLumberjack.h"
+#import "AWSMQTTDecoder.h"
 
-@interface MQTTDecoder() {
+@interface AWSMQTTDecoder() {
         NSInputStream*  stream;
-        NSRunLoop*      runLoop;
-        NSString*       runLoopMode;
         UInt8           header;
         UInt32          length;
         UInt32          lengthMultiplier;
@@ -29,24 +27,20 @@
 
 @end
 
-@implementation MQTTDecoder
+@implementation AWSMQTTDecoder
 
 - (id)initWithStream:(NSInputStream*)aStream
-             runLoop:(NSRunLoop*)aRunLoop
-         runLoopMode:(NSString*)aMode {
-    _status = MQTTDecoderStatusInitializing;
+{
+    _status = AWSMQTTDecoderStatusInitializing;
     stream = aStream;
     [stream setDelegate:self];
-    runLoop = aRunLoop;
-    runLoopMode = aMode;
     return self;
 }
 
 - (void)open {
     AWSDDLogDebug(@"opening decoder stream.");
     [stream setDelegate:self];
-    runLoop = [NSRunLoop currentRunLoop];
-    [stream scheduleInRunLoop:runLoop forMode:NSDefaultRunLoopMode];
+    [stream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [stream open];
 }
 
@@ -54,7 +48,6 @@
     AWSDDLogDebug(@"closing decoder stream.");
     [stream setDelegate:nil];
     [stream close];
-    [stream removeFromRunLoop:runLoop forMode:NSDefaultRunLoopMode];
     stream = nil;
 }
 
@@ -65,27 +58,27 @@
         return;
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
-            _status = MQTTDecoderStatusDecodingHeader;
+            _status = AWSMQTTDecoderStatusDecodingHeader;
             break;
         case NSStreamEventHasBytesAvailable:
-            if (_status == MQTTDecoderStatusDecodingHeader) {
+            if (_status == AWSMQTTDecoderStatusDecodingHeader) {
                 NSInteger n = [stream read:&header maxLength:1];
                 if (n == -1) {
-                    _status = MQTTDecoderStatusConnectionError;
-                    [_delegate decoder:self handleEvent:MQTTDecoderEventConnectionError];
+                    _status = AWSMQTTDecoderStatusConnectionError;
+                    [_delegate decoder:self handleEvent:AWSMQTTDecoderEventConnectionError];
                 }
                 else if (n == 1) {
                     length = 0;
                     lengthMultiplier = 1;
-                    _status = MQTTDecoderStatusDecodingLength;
+                    _status = AWSMQTTDecoderStatusDecodingLength;
                 }
             }
-            while (_status == MQTTDecoderStatusDecodingLength) {
+            while (_status == AWSMQTTDecoderStatusDecodingLength) {
                 UInt8 digit;
                 NSInteger n = [stream read:&digit maxLength:1];
                 if (n == -1) {
-                    _status = MQTTDecoderStatusConnectionError;
-                    [_delegate decoder:self handleEvent:MQTTDecoderEventConnectionError];
+                    _status = AWSMQTTDecoderStatusConnectionError;
+                    [_delegate decoder:self handleEvent:AWSMQTTDecoderEventConnectionError];
                     break;
                 }
                 else if (n == 0) {
@@ -94,13 +87,13 @@
                 length += (digit & 0x7f) * lengthMultiplier;
                 if ((digit & 0x80) == 0x00) {
                     dataBuffer = [NSMutableData dataWithCapacity:length];
-                    _status = MQTTDecoderStatusDecodingData;
+                    _status = AWSMQTTDecoderStatusDecodingData;
                 }
                 else {
                     lengthMultiplier *= 128;
                 }
             }
-            if (_status == MQTTDecoderStatusDecodingData) {
+            if (_status == AWSMQTTDecoderStatusDecodingData) {
                 if (length > 0) {
                     NSInteger n, toRead;
                     UInt8 buffer[768];
@@ -110,15 +103,15 @@
                     }
                     n = [stream read:buffer maxLength:toRead];
                     if (n == -1) {
-                        _status = MQTTDecoderStatusConnectionError;
-                        [_delegate decoder:self handleEvent:MQTTDecoderEventConnectionError];
+                        _status = AWSMQTTDecoderStatusConnectionError;
+                        [_delegate decoder:self handleEvent:AWSMQTTDecoderEventConnectionError];
                     }
                     else {
                         [dataBuffer appendBytes:buffer length:n];
                     }
                 }
                 if ([dataBuffer length] == length) {
-                    MQTTMessage* msg;
+                    AWSMQTTMessage* msg;
                     UInt8 type, qos;
                     BOOL isDuplicate, retainFlag;
                     type = (header >> 4) & 0x0f;
@@ -132,24 +125,24 @@
                     if ((header & 0x01) == 0x01) {
                         retainFlag = YES;
                     }
-                    msg = [[MQTTMessage alloc] initWithType:type
+                    msg = [[AWSMQTTMessage alloc] initWithType:type
                                                         qos:qos
                                                  retainFlag:retainFlag
                                                     dupFlag:isDuplicate
                                                        data:dataBuffer];
                     [_delegate decoder:self newMessage:msg];
                     dataBuffer = nil;
-                    _status = MQTTDecoderStatusDecodingHeader;
+                    _status = AWSMQTTDecoderStatusDecodingHeader;
                 }
             }
             break;
         case NSStreamEventEndEncountered:
-            _status = MQTTDecoderStatusConnectionClosed;
-            [_delegate decoder:self handleEvent:MQTTDecoderEventConnectionClosed];
+            _status = AWSMQTTDecoderStatusConnectionClosed;
+            [_delegate decoder:self handleEvent:AWSMQTTDecoderEventConnectionClosed];
             break;
         case NSStreamEventErrorOccurred:
-            _status = MQTTDecoderStatusConnectionError;
-            [_delegate decoder:self handleEvent:MQTTDecoderEventConnectionError];
+            _status = AWSMQTTDecoderStatusConnectionError;
+            [_delegate decoder:self handleEvent:AWSMQTTDecoderEventConnectionError];
             break;
         default:
             AWSDDLogDebug(@"unhandled event code");
