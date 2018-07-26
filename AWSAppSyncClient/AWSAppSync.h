@@ -16,6 +16,6 @@ FOUNDATION_EXPORT const unsigned char AWSAppSyncClientVersionString[];
 #if __has_include("AWSAppSync/AWSAppSync-umbrella.h")
 #import "AWSAppSync/AWSAppSync-umbrella.h"
 #endif
-#import "MQTTClient.h"
+#import "AWSIoTMQTTClient.h"
 
 

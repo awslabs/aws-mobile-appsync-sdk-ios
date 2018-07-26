@@ -33,9 +33,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "17DECF661F59F5FF004B0512"
-               BuildableName = "AWSDeepDishClientTests.xctest"
-               BlueprintName = "AWSDeepDishClientTests"
+               BlueprintIdentifier = "174F80AB2109229C00775D0D"
+               BuildableName = "AWSAppSyncTests.xctest"
+               BlueprintName = "AWSAppSyncTests"
                ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
             </BuildableReference>
          </TestableReference>

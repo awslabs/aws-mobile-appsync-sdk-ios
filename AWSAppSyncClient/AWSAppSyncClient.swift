@@ -346,7 +346,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     private var offlineMuationCacheClient : AWSAppSyncOfflineMutationCache?
     private var offlineMutationExecutor: MutationExecutor?
     private var autoSubmitOfflineMutations: Bool = false
-    private var mqttClient = MQTTClient<AnyObject, AnyObject>()
+    private var mqttClient = AWSIoTMQTTClient<AnyObject, AnyObject>()
     private var appSyncMQTTClient = AppSyncMQTTClient()
     
     internal var connectionStateChangeHandler: ConnectionStateChangeHandler?

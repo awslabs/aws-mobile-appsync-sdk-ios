@@ -6,11 +6,11 @@
 import Foundation
 import Reachability
 
-class AppSyncMQTTClient: MQTTClientDelegate {
+class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     
-    var mqttClient = MQTTClient<AnyObject, AnyObject>()
-    var mqttClients = Set<MQTTClient<AnyObject, AnyObject>>()
-    var mqttClientsWithTopics = [MQTTClient<AnyObject, AnyObject>: Set<String>]()
+    var mqttClient = AWSIoTMQTTClient<AnyObject, AnyObject>()
+    var mqttClients = Set<AWSIoTMQTTClient<AnyObject, AnyObject>>()
+    var mqttClientsWithTopics = [AWSIoTMQTTClient<AnyObject, AnyObject>: Set<String>]()
     var reachability: Reachability?
     var hostURL: String?
     var clientId: String?
@@ -32,7 +32,7 @@ class AppSyncMQTTClient: MQTTClientDelegate {
         }
     }
     
-    func connectionStatusChanged(_ status: MQTTStatus, client mqttClient: MQTTClient<AnyObject, AnyObject>) {
+    func connectionStatusChanged(_ status: AWSIoTMQTTStatus, client mqttClient: AWSIoTMQTTClient<AnyObject, AnyObject>) {
         if status.rawValue == 2 {
             for topic in mqttClientsWithTopics[mqttClient]! {
                 mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
@@ -83,12 +83,13 @@ class AppSyncMQTTClient: MQTTClientDelegate {
             return
         }
         
-        let mqttClient = MQTTClient<AnyObject, AnyObject>()
+        let mqttClient = AWSIoTMQTTClient<AnyObject, AnyObject>()
         mqttClient.clientDelegate = self
         
         mqttClients.insert(mqttClient)
         mqttClientsWithTopics[mqttClient] = Set(interestedTopics)
-        mqttClient.connect(withClientId: subscriptionInfo.clientId, toHost: subscriptionInfo.url, statusCallback: nil)
+        
+        mqttClient.connect(withClientId: subscriptionInfo.clientId, presignedURL: subscriptionInfo.url, statusCallback: nil)
     }
 
     public func stopSubscription(subscription: MQTTSubscritionWatcher) {

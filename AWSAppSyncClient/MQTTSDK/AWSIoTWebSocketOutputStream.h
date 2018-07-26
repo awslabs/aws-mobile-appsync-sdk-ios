@@ -13,20 +13,20 @@
  permissions and limitations under the License.
  */
 
-#ifndef WebSocketOutputStream_h
-#define WebSocketOutputStream_h
+#ifndef AWSIoTWebSocketOutputStream_h
+#define AWSIoTWebSocketOutputStream_h
 
 #import <Foundation/Foundation.h>
 #import "AWSSRWebSocket.h"
 
-@interface WebSocketOutputStream : NSOutputStream
+@interface AWSIoTWebSocketOutputStream : NSOutputStream
 
 @end
 
-@interface WebSocketOutputStreamFactory: NSObject
+@interface AWSIoTWebSocketOutputStreamFactory: NSObject
 
-+ (WebSocketOutputStream *)createWebSocketOutputStreamWithWebSocket:(AWSSRWebSocket *)webSocket;
++ (AWSIoTWebSocketOutputStream *)createAWSIoTWebSocketOutputStreamWithWebSocket:(AWSSRWebSocket *)webSocket;
 
 @end
 
-#endif /* WebSocketOutputStream_h */
+#endif /* AWSIoTWebSocketOutputStream_h */
