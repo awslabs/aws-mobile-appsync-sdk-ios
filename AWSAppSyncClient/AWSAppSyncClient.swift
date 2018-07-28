@@ -30,73 +30,97 @@ enum AWSAppSyncGraphQLOperation {
 
 class SnapshotProcessController {
     let endpointURL: URL
-    var reachability: Reachability?
-    private var networkStatusWatchers: [NetworkConnectionNotification] = []
-    let allowsCellularAccess: Bool
+    var reachability: Reachability
+    var networkStatusWatchers = NSHashTable<NetworkConnectionNotification>.weakObjects()
     
-    init(endpointURL: URL, allowsCellularAccess: Bool = true) {
-        self.endpointURL = endpointURL
-        self.allowsCellularAccess = allowsCellularAccess
-        reachability = Reachability(hostname: endpointURL.host!)
-        reachability?.allowsCellularConnection = allowsCellularAccess
-        NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
-        do{
-            try reachability?.startNotifier()
-        } catch {
+    init(endpointURL: URL, allowsCellularAccess: Bool = true){
+        guard let host = endpointURL.host,
+            let reachability = Reachability(hostname: host) else {
+                preconditionFailure("Failed to create reachability client when creating SnapshotProcessController")
         }
         
+        reachability.allowsCellularConnection = allowsCellularAccess
+        self.reachability = reachability
+        self.endpointURL = endpointURL
+        NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(notification:)), name: .reachabilityChanged, object: reachability)
+        try? reachability.startNotifier()
         NotificationCenter.default.addObserver(self, selector: #selector(SnapshotProcessController.checkForReachability), name: NSNotification.Name(rawValue: kAWSDefaultNetworkReachabilityChangedNotification), object: nil)
     }
     
-    @objc func checkForReachability(note: Notification) {
-        
-        let reachability = note.object as! Reachability
-        var isReachable = true
-        switch reachability.connection {
-        case .none:
-            isReachable = false
-            break
-        default:
-            break
+    @objc func checkForReachability(notification: Notification) {
+        guard let reachability = notification.object as? Reachability else {
+            return
         }
-        
-        for watchers in networkStatusWatchers {
-            watchers.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
+
+        let isReachable = reachability.connection != .none
+        networkStatusWatchers.allObjects.forEach {
+            $0.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
         }
     }
     
+    /// Determines if an operation should proceed based on network reachability.
+    ///
+    /// - Parameter operation: The operation that wants to be executed.
+    /// - Returns: A `Bool` that determines if an operation should continue.
     func shouldExecuteOperation(operation: AWSAppSyncGraphQLOperation) -> Bool {
         switch operation {
         case .mutation:
-            if !(reachability?.connection.description == "No Connection") {
-                return true
-            } else {
-                return false
-            }
-        case .query:
-            return true
-        case .subscription:
+          return reachability.connection != .none
+        case .query, .subscription:
             return true
         }
     }
 }
 
 public class AWSAppSyncClientConfiguration {
-    
-    fileprivate var url: URL
-    fileprivate var region: AWSRegionType
-    fileprivate var store: ApolloStore
-    fileprivate var networkTransport: AWSNetworkTransport
-    fileprivate var databaseURL: URL?
-    fileprivate var oidcAuthProvider: AWSOIDCAuthProvider? = nil
-    fileprivate var snapshotController: SnapshotProcessController? = nil
-    fileprivate var s3ObjectManager: AWSS3ObjectManager? = nil
-    fileprivate var presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil
-    fileprivate var connectionStateChangeHandler: ConnectionStateChangeHandler? = nil
+    fileprivate let url: URL
+    fileprivate let region: AWSRegionType
+    fileprivate let store: ApolloStore
+    fileprivate let networkTransport: AWSNetworkTransport
+    fileprivate let s3ObjectManager: AWSS3ObjectManager?
+    fileprivate let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
+    fileprivate let connectionStateChangeHandler: ConnectionStateChangeHandler?
+    fileprivate let snapshotController: SnapshotProcessController
     
     fileprivate var allowsCellularAccess: Bool = true
     fileprivate var autoSubmitOfflineMutations: Bool = true
-    
+
+    fileprivate var databaseURL: URL?
+
+    /// Creates a base configuration object for the `AWSAppSyncClient`.
+    ///
+    /// - Parameters:
+    ///   - url: The endpoint url for Appsync endpoint.
+    ///   - serviceRegion: The service region for Appsync.
+    ///   - networkTransport: The Network Transport used to communicate with the server.
+    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
+    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
+    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
+    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    public init(url: URL,
+                 serviceRegion: AWSRegionType,
+                 networkTransport: AWSNetworkTransport,
+                 databaseURL: URL? = nil,
+                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
+                 s3ObjectManager: AWSS3ObjectManager? = nil,
+                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil){
+        self.url = url
+        self.region = serviceRegion
+        self.networkTransport = networkTransport
+        self.s3ObjectManager = s3ObjectManager
+        self.presignedURLClient = presignedURLClient
+        self.connectionStateChangeHandler = connectionStateChangeHandler
+        self.snapshotController = SnapshotProcessController(endpointURL: url)
+
+        if let databaseURL = databaseURL,
+            let dbStore = try? ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL)) {
+            self.store = dbStore
+            self.databaseURL = databaseURL
+        } else {
+            self.store = ApolloStore(cache: InMemoryNormalizedCache())
+        }
+    }
+
     /// Creates a configuration object for the `AWSAppSyncClient`.
     ///
     /// - Parameters:
@@ -108,36 +132,28 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    public init(url: URL,
+    public convenience init(url: URL,
                 serviceRegion: AWSRegionType,
                 credentialsProvider: AWSCredentialsProvider,
                 urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
                 databaseURL: URL? = nil,
                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = url
-        self.region = serviceRegion
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
+        let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                                configuration: urlSessionConfiguration,
-                                                               region: region,
+                                                               region: serviceRegion,
                                                                credentialsProvider: credentialsProvider)
 
-        self.connectionStateChangeHandler = connectionStateChangeHandler
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        self.snapshotController = SnapshotProcessController(endpointURL: url)
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
+        self.init(url: url,
+                  serviceRegion: serviceRegion,
+                  networkTransport: networkTransport,
+                  databaseURL: databaseURL,
+                  connectionStateChangeHandler: connectionStateChangeHandler,
+                  s3ObjectManager: s3ObjectManager,
+                  presignedURLClient: presignedURLClient)
     }
-    
+
     /// Creates a configuration object for the `AWSAppSyncClient`.
     ///
     /// - Parameters:
@@ -149,33 +165,27 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    public init(url: URL,
+    public convenience init(url: URL,
                 serviceRegion: AWSRegionType,
                 apiKeyAuthProvider: AWSAPIKeyAuthProvider,
                 urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
                 databaseURL: URL? = nil,
                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = url
-        self.region = serviceRegion
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
+        let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                                apiKeyAuthProvider: apiKeyAuthProvider,
                                                                configuration: urlSessionConfiguration)
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
-        self.connectionStateChangeHandler = connectionStateChangeHandler
+
+        self.init(url: url,
+                  serviceRegion: serviceRegion,
+                  networkTransport: networkTransport,
+                  databaseURL: databaseURL,
+                  connectionStateChangeHandler: connectionStateChangeHandler,
+                  s3ObjectManager: s3ObjectManager,
+                  presignedURLClient: presignedURLClient)
     }
-    
+
     /// Creates a configuration object for the `AWSAppSyncClient`.
     ///
     /// - Parameters:
@@ -187,33 +197,27 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    public init(url: URL,
+    public convenience init(url: URL,
                 serviceRegion: AWSRegionType,
                 userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider,
                 urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
                 databaseURL: URL? = nil,
                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = url
-        self.region = serviceRegion
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
+        let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                                userPoolsAuthProvider: userPoolsAuthProvider,
                                                                configuration: urlSessionConfiguration)
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
-        self.connectionStateChangeHandler = connectionStateChangeHandler
+
+        self.init(url: url,
+                  serviceRegion: serviceRegion,
+                  networkTransport: networkTransport,
+                  databaseURL: databaseURL,
+                  connectionStateChangeHandler: connectionStateChangeHandler,
+                  s3ObjectManager: s3ObjectManager,
+                  presignedURLClient: presignedURLClient)
     }
-    
+
     /// Creates a configuration object for the `AWSAppSyncClient`.
     ///
     /// - Parameters:
@@ -225,65 +229,25 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    public init(url: URL,
+    public convenience init(url: URL,
                 serviceRegion: AWSRegionType,
                 oidcAuthProvider: AWSOIDCAuthProvider,
                 urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
                 databaseURL: URL? = nil,
                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = url
-        self.region = serviceRegion
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
+        let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                                oidcAuthProvider: oidcAuthProvider,
                                                                configuration: urlSessionConfiguration)
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
-        self.connectionStateChangeHandler = connectionStateChangeHandler
-    }
 
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - url: The endpoint url for Appsync endpoint.
-    ///   - serviceRegion: The service region for Appsync.
-    ///   - networkTransport: The Network Transport used to communicate with the server.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    public init(url: URL,
-                serviceRegion: AWSRegionType,
-                networkTransport: AWSNetworkTransport,
-                databaseURL: URL? = nil,
-                connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = url
-        self.region = serviceRegion
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.networkTransport = networkTransport
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
-        self.connectionStateChangeHandler = connectionStateChangeHandler
+        self.init(url: url,
+                  serviceRegion: serviceRegion,
+                  networkTransport: networkTransport,
+                  databaseURL: databaseURL,
+                  connectionStateChangeHandler: connectionStateChangeHandler,
+                  s3ObjectManager: s3ObjectManager,
+                  presignedURLClient: presignedURLClient)
     }
 }
 
@@ -321,30 +285,27 @@ public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
     }
 }
 
-protocol NetworkConnectionNotification {
+@objc
+protocol NetworkConnectionNotification: AnyObject {
     func onNetworkAvailabilityStatusChanged(isEndpointReachable: Bool)
 }
 
-public protocol AWSAppSyncOfflineMutationDelegate {
+public protocol AWSAppSyncOfflineMutationDelegate: AnyObject {
     func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?) -> Void
 }
 
 // The client for making `Mutation`, `Query` and `Subscription` requests.
 public class AWSAppSyncClient: NetworkConnectionNotification {
-    
-    public let apolloClient: ApolloClient?
+    public let apolloClient: ApolloClient
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
-    public let store: ApolloStore?
+    public let store: ApolloStore
     public let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
     public let s3ObjectManager: AWSS3ObjectManager?
-    
-    var reachability: Reachability?
-    
-    private var networkStatusWatchers: [NetworkConnectionNotification] = []
+
     private var appSyncConfiguration: AWSAppSyncClientConfiguration
-    internal var httpTransport: AWSNetworkTransport?
+    internal var httpTransport: AWSNetworkTransport
     private var offlineMuationCacheClient : AWSAppSyncOfflineMutationCache?
-    private var offlineMutationExecutor: MutationExecutor?
+    private var offlineMutationExecutor: MutationExecutor
     private var autoSubmitOfflineMutations: Bool = false
     private var mqttClient = AWSIoTMQTTClient<AnyObject, AnyObject>()
     private var appSyncMQTTClient = AppSyncMQTTClient()
@@ -357,8 +318,6 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     ///   - appSyncConfig: The `AWSAppSyncClientConfiguration` object.
     public init(appSyncConfig: AWSAppSyncClientConfiguration) throws {
         self.appSyncConfiguration = appSyncConfig
-        
-        reachability = Reachability(hostname: self.appSyncConfiguration.url.host!)
         self.autoSubmitOfflineMutations = self.appSyncConfiguration.autoSubmitOfflineMutations
         self.store = appSyncConfig.store
         self.appSyncMQTTClient.allowCellularAccess = self.appSyncConfiguration.allowsCellularAccess
@@ -368,7 +327,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         self.httpTransport = appSyncConfig.networkTransport
         self.connectionStateChangeHandler = appSyncConfiguration.connectionStateChangeHandler
         
-        self.apolloClient = ApolloClient(networkTransport: self.httpTransport!, store: self.appSyncConfiguration.store)
+        self.apolloClient = ApolloClient(networkTransport: self.httpTransport, store: self.appSyncConfiguration.store)
         
         try self.offlineMuationCacheClient = AWSAppSyncOfflineMutationCache()
         if let fileURL = self.appSyncConfiguration.databaseURL {
@@ -378,41 +337,19 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
                 // continue using in memory cache client
             }
         }
-        
-        self.offlineMutationExecutor = MutationExecutor(networkClient: self.httpTransport!, appSyncClient: self, snapshotProcessController: SnapshotProcessController(endpointURL:self.appSyncConfiguration.url), fileURL: self.appSyncConfiguration.databaseURL)
-        networkStatusWatchers.append(self.offlineMutationExecutor!)
-        networkStatusWatchers.append(self)
-        
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
-        do{
-            try reachability?.startNotifier()
-        } catch {
-        }
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(AWSAppSyncClient.checkForReachability), name: NSNotification.Name(rawValue: kAWSDefaultNetworkReachabilityChangedNotification), object: nil)
-        
-    }
-    
-    @objc func checkForReachability(note: Notification) {
-        
-        let reachability = note.object as! Reachability
-        var isReachable = false
 
-        switch reachability.connection {
-            case .wifi:
-                isReachable = true
-            case .cellular:
-                if (self.appSyncConfiguration.allowsCellularAccess) {
-                    isReachable = true
-                }
-            case .none:
-                print("")
-        }
-        
-        for watchers in networkStatusWatchers {
-            watchers.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
-        }
+        let snapshotProcessController = appSyncConfig.snapshotController
+
+        self.offlineMutationExecutor = MutationExecutor(
+            networkClient: httpTransport,
+            snapshotProcessController: snapshotProcessController,
+            offlineMutationDelegate: offlineMutationDelegate,
+            s3ObjectManager: s3ObjectManager,
+            fileURL: appSyncConfiguration.databaseURL
+        )
+
+        snapshotProcessController.networkStatusWatchers.add(self.offlineMutationExecutor)
+        snapshotProcessController.networkStatusWatchers.add(self)
     }
     
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
@@ -426,7 +363,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     ///   - error: An error that indicates why the fetch failed, or `nil` if the fetch was succesful.
     /// - Returns: An object that can be used to cancel an in progress fetch.
     @discardableResult public func fetch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: OperationResultHandler<Query>? = nil) -> Cancellable {
-        return apolloClient!.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+        return apolloClient.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
     
     /// Watches a query by first fetching an initial result from the server or from the local cache, depending on the current contents of the cache and the specified cache policy. After the initial fetch, the returned query watcher object will get notified whenever any of the data the query result depends on changes in the local cache, and calls the result handler again with the new result.
@@ -441,14 +378,14 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     /// - Returns: A query watcher object that can be used to control the watching behavior.
     public func watch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping OperationResultHandler<Query>) -> GraphQLQueryWatcher<Query> {
         
-        return apolloClient!.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+        return apolloClient.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
     
     public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
         
         return AWSAppSyncSubscriptionWatcher(client: self.appSyncMQTTClient,
-                                              httpClient: self.httpTransport!,
-                                              store: self.store!,
+                                              httpClient: self.httpTransport,
+                                              store: self.store,
                                               subscription: subscription,
                                               handlerQueue: queue,
                                               resultHandler: resultHandler)
@@ -472,7 +409,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
                                                                       resultHandler: OperationResultHandler<Mutation>? = nil) -> PerformMutationOperation<Mutation>? {
         if let optimisticUpdate = optimisticUpdate {
             do {
-                let _ = try self.store?.withinReadWriteTransaction { transaction in
+                let _ = try self.store.withinReadWriteTransaction { transaction in
                     optimisticUpdate(transaction)
                     }.await()
             } catch {
@@ -503,7 +440,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         record.recordState = .inQueue
         record.operationString = Mutation.operationString
         
-        return PerformMutationOperation(offlineMutationRecord: record, client: self.apolloClient!, appSyncClient: self, offlineExecutor: self.offlineMutationExecutor!, mutation: mutation, handlerQueue: queue, mutationConflictHandler: conflictResolutionBlock, resultHandler: resultHandler)
+        return PerformMutationOperation(offlineMutationRecord: record, client: self.apolloClient, appSyncClient: self, offlineExecutor: self.offlineMutationExecutor, mutation: mutation, handlerQueue: queue, mutationConflictHandler: conflictResolutionBlock, resultHandler: resultHandler)
     }
     
     private func checkAndFetchS3Object(variables:GraphQLMap?) -> (bucket: String, key: String, region: String, contentType: String, localUri: String)? {
