@@ -162,8 +162,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
     }
     
-    func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void ) {
-        print("******* In sendRequestWithAuth with auth type: \(self.authType)")
+    private func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void ) {        
         switch self.authType {
             
         case .awsIAM:
