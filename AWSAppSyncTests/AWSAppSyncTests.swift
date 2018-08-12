@@ -10,20 +10,21 @@ import XCTest
 /// The test class uses the `EventsApp` starter schema from AWS AppSync Console which can be created easily by selecting an option in the console. It uses AWS_IAM for auth.
 class AWSAppSyncTests: XCTestCase {
     
-    static let CognitoIdentityPoolId = "YOUR_COGNITO_IDENTITY_POOL_ID"
-    static let CognitoIdentityRegion: AWSRegionType = .USEast1
-    static let AppSyncRegion: AWSRegionType = .USEast1
-    static let AppSyncEndpointURL: URL = URL(string: "YOUR_GRAPHQL_ENDPOINT")!
-    static let database_name = "appsync-local-db"
-    static var appSyncClient: AWSAppSyncClient?
+    let CognitoIdentityPoolId = "YOUR_COGNITO_IDENTITY_POOL_ID"
+    let CognitoIdentityRegion: AWSRegionType = .USEast1
+    let AppSyncRegion: AWSRegionType = .USEast1
+    let AppSyncEndpointURL: URL = URL(string: "YOUR_GRAPHQL_ENDPOINT")!
+    let apiKey = "YOUR_API_KEY"
+    let database_name = "appsync-local-db"
+    var appSyncClient: AWSAppSyncClient?
     
-    static let EventName = "Testing Event"
-    static let EventTime = "July 26 2018, 12:30"
-    static let EventLocation = "Seattle, WA"
-    static let EventDescription = "Event Description"
+    let EventName = "Testing Event"
+    let EventTime = "July 26 2018, 12:30"
+    let EventLocation = "Seattle, WA"
+    let EventDescription = "Event Description"
     
-    override class func setUp() {
-        superclass()?.setUp()
+    override func setUp() {
+        super.setUp()
         // Set up Amazon Cognito credentials
         let credentialsProvider = AWSCognitoCredentialsProvider(regionType: CognitoIdentityRegion,
                                                                 identityPoolId: CognitoIdentityPoolId)
@@ -48,46 +49,122 @@ class AWSAppSyncTests: XCTestCase {
         }
     }
     
-    override class func tearDown() {
-        superclass()?.tearDown()
+    override func tearDown() {
+        super.tearDown()
         let query = ListEventsQuery(limit: 99)
-        AWSAppSyncTests.appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
+        let successfulExpectation = expectation(description: "Fetch done successfully.")
+
+        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be empty.")
             XCTAssertTrue(result!.data!.listEvents!.items!.count > 0, "Expected service to return at least 1 event.")
             guard let events = result?.data?.listEvents?.items else { return }
-            
+
             for event in events {
-                AWSAppSyncTests.appSyncClient?.perform(mutation: DeleteEventMutation(id: event!.id))
+                self.appSyncClient?.perform(mutation: DeleteEventMutation(id: event!.id))
             }
+            successfulExpectation.fulfill()
         }
+
         // Wait for the mutations(delete event actions) to complete.
-        sleep(5)
+        wait(for: [successfulExpectation], timeout: 5.0)
     }
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+
+    func testAppSynClientConfigurationAwsCredentialsProvider() {
+        // Set up Amazon Cognito credentials
+        let credentialsProvider = AWSCognitoCredentialsProvider(regionType: CognitoIdentityRegion,
+                                                                identityPoolId: CognitoIdentityPoolId)
+        // You can choose your database location, accessible by the SDK
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
         
+        do {
+            // Initialize the AWS AppSync configuration
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
+                                                                  serviceRegion: AppSyncRegion,
+                                                                  credentialsProvider: credentialsProvider,
+                                                                  databaseURL:databaseURL)
+            // Initialize the AWS AppSync client
+            let appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+
+            XCTAssertNotNil(appSyncConfig, "AppSyncConfig cannot be nil")
+            XCTAssertNotNil(appSyncClient, "AppSyncClient cannot be nil")
+        } catch {
+            print("Error initializing appsync client. \(error)")
+        }
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testAppSynClientConfigurationApiKeyAuthProvider() {
+        // You can choose your database location, accessible by the SDK
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+
+        do {
+            // Create AWSApiKeyAuthProvider
+            class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
+                var apiKey: String
+                public init(key: String) {
+                    apiKey = key
+                }
+                func getAPIKey() -> String {
+                    return self.apiKey
+                }
+            }
+            let apiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(key: apiKey)
+
+            // Initialize the AWS AppSync configuration
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
+                                                                  serviceRegion: AppSyncRegion,
+                                                                  apiKeyAuthProvider: apiKeyAuthProvider,
+                                                                  databaseURL:databaseURL)
+            // Initialize the AWS AppSync client
+            let appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+
+            XCTAssertNotNil(appSyncConfig, "AppSyncConfig cannot be nil")
+            XCTAssertNotNil(appSyncClient, "AppSyncClient cannot be nil")
+        } catch {
+            print("Error initializing appsync client. \(error)")
+        }
     }
-    
+
+    func testAppSynClientConfigurationOidcAuthProvider() {
+        // You can choose your database location, accessible by the SDK
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+
+        do {
+            // Create AWSApiKeyAuthProvider
+            class BasicOidcAuthProvider: AWSOIDCAuthProvider {
+                func getLatestAuthToken() -> String {
+                    return "token"
+                }
+            }
+            let oidcAuthProvider = BasicOidcAuthProvider()
+
+            // Initialize the AWS AppSync configuration
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
+                                                                  serviceRegion: AppSyncRegion,
+                                                                  oidcAuthProvider: oidcAuthProvider,
+                                                                  databaseURL:databaseURL)
+            // Initialize the AWS AppSync client
+            let appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+
+            XCTAssertNotNil(appSyncConfig, "AppSyncConfig cannot be nil")
+            XCTAssertNotNil(appSyncClient, "AppSyncClient cannot be nil")
+        } catch {
+            print("Error initializing appsync client. \(error)")
+        }
+    }
+
     func testQuery() {
         let successfulMutationEventExpectation = expectation(description: "Mutation done successfully.")
         
-        let addEvent = AddEventMutation(name: AWSAppSyncTests.EventName,
-                                        when: AWSAppSyncTests.EventTime,
-                                        where: AWSAppSyncTests.EventLocation,
-                                        description: AWSAppSyncTests.EventDescription)
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
         
-        AWSAppSyncTests.appSyncClient?.perform(mutation: addEvent) { (result, error) in
+        appSyncClient?.perform(mutation: addEvent) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-            XCTAssert(AWSAppSyncTests.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
             successfulMutationEventExpectation.fulfill()
         }
         
@@ -97,7 +174,7 @@ class AWSAppSyncTests: XCTestCase {
         
         let successfullistEventExpectation = expectation(description: "Mutation done successfully.")
         
-        AWSAppSyncTests.appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
+        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be empty.")
             XCTAssertTrue(result!.data!.listEvents!.items!.count > 0, "Expected service to return at least 1 event.")
@@ -106,19 +183,19 @@ class AWSAppSyncTests: XCTestCase {
         
         wait(for: [successfullistEventExpectation], timeout: 5.0)
     }
-    
+
     func testMutation() {
         let successfulMutationEventExpectation = expectation(description: "Mutation done successfully.")
         
-        let addEvent = AddEventMutation(name: AWSAppSyncTests.EventName,
-                                        when: AWSAppSyncTests.EventTime,
-                                        where: AWSAppSyncTests.EventLocation,
-                                        description: AWSAppSyncTests.EventDescription)
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
         
-        AWSAppSyncTests.appSyncClient?.perform(mutation: addEvent) { (result, error) in
+        appSyncClient?.perform(mutation: addEvent) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-            XCTAssert(AWSAppSyncTests.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
             successfulMutationEventExpectation.fulfill()
         }
         
@@ -129,27 +206,27 @@ class AWSAppSyncTests: XCTestCase {
         let successfulSubscriptionExpectation = expectation(description: "Mutation done successfully.")
         let receivedSubscriptioExpectation = self.expectation(description: "Subscription received successfully.")
         
-        let addEvent = AddEventMutation(name: AWSAppSyncTests.EventName,
-                                        when: AWSAppSyncTests.EventTime,
-                                        where: AWSAppSyncTests.EventLocation,
-                                        description: AWSAppSyncTests.EventDescription)
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
         
-        AWSAppSyncTests.appSyncClient?.perform(mutation: addEvent) { (result, error) in
+        appSyncClient?.perform(mutation: addEvent) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-            XCTAssert(AWSAppSyncTests.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
             print("Received create event mutation response.")
             
             let eventId = result!.data!.createEvent!.id
             
-            let _ = try? AWSAppSyncTests.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId)) { (result, _, error) in
+            let _ = try? self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId)) { (result, _, error) in
                 XCTAssertNil(error, "Error expected to be nil, but is not.")
                 print("Received new comment subscription response.")
                 receivedSubscriptioExpectation.fulfill()
             }
             // Wait 2 seconds to ensure subscription is active
             sleep(2)
-            AWSAppSyncTests.appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventId, content: "content", createdAt: "2 pm")) { (result, error) in
+            self.appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventId, content: "content", createdAt: "2 pm")) { (result, error) in
                 XCTAssertNil(error, "Error expected to be nil, but is not.")
                 XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
                 print("Received create comment mutation response.")
@@ -184,14 +261,14 @@ class AWSAppSyncTests: XCTestCase {
         
         for i in 0..<expectations.count {
             let expectationNum = i
-            let addEvent = AddEventMutation(name: AWSAppSyncTests.EventName,
-                                            when: AWSAppSyncTests.EventTime,
-                                            where: AWSAppSyncTests.EventLocation,
-                                            description: AWSAppSyncTests.EventDescription)
-            AWSAppSyncTests.appSyncClient?.perform(mutation: addEvent) { (result, error) in
+            let addEvent = AddEventMutation(name: EventName,
+                                            when: EventTime,
+                                            where: EventLocation,
+                                            description: EventDescription)
+            appSyncClient?.perform(mutation: addEvent) { (result, error) in
                 XCTAssertNil(error, "Error expected to be nil, but is not.")
                 XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-                XCTAssert(AWSAppSyncTests.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+                XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
                 eventsCreated.append(result!.data!.createEvent!.id)
                 expectations[expectationNum].fulfill()
             }
@@ -209,7 +286,7 @@ class AWSAppSyncTests: XCTestCase {
         
         for i in 0..<eventsCreated.count {
             let expectationNum = i
-            let _ = try? AWSAppSyncTests.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventsCreated[i])) { (result, _, error) in
+            let _ = try? appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventsCreated[i])) { (result, _, error) in
                 XCTAssertNil(error, "Error expected to be nil, but is not.")
                 print("Received new comment subscription response. \(expectationNum)")
                 receivedComments.append(result!.data!.subscribeToEventComments!.eventId)
@@ -224,9 +301,9 @@ class AWSAppSyncTests: XCTestCase {
         
         for i in 0..<eventsCreated.count {
             let expectationNum = i
-            AWSAppSyncTests.appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventsCreated[i],
-                                                                                    content: "content",
-                                                                                    createdAt: "2 pm")) { (result, error) in
+            appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventsCreated[i],
+                                                                    content: "content",
+                                                                    createdAt: "2 pm")) { (result, error) in
                 XCTAssertNil(error, "Error expected to be nil, but is not.")
                 XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
                 print("Received create comment mutation response. \(expectationNum)")
