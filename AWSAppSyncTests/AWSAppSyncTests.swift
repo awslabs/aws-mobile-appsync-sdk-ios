@@ -10,10 +10,10 @@ import XCTest
 /// The test class uses the `EventsApp` starter schema from AWS AppSync Console which can be created easily by selecting an option in the console. It uses AWS_IAM for auth.
 class AWSAppSyncTests: XCTestCase {
     
-    let CognitoIdentityPoolId = "YOUR_COGNITO_IDENTITY_POOL_ID"
+    let CognitoIdentityPoolId = "us-east-1:6cd2ded7-f4b7-46b8-8b47-57c2cd383d46"
     let CognitoIdentityRegion: AWSRegionType = .USEast1
     let AppSyncRegion: AWSRegionType = .USEast1
-    let AppSyncEndpointURL: URL = URL(string: "YOUR_GRAPHQL_ENDPOINT")!
+    let AppSyncEndpointURL: URL = URL(string: "https://cujvek3ev5brnl7xd7xovon7j4.appsync-api.us-east-1.amazonaws.com/graphql")!
     let apiKey = "YOUR_API_KEY"
     let database_name = "appsync-local-db"
     var appSyncClient: AWSAppSyncClient?
@@ -56,8 +56,7 @@ class AWSAppSyncTests: XCTestCase {
 
         appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
-            XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be empty.")
-            XCTAssertTrue(result!.data!.listEvents!.items!.count > 0, "Expected service to return at least 1 event.")
+            XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be nil.")
             guard let events = result?.data?.listEvents?.items else { return }
 
             for event in events {
@@ -314,13 +313,6 @@ class AWSAppSyncTests: XCTestCase {
         wait(for: [subsExpectation], timeout: 20.0)
         
         XCTAssertTrue(receivedComments.count == 18, "Expected 18 but was \(receivedComments.count)")
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
     }
     
 }

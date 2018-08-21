@@ -165,9 +165,9 @@ public class AWSAppSyncClientConfiguration {
         
         // Find the authType object passed in
         var selectedauthType: AuthType? = nil
-        var authTypeFromConfig: AuthType? = try AuthType.getAuthType(rawValue: appSyncClientInfo.authType)
+        let authTypeFromConfig: AuthType? = try AuthType.getAuthType(rawValue: appSyncClientInfo.authType)
         var hasOneAuth: Bool = false
-        try authTypeObjectMap.forEach ({(key: AuthType, value: Any) in
+        try authTypeObjectMap.forEach ({(key: AuthType, value: Any?) in
             if hasOneAuth {
                 // Throw Error when more than one authType object is passed in
                 throw AWSAppSyncClientInfoError(errorMessage: "More than one Authentication Mode found. "
