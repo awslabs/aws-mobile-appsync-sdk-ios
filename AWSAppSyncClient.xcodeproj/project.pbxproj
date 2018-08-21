@@ -76,9 +76,10 @@
 		17E009DA1FCAB234005031DB /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B81FCAB233005031DB /* Result.swift */; };
 		17E009DB1FCAB234005031DB /* NormalizedCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B91FCAB234005031DB /* NormalizedCache.swift */; };
 		17E009DC1FCAB234005031DB /* ApolloClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009BA1FCAB234005031DB /* ApolloClient.swift */; };
-		7C8D9BD0CFD94CE97870947D /* Pods_AWSAppSyncTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB93C78C2EEB30A1C3C24E2E /* Pods_AWSAppSyncTests.framework */; };
 		DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */; };
-		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
+		E5104B58212C76FF004616D7 /* SQLite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5104B57212C76FF004616D7 /* SQLite.framework */; };
+		E5104B5A212C7701004616D7 /* Reachability.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5104B59212C7701004616D7 /* Reachability.framework */; };
+		E5104B5C212C770B004616D7 /* AWSCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5104B5B212C770B004616D7 /* AWSCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,7 +125,6 @@
 		178C8DA91FAAAC0600A7F725 /* AWSAppSyncAuthProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncAuthProvider.swift; sourceTree = "<group>"; };
 		178E8601210A6C7300C07E6D /* AWSIoTMQTTTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSIoTMQTTTypes.h; sourceTree = "<group>"; };
 		17915B041F5F106600C4B73C /* AWSAppSyncHTTPNetworkTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSAppSyncHTTPNetworkTransport.swift; sourceTree = "<group>"; };
-		17915C5F1F5FA36300C4B73C /* AWSCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AWSCore.framework; path = "../AWSiOSSDKv2/build/Debug-iphoneos/AWSCore.framework"; sourceTree = "<group>"; };
 		17A2673C1F66465B009E50B7 /* AWSSQLLiteNormalizedCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSSQLLiteNormalizedCache.swift; sourceTree = "<group>"; };
 		17A66BA31F59FF69008DDA11 /* AWSAppSyncClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClient.swift; sourceTree = "<group>"; };
 		17A7F8C91FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSS3ObjectProtocol.swift; sourceTree = "<group>"; };
@@ -166,13 +166,10 @@
 		17E009B81FCAB233005031DB /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Result.swift; path = Apollo/Sources/Apollo/Result.swift; sourceTree = "<group>"; };
 		17E009B91FCAB234005031DB /* NormalizedCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NormalizedCache.swift; path = Apollo/Sources/Apollo/NormalizedCache.swift; sourceTree = "<group>"; };
 		17E009BA1FCAB234005031DB /* ApolloClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ApolloClient.swift; path = Apollo/Sources/Apollo/ApolloClient.swift; sourceTree = "<group>"; };
-		621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6A5E9B8BFB35E672A4BA10CD /* Pods-AWSAppSyncTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTests/Pods-AWSAppSyncTests.release.xcconfig"; sourceTree = "<group>"; };
-		9A210F34AE9783A62B36F8F2 /* Pods-AWSAppSyncTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTests/Pods-AWSAppSyncTests.debug.xcconfig"; sourceTree = "<group>"; };
-		AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.debug.xcconfig"; sourceTree = "<group>"; };
-		C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.release.xcconfig"; sourceTree = "<group>"; };
-		CB93C78C2EEB30A1C3C24E2E /* Pods_AWSAppSyncTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSNetworkTransport.swift; sourceTree = "<group>"; };
+		E5104B57212C76FF004616D7 /* SQLite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SQLite.framework; path = Carthage/Build/iOS/SQLite.framework; sourceTree = "<group>"; };
+		E5104B59212C7701004616D7 /* Reachability.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Reachability.framework; path = Carthage/Build/iOS/Reachability.framework; sourceTree = "<group>"; };
+		E5104B5B212C770B004616D7 /* AWSCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AWSCore.framework; path = Carthage/Build/iOS/AWSCore.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,7 +178,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				174F80B12109229C00775D0D /* AWSAppSync.framework in Frameworks */,
-				7C8D9BD0CFD94CE97870947D /* Pods_AWSAppSyncTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,7 +185,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */,
+				E5104B58212C76FF004616D7 /* SQLite.framework in Frameworks */,
+				E5104B5A212C7701004616D7 /* Reachability.framework in Frameworks */,
+				E5104B5C212C770B004616D7 /* AWSCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,9 +252,9 @@
 		17915C5E1F5FA36300C4B73C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				17915C5F1F5FA36300C4B73C /* AWSCore.framework */,
-				621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */,
-				CB93C78C2EEB30A1C3C24E2E /* Pods_AWSAppSyncTests.framework */,
+				E5104B5B212C770B004616D7 /* AWSCore.framework */,
+				E5104B59212C7701004616D7 /* Reachability.framework */,
+				E5104B57212C76FF004616D7 /* SQLite.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -268,7 +266,6 @@
 				174F80AD2109229C00775D0D /* AWSAppSyncTests */,
 				17DECF5F1F59F5FF004B0512 /* Products */,
 				17915C5E1F5FA36300C4B73C /* Frameworks */,
-				E1D9078E4FB0753759F6C498 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -344,17 +341,6 @@
 			name = Apollo;
 			sourceTree = "<group>";
 		};
-		E1D9078E4FB0753759F6C498 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */,
-				C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */,
-				9A210F34AE9783A62B36F8F2 /* Pods-AWSAppSyncTests.debug.xcconfig */,
-				6A5E9B8BFB35E672A4BA10CD /* Pods-AWSAppSyncTests.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -404,7 +390,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 17DECF721F59F5FF004B0512 /* Build configuration list for PBXNativeTarget "AWSAppSync" */;
 			buildPhases = (
-				4E996121F39BA74DB553A2CB /* [CP] Check Pods Manifest.lock */,
 				17DECF591F59F5FF004B0512 /* Sources */,
 				17DECF5A1F59F5FF004B0512 /* Frameworks */,
 				17DECF5B1F59F5FF004B0512 /* Headers */,
@@ -520,24 +505,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		4E996121F39BA74DB553A2CB /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AWSAppSync-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -624,7 +591,6 @@
 /* Begin XCBuildConfiguration section */
 		174F80B52109229C00775D0D /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9A210F34AE9783A62B36F8F2 /* Pods-AWSAppSyncTests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -643,7 +609,6 @@
 		};
 		174F80B62109229C00775D0D /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6A5E9B8BFB35E672A4BA10CD /* Pods-AWSAppSyncTests.release.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -775,7 +740,6 @@
 		};
 		17DECF731F59F5FF004B0512 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -783,6 +747,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				HEADER_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)/usr/local/include";
 				INFOPLIST_FILE = AWSAppSyncClient/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -802,7 +770,6 @@
 		};
 		17DECF741F59F5FF004B0512 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -810,6 +777,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				HEADER_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)/usr/local/include";
 				INFOPLIST_FILE = AWSAppSyncClient/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";

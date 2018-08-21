@@ -13,7 +13,7 @@
 // permissions and limitations under the License.
 //
 
-#import "AWSCocoaLumberjack.h"
+#import <AWSCore/AWSCocoaLumberjack.h>
 #import "AWSMQTTEncoder.h"
 
 @interface AWSMQTTEncoder () {

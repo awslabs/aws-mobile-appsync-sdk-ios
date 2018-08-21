@@ -1,3 +1,3 @@
-github "aws/aws-sdk-ios" ~> 2.6.6
-github "stephencelis/SQLite.swift" ~> 0.11.4
-github "ashleymills/Reachability.swift" ~> 0.4.0
+github "aws/aws-sdk-ios"
+github "stephencelis/SQLite.swift"
+github "ashleymills/Reachability.swift"

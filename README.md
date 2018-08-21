@@ -39,6 +39,18 @@ end
 
 3. Now, open the `.xcworkspace` file and import the SDK using `import AWSAppSync`.
 
+- Consuming through carthage:
+
+1. Add the following line to your Cartfile:
+
+```
+  github "awslabs/aws-mobile-appsync-sdk-ios"
+```
+
+2. Run `carthage bootstrap`
+
+3. Follow the carthage instructions. [Quick Start](https://github.com/Carthage/Carthage#quick-start)
+
 - Codegen
 
 To use the AppSync SDK, you will need to use `aws-appsync-codegen` which helps generated a strongly typed API for your schema. You can find the instructions to use the codegen here: https://github.com/awslabs/aws-appsync-codegen 
