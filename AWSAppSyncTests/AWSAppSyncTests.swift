@@ -10,10 +10,10 @@ import XCTest
 /// The test class uses the `EventsApp` starter schema from AWS AppSync Console which can be created easily by selecting an option in the console. It uses AWS_IAM for auth.
 class AWSAppSyncTests: XCTestCase {
     
-    let CognitoIdentityPoolId = "us-east-1:6cd2ded7-f4b7-46b8-8b47-57c2cd383d46"
+    let CognitoIdentityPoolId = "YOUR_POOL_ID"
     let CognitoIdentityRegion: AWSRegionType = .USEast1
     let AppSyncRegion: AWSRegionType = .USEast1
-    let AppSyncEndpointURL: URL = URL(string: "https://cujvek3ev5brnl7xd7xovon7j4.appsync-api.us-east-1.amazonaws.com/graphql")!
+    let AppSyncEndpointURL: URL = URL(string: "YOUR_GRAPHQL_ENDPOINT")!
     let apiKey = "YOUR_API_KEY"
     let database_name = "appsync-local-db"
     var appSyncClient: AWSAppSyncClient?
