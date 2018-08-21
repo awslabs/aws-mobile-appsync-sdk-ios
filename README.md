@@ -17,7 +17,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
 ```
-  pod 'AWSAppSync', '~> 2.6.7'
+  pod 'AWSAppSync', '~> 2.6.19'
 ```
 
 Example:
@@ -31,7 +31,7 @@ target 'EventsApp' do
   use_frameworks!
 
   # Pods for EventsApp
-  pod 'AWSAppSync', '~> 2.6.7'
+  pod 'AWSAppSync', '~> 2.6.19'
 end
 ```
 
