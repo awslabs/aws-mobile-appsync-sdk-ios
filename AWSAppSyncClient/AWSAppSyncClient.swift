@@ -156,47 +156,20 @@ public class AWSAppSyncClientConfiguration {
                             s3ObjectManager: AWSS3ObjectManager? = nil,
                             presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
         
-        // Create a map of {authType -> authTypeObject}
-        var authTypeObjectMap: [AuthType : Any?] = [AuthType : Any?]()
-        authTypeObjectMap[AuthType.apiKey] = apiKeyAuthProvider
-        authTypeObjectMap[AuthType.awsIAM] = credentialsProvider
-        authTypeObjectMap[AuthType.amazonCognitoUserPools] = userPoolsAuthProvider
-        authTypeObjectMap[AuthType.oidcToken] = oidcAuthProvider
+        let authTypeFromConfig: AuthType = try AuthType.getAuthType(rawValue: appSyncClientInfo.authType)
         
-        // Find the authType object passed in
-        var selectedauthType: AuthType? = nil
-        let authTypeFromConfig: AuthType? = try AuthType.getAuthType(rawValue: appSyncClientInfo.authType)
-        var hasOneAuth: Bool = false
-        try authTypeObjectMap.forEach ({(key: AuthType, value: Any?) in
-            if hasOneAuth {
-                // Throw Error when more than one authType object is passed in
-                throw AWSAppSyncClientInfoError(errorMessage: "More than one Authentication Mode found. "
-                    + "Please pass in exactly one Authentication Mode.")
-            }
-            if value != nil {
-                selectedauthType = key
-                hasOneAuth = true
-            }
-        })
-        
-        // Throw error when no Authentication object is passed in
-        if !hasOneAuth {
-            throw AWSAppSyncClientInfoError(errorMessage: "Please pass in a valid Authentication Mode object.")
-        }
-        
-        // Validate if the authType object passed in matches the authType
-        // configured in awsconfiguration.json
-        if selectedauthType != authTypeFromConfig {
-            let authTypeErrorMessage = "Expected: " + (authTypeFromConfig?.rawValue)! + "; Found: " + (selectedauthType?.rawValue)!
-            throw AWSAppSyncClientInfoError(errorMessage: "Found conflicting AuthMode. "
-                + authTypeErrorMessage
-                + ". Please check the AuthMode in awsconfiguration.json")
-        }
-        
-        // If AuthType is API_KEY, use the ApiKey Auth Provider passed in
-        // or create a provider based on the ApiKey passed from the config
         var defaultApiKeyAuthProvider: AWSAPIKeyAuthProvider? = apiKeyAuthProvider
-        if authTypeFromConfig == AuthType.apiKey {
+        var defaultCredentialsProvider: AWSCredentialsProvider? = credentialsProvider
+        
+        switch (authTypeFromConfig) {
+        case AuthType.apiKey:
+            if credentialsProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
+                throw AWSAppSyncClientInfoError(errorMessage: AuthType.apiKey.rawValue + " is selected in configuration but a "
+                    + "AWSAPIKeyAuthProvider object is not passed in or cannot be constructed.")
+            }
+            
+            // If AuthType is API_KEY, use the ApiKey Auth Provider passed in
+            // or create a provider based on the ApiKey passed from the config
             if defaultApiKeyAuthProvider == nil {
                 class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
                     var apiKey: String
@@ -209,24 +182,48 @@ public class AWSAppSyncClientConfiguration {
                 }
                 defaultApiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(key: appSyncClientInfo.apiKey)
             }
-        }
-        
-        // If AuthType is AWS_IAM, use the AWSCredentialsProvider passed in
-        // or create a provider based on the CognitoIdentity CredentialsProvider
-        // passed from the config
-        var defaultCredentialsProvider: AWSCredentialsProvider? = credentialsProvider
-        if authTypeFromConfig == AuthType.awsIAM {
+            break
+        case AuthType.amazonCognitoUserPools:
+            if credentialsProvider != nil || apiKeyAuthProvider != nil || oidcAuthProvider != nil {
+                throw AWSAppSyncClientInfoError(errorMessage: AuthType.amazonCognitoUserPools.rawValue + " is selected in configuration but a "
+                    + "AWSCognitoUserPoolsAuthProvider object is not passed in.")
+            }
+            
+            if userPoolsAuthProvider == nil {
+                throw AWSAppSyncClientInfoError(errorMessage: "userPoolsAuthProvider cannot be nil.")
+            }
+            break
+        case AuthType.awsIAM:
+            if apiKeyAuthProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
+                throw AWSAppSyncClientInfoError(errorMessage: AuthType.awsIAM.rawValue + " is selected in configuration but a "
+                    + "AWSCredentialsProvider object is not passed in or cannot be constructed.")
+            }
+            
+            // If AuthType is AWS_IAM, use the AWSCredentialsProvider passed in
+            // or create a provider based on the CognitoIdentity CredentialsProvider
+            // passed from the config
             if defaultCredentialsProvider == nil {
                 defaultCredentialsProvider = AWSServiceInfo.init().cognitoCredentialsProvider
                 if defaultCredentialsProvider == nil {
                     throw AWSAppSyncClientInfoError(errorMessage: "CredentialsProvider is missing in the configuration.")
                 }
             }
+            break
+        case AuthType.oidcToken:
+            if credentialsProvider != nil || userPoolsAuthProvider != nil || apiKeyAuthProvider != nil {
+                throw AWSAppSyncClientInfoError(errorMessage: AuthType.oidcToken.rawValue + " is selected in configuration but a "
+                    + "AWSOIDCAuthProvider object is not passed in.")
+            }
+            
+            if oidcAuthProvider == nil {
+                throw AWSAppSyncClientInfoError(errorMessage: "oidcAuthProvider cannot be nil.")
+            }
+            break
         }
         
         try self.init(url: URL(string: appSyncClientInfo.apiUrl)!,
                       serviceRegion: appSyncClientInfo.region.aws_regionTypeValue(),
-                      authType: authTypeFromConfig!,
+                      authType: authTypeFromConfig,
                       apiKeyAuthProvider: defaultApiKeyAuthProvider,
                       credentialsProvider: defaultCredentialsProvider,
                       userPoolsAuthProvider: userPoolsAuthProvider,
@@ -487,22 +484,26 @@ public class AWSAppSyncClientInfo {
     }
     
     public init(forKey: String) throws {
-        if AWSInfo.default().rootInfoDictionary["AppSync"] == nil {
-            throw AWSAppSyncClientInfoError(errorMessage: "Cannot read configuration from the awsconfiguration.json/Info.plist")
-        }
-        
-        let appSyncConfig : [String : Any] = (AWSInfo.default().rootInfoDictionary["AppSync"] as? [String : Any])!
-        let defaultAppSyncConfig : [String : Any] = (appSyncConfig[forKey] as? [String : Any])!
-        self.apiUrl = defaultAppSyncConfig["ApiUrl"] as! String
-        self.region = defaultAppSyncConfig["Region"] as! String
-        self.authType = defaultAppSyncConfig["AuthMode"] as! String
-        
-        if let apiKeyFromDictionary = defaultAppSyncConfig["ApiKey"] {
-            self.apiKey = apiKeyFromDictionary as! String
-        } else {
-            if (self.authType == AuthType.apiKey.rawValue) {
-                throw AWSAppSyncClientInfoError(errorMessage: "API_KEY AuthMode found in configuration but a valid ApiKey is not found")
+        do {
+            if AWSInfo.default().rootInfoDictionary["AppSync"] == nil {
+                throw AWSAppSyncClientInfoError(errorMessage: "Cannot read configuration from the awsconfiguration.json")
             }
+            
+            let appSyncConfig : [String : Any] = (AWSInfo.default().rootInfoDictionary["AppSync"] as? [String : Any])!
+            let defaultAppSyncConfig : [String : Any] = (appSyncConfig[forKey] as? [String : Any])!
+            self.apiUrl = defaultAppSyncConfig["ApiUrl"] as! String
+            self.region = defaultAppSyncConfig["Region"] as! String
+            self.authType = defaultAppSyncConfig["AuthMode"] as! String
+            
+            if let apiKeyFromDictionary = defaultAppSyncConfig["ApiKey"] {
+                self.apiKey = apiKeyFromDictionary as! String
+            } else {
+                if (self.authType == AuthType.apiKey.rawValue) {
+                    throw AWSAppSyncClientInfoError(errorMessage: "API_KEY AuthMode found in configuration but a valid ApiKey is not found")
+                }
+            }
+        } catch {
+            throw AWSAppSyncClientInfoError(errorMessage: "Error in reading AppSync configuration from the awsconfiguration.json")
         }
     }
 }
@@ -803,4 +804,3 @@ public final class PerformMutationOperation<Mutation: GraphQLMutation>: InMemory
         }
     }
 }
-
