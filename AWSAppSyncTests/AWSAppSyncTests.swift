@@ -1,6 +1,16 @@
 //
-//  AWSAppSyncTests.swift
-//  AWSAppSyncTests
+// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License").
+// You may not use this file except in compliance with the License.
+// A copy of the License is located at
+//
+// http://aws.amazon.com/apache2.0
+//
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied. See the License for the specific language governing
+// permissions and limitations under the License.
 //
 
 import XCTest
@@ -10,11 +20,14 @@ import XCTest
 /// The test class uses the `EventsApp` starter schema from AWS AppSync Console which can be created easily by selecting an option in the console. It uses AWS_IAM for auth.
 class AWSAppSyncTests: XCTestCase {
     
-    let CognitoIdentityPoolId = "YOUR_POOL_ID"
+    //let CognitoIdentityPoolId = "us-east-1:1071f76b-37d2-4d82-988e-08f9c7b9b27e"
+    let CognitoIdentityPoolId = "us-east-1:cffa2476-ddde-44c8-8f81-cc632248db03"
     let CognitoIdentityRegion: AWSRegionType = .USEast1
     let AppSyncRegion: AWSRegionType = .USEast1
-    let AppSyncEndpointURL: URL = URL(string: "YOUR_GRAPHQL_ENDPOINT")!
-    let apiKey = "YOUR_API_KEY"
+    //let AppSyncEndpointURL: URL = URL(string: "https://uv34dxa5xveidkmwisswidnxyi.appsync-api.us-east-1.amazonaws.com/graphql")!
+    let AppSyncEndpointURL: URL = URL(string: "https://iafw64zvxjbyfls3kvjljicoa4.appsync-api.us-east-1.amazonaws.com/graphql")!
+    
+    let apiKey = "da2-iclrgi3aznh2zhdetsl676zke4"
     let database_name = "appsync-local-db"
     var appSyncClient: AWSAppSyncClient?
     
@@ -32,11 +45,15 @@ class AWSAppSyncTests: XCTestCase {
         let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
         
         do {
+            let loggingClient:AWSAppSyncLogClient = AWSAppSyncLogClient()
+            loggingClient.setLoggingProvider(provider: AWSAppSyncDefaultLogProvider(logLevel: .verbose))
+            
             // Initialize the AWS AppSync configuration
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   credentialsProvider: credentialsProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL:databaseURL,
+                                                                  loggingClient: loggingClient)
             // Initialize the AWS AppSync client
             appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
             // Set id as the cache key for objects
