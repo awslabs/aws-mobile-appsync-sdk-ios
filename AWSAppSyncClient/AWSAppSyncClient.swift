@@ -110,6 +110,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - loggingClient: The logging client for application logging.
     public convenience init(url: URL,
                             serviceRegion: AWSRegionType,
                             credentialsProvider: AWSCredentialsProvider,
@@ -117,7 +118,8 @@ public class AWSAppSyncClientConfiguration {
                             databaseURL: URL? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            loggingClient: AWSAppSyncLogClient? = nil) throws {
         try self.init(url: url,
                       serviceRegion: serviceRegion,
                       authType: AuthType.awsIAM,
@@ -129,7 +131,8 @@ public class AWSAppSyncClientConfiguration {
                       databaseURL: databaseURL,
                       connectionStateChangeHandler: connectionStateChangeHandler,
                       s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                      presignedURLClient: presignedURLClient,
+                      loggingClient: loggingClient)
     }
     
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -145,6 +148,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - loggingClient: The logging client for application logging.
     public convenience init(appSyncClientInfo: AWSAppSyncClientInfo,
                             apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil,
                             credentialsProvider: AWSCredentialsProvider? = nil,
@@ -154,7 +158,8 @@ public class AWSAppSyncClientConfiguration {
                             databaseURL: URL? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            loggingClient: AWSAppSyncLogClient? = nil) throws {
         
         // Create a map of {authType -> authTypeObject}
         var authTypeObjectMap: [AuthType : Any?] = [AuthType : Any?]()
@@ -235,7 +240,8 @@ public class AWSAppSyncClientConfiguration {
                       databaseURL: databaseURL,
                       connectionStateChangeHandler: connectionStateChangeHandler,
                       s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                      presignedURLClient: presignedURLClient,
+                      loggingClient: loggingClient)
     }
     
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -249,6 +255,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - loggingClient: The logging client for application logging.
     public convenience init(url: URL,
                             serviceRegion: AWSRegionType,
                             apiKeyAuthProvider: AWSAPIKeyAuthProvider,
@@ -256,7 +263,8 @@ public class AWSAppSyncClientConfiguration {
                             databaseURL: URL? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            loggingClient: AWSAppSyncLogClient? = nil ) throws {
         try self.init(url: url,
                       serviceRegion: serviceRegion,
                       authType: AuthType.apiKey,
@@ -268,7 +276,8 @@ public class AWSAppSyncClientConfiguration {
                       databaseURL: databaseURL,
                       connectionStateChangeHandler: connectionStateChangeHandler,
                       s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                      presignedURLClient: presignedURLClient,
+                      loggingClient: loggingClient)
     }
     
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -282,6 +291,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - loggingClient: The logging client for application logging.
     public convenience init(url: URL,
                             serviceRegion: AWSRegionType,
                             userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider,
@@ -289,7 +299,8 @@ public class AWSAppSyncClientConfiguration {
                             databaseURL: URL? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            loggingClient: AWSAppSyncLogClient? = nil ) throws {
         try self.init(url: url,
                       serviceRegion: serviceRegion,
                       authType: AuthType.amazonCognitoUserPools,
@@ -301,7 +312,8 @@ public class AWSAppSyncClientConfiguration {
                       databaseURL: databaseURL,
                       connectionStateChangeHandler: connectionStateChangeHandler,
                       s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                      presignedURLClient: presignedURLClient,
+                      loggingClient: loggingClient)
     }
     
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -315,6 +327,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - loggingClient: The logging client for application logging.
     public convenience init(url: URL,
                             serviceRegion: AWSRegionType,
                             oidcAuthProvider: AWSOIDCAuthProvider,
@@ -322,7 +335,8 @@ public class AWSAppSyncClientConfiguration {
                             databaseURL: URL? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            loggingClient: AWSAppSyncLogClient? = nil ) throws {
         try self.init(url: url,
                       serviceRegion: serviceRegion,
                       authType: AuthType.oidcToken,
@@ -334,7 +348,8 @@ public class AWSAppSyncClientConfiguration {
                       databaseURL: databaseURL,
                       connectionStateChangeHandler: connectionStateChangeHandler,
                       s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                      presignedURLClient: presignedURLClient,
+                      loggingClient: loggingClient)
     }
     
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -347,13 +362,15 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - loggingClient: The logging client for application logging.
     public init(url: URL,
                 serviceRegion: AWSRegionType,
                 networkTransport: AWSNetworkTransport,
                 databaseURL: URL? = nil,
                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                loggingClient: AWSAppSyncLogClient? = nil ) throws {
         self.url = url
         self.region = serviceRegion
         self.databaseURL = databaseURL
@@ -369,6 +386,12 @@ public class AWSAppSyncClientConfiguration {
         self.s3ObjectManager = s3ObjectManager
         self.presignedURLClient = presignedURLClient
         self.connectionStateChangeHandler = connectionStateChangeHandler
+        
+        //Create logging client if not passed in.
+        //This needs to be refactored to use the private init method.
+        if let loggingClient = loggingClient {
+            AWSAppSyncLogClient.sharedLoggingClient = loggingClient
+        }
     }
     
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -380,12 +403,14 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - loggingClient: The logging client for application logging.
     public init(appSyncClientInfo: AWSAppSyncClientInfo,
                 networkTransport: AWSNetworkTransport,
                 databaseURL: URL? = nil,
                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                loggingClient: AWSAppSyncLogClient? = nil) throws {
         self.url = URL(string: appSyncClientInfo.apiUrl)!
         self.region = appSyncClientInfo.region.aws_regionTypeValue()
         self.databaseURL = databaseURL
@@ -401,6 +426,13 @@ public class AWSAppSyncClientConfiguration {
         self.s3ObjectManager = s3ObjectManager
         self.presignedURLClient = presignedURLClient
         self.connectionStateChangeHandler = connectionStateChangeHandler
+        
+        //Create logging client if not passed in.
+        //This needs to be refactored to use the private init method.
+        if let loggingClient = loggingClient {
+            AWSAppSyncLogClient.sharedLoggingClient = loggingClient
+        }
+     
     }
     
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -429,7 +461,8 @@ public class AWSAppSyncClientConfiguration {
                  databaseURL: URL? = nil,
                  connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                  s3ObjectManager: AWSS3ObjectManager? = nil,
-                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                 loggingClient: AWSAppSyncLogClient? = nil ) throws {
         self.url = url
         self.region = serviceRegion
         self.authType = authType
@@ -469,6 +502,10 @@ public class AWSAppSyncClientConfiguration {
         self.snapshotController = SnapshotProcessController(endpointURL: url)
         self.s3ObjectManager = s3ObjectManager
         self.presignedURLClient = presignedURLClient
+        
+        if let loggingClient = loggingClient {
+            AWSAppSyncLogClient.sharedLoggingClient = loggingClient
+        }
     }
 }
 
