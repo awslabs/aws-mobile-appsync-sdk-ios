@@ -42,22 +42,18 @@ class AWSAppSyncTests: XCTestCase {
         let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
         
         do {
-            let loggingClient:AWSAppSyncLogClient = AWSAppSyncLogClient()
-            loggingClient.setLoggingProvider(provider: AWSAppSyncDefaultLogProvider(logLevel: .verbose))
+            AWSDDLog.sharedInstance.logLevel = .verbose
+            AWSDDLog.add(AWSDDTTYLogger.sharedInstance) 
             
             // Initialize the AWS AppSync configuration
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   credentialsProvider: credentialsProvider,
-                                                                  databaseURL:databaseURL,
-                                                                  loggingClient: loggingClient)
+                                                                  databaseURL:databaseURL)
             // Initialize the AWS AppSync client
             appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
             // Set id as the cache key for objects
             appSyncClient?.apolloClient?.cacheKeyForObject = { $0["id"] }
-            
-            AWSDDLog.sharedInstance.logLevel = .verbose
-            AWSDDLog.add(AWSDDTTYLogger.sharedInstance) // TTY = Xcode console
         } catch {
             print("Error initializing appsync client. \(error)")
         }

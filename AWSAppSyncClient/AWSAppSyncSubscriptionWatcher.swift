@@ -125,17 +125,17 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     
     func messageCallbackDelegate(data: Data) {
         do {
-            AWSAppSyncLogClient.sharedLoggingClient.debug("Received message in messageCallbackDelegate")
+            AppSyncLog.verbose("Received message in messageCallbackDelegate")
             
             guard let _ = NSString(data: data, encoding: String.Encoding.utf8.rawValue) else {
-                AWSAppSyncLogClient.sharedLoggingClient.error("Unable to convert message data to String using UTF8 encoding")
-                AWSAppSyncLogClient.sharedLoggingClient.debug("Message data is [\(data)]")
+                AppSyncLog.error("Unable to convert message data to String using UTF8 encoding")
+                AppSyncLog.debug("Message data is [\(data)]")
                 return
             }
            
             guard let jsonObject = try JSONSerializationFormat.deserialize(data: data) as? JSONObject else {
-                AWSAppSyncLogClient.sharedLoggingClient.error("Unable to deserialize message data")
-                AWSAppSyncLogClient.sharedLoggingClient.debug("Message data is [\(data)]")
+                AppSyncLog.error("Unable to deserialize message data")
+                AppSyncLog.debug("Message data is [\(data)]")
                 return
             }
             

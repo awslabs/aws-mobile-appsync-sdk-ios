@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.dependency 'AWSCore', '~> 2.6.6'
   s.dependency 'SQLite.swift', '0.11.4'
   s.dependency 'ReachabilitySwift', '~> 4.0.0'
-  s.source_files = 'AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/*.swift', 'AWSAppSyncClient/Apollo/Sources/Apollo/*.swift', 'AWSAppSyncClient/MQTTSDK/*.{h,m}', 'AWSAppSyncClient/MQTTSDK/MQTTSDK/*.{h,m}', 'AWSAppSyncClient/MQTTSDK/SocketRocket/*.{h,m}'
-  s.public_header_files = ['AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/AWSAppSync-Swift.h', 'AWSAppSyncClient/MQTTSDK/AWSIoTMQTTClient.h','AWSAppSyncClient/MQTTSDK/AWSIoTMQTTTypes.h']
+  s.source_files = 'AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/*.swift', 'AWSAppSyncClient/Internal/*.swift', 'AWSAppSyncClient/Apollo/Sources/Apollo/*.swift', 'AWSAppSyncClient/MQTTSDK/*.{h,m}', 'AWSAppSyncClient/MQTTSDK/MQTTSDK/*.{h,m}', 'AWSAppSyncClient/MQTTSDK/SocketRocket/*.{h,m}', 'AWSAppSyncClient/Internal/*.{h,m}'
+  s.public_header_files = ['AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/AWSAppSync-Swift.h', 'AWSAppSyncClient/MQTTSDK/AWSIoTMQTTClient.h','AWSAppSyncClient/MQTTSDK/AWSIoTMQTTTypes.h','AWSAppSyncClient/Internal/AppSyncLogHelper.h']
   s.private_header_files = 'AWSAppSyncClient/MQTTSDK/AWSIoTWebSocketOutputStream.h', 'AWSAppSyncClient/MQTTSDK/MQTTSDK/*.h', 'AWSAppSyncClient/MQTTSDK/SocketRocket/*.h'
 end
