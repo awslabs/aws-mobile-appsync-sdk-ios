@@ -124,7 +124,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("aws-sdk-ios/2.6.18 AppSyncClient", forHTTPHeaderField: "User-Agent")       
+        request.setValue("aws-sdk-ios/2.6.18 AppSyncClient", forHTTPHeaderField: "User-Agent")
     }
     
     /// Send a data payload to a server and return a response.
@@ -182,7 +182,10 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
     }
     
-    private func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void ) {
+   
+    
+    private func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void ) {        
+
         switch self.authType {
             
         case .awsIAM:
