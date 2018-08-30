@@ -125,13 +125,6 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("aws-sdk-ios/2.6.18 AppSyncClient", forHTTPHeaderField: "User-Agent")
-        if self.authType == .apiKey {
-            request.setValue(self.apiKeyAuthProvider!.getAPIKey(), forHTTPHeaderField: "x-api-key")
-        } else if self.authType == .oidcToken {
-            request.setValue(self.oidcAuthProvider!.getLatestAuthToken(), forHTTPHeaderField: "authorization")
-        } else if self.authType == .amazonCognitoUserPools {
-            request.setValue(self.userPoolsAuthProvider!.getLatestAuthToken(), forHTTPHeaderField: "authorization")
-        }
     }
     
     /// Send a data payload to a server and return a response.
@@ -186,18 +179,56 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         
-        if self.authType == .awsIAM {
+        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
+    }
+    
+   
+    
+    private func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void ) {        
+
+        switch self.authType {
+            
+        case .awsIAM:
             let signer:AWSSignatureV4Signer = AWSSignatureV4Signer(credentialsProvider: self.credentialsProvider, endpoint: self.endpoint)
             signer.interceptRequest(mutableRequest).continueWith { _ in
                 return nil
                 }.continueWith { _ in
-                    sendRequest(request: mutableRequest as URLRequest)
+                    sendRequest(mutableRequest as URLRequest)
             }
-        } else {
-            sendRequest(request: mutableRequest as URLRequest)
+        case .apiKey:
+            mutableRequest.setValue(self.apiKeyAuthProvider!.getAPIKey(), forHTTPHeaderField: "x-api-key")
+            sendRequest( mutableRequest as URLRequest)
+        case .oidcToken:
+            if let prov = self.oidcAuthProvider as? AWSOIDCAuthProviderAsync {
+            
+                prov.getLatestAuthToken { token in
+                    if !token.isEmpty {
+                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
+                    }
+                    sendRequest( mutableRequest as URLRequest)
+                }
+            } else if let prov = self.oidcAuthProvider {
+                 mutableRequest.setValue(prov.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+            } else {
+                fatalError("Authentication provide not set")
+            }
+        case .amazonCognitoUserPools:
+            if let prov = self.userPoolsAuthProvider as? AWSOIDCAuthProviderAsync {
+                
+                prov.getLatestAuthToken { token in
+                    if !token.isEmpty {
+                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
+                    }
+                    sendRequest( mutableRequest as URLRequest)
+                }
+            } else if let prov = self.userPoolsAuthProvider {
+                mutableRequest.setValue(prov.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+            } else {
+                fatalError("Authentication provide not set")
+            }
         }
+        
     }
-    
     
     /// Send a GraphQL operation to a server and return a response for a subscription.
     ///
@@ -259,16 +290,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         
-        if self.authType == .awsIAM {
-            let signer:AWSSignatureV4Signer = AWSSignatureV4Signer(credentialsProvider: self.credentialsProvider, endpoint: self.endpoint)
-            signer.interceptRequest(mutableRequest).continueWith { _ in
-                return nil
-                }.continueWith { _ in
-                    sendRequest(request: mutableRequest as URLRequest)
-            }
-        } else {
-            sendRequest(request: mutableRequest as URLRequest)
-        }
+        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
         
         return networkTransportOperation
     }
@@ -334,16 +356,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         
-        if self.authType == .awsIAM {
-            let signer:AWSSignatureV4Signer = AWSSignatureV4Signer(credentialsProvider: self.credentialsProvider, endpoint: self.endpoint)
-            signer.interceptRequest(mutableRequest).continueWith { _ in
-                return nil
-                }.continueWith { _ in
-                    sendRequest(request: mutableRequest as URLRequest)
-            }
-        } else {
-            sendRequest(request: mutableRequest as URLRequest)
-        }
+        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
         
         return networkTransportOperation
     }
