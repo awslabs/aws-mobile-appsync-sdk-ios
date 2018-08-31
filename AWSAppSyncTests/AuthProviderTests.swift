@@ -33,7 +33,6 @@ class AuthProviderTests: XCTestCase {
             callback("CognitoUserPoolsAuthProviderAsync")
             self.expectation?.fulfill()
         }
-        
     }
     
     class OIDCAuthProvider: AWSOIDCAuthProvider {
@@ -58,7 +57,6 @@ class AuthProviderTests: XCTestCase {
             callback("CognitoUserPoolsAuthProviderAsync")
             self.expectation?.fulfill()
         }
-        
     }
 
     class CognitoUserPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider {
