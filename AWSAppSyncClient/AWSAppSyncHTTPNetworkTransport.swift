@@ -197,30 +197,28 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             mutableRequest.setValue(self.apiKeyAuthProvider!.getAPIKey(), forHTTPHeaderField: "x-api-key")
             sendRequest( mutableRequest as URLRequest)
         case .oidcToken:
-            if let prov = self.oidcAuthProvider as? AWSOIDCAuthProviderAsync {
+            if let provider = self.oidcAuthProvider as? AWSOIDCAuthProviderAsync {
             
-                prov.getLatestAuthToken { token in
-                    if !token.isEmpty {
-                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
-                    }
+                provider.getLatestAuthToken { token in
+                    mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
                     sendRequest( mutableRequest as URLRequest)
                 }
-            } else if let prov = self.oidcAuthProvider {
-                 mutableRequest.setValue(prov.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+            } else if let provider = self.oidcAuthProvider {
+                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+                 sendRequest( mutableRequest as URLRequest)
             } else {
                 fatalError("Authentication provide not set")
             }
         case .amazonCognitoUserPools:
-            if let prov = self.userPoolsAuthProvider as? AWSOIDCAuthProviderAsync {
+            if let provider = self.userPoolsAuthProvider as? AWSOIDCAuthProviderAsync {
                 
-                prov.getLatestAuthToken { token in
-                    if !token.isEmpty {
-                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
-                    }
+                provider.getLatestAuthToken { token in
+                    mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
                     sendRequest( mutableRequest as URLRequest)
                 }
-            } else if let prov = self.userPoolsAuthProvider {
-                mutableRequest.setValue(prov.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+            } else if let provider = self.userPoolsAuthProvider {
+                mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+                sendRequest( mutableRequest as URLRequest)
             } else {
                 fatalError("Authentication provide not set")
             }
