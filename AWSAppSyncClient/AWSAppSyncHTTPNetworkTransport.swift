@@ -182,8 +182,6 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
     }
     
-   
-    
     private func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void ) {        
 
         switch self.authType {
