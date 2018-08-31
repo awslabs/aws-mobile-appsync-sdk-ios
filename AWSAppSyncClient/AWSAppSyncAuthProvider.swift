@@ -13,7 +13,7 @@ public protocol AWSOIDCAuthProviderAsync: AWSOIDCAuthProvider {
 
 // For AuthProviders that use a callback, the getLatestAuthToken is defaulted to return an empty string
 extension AWSOIDCAuthProviderAsync {
-    public func getLatestAuthToken() -> String { return "" }
+    public func getLatestAuthToken() -> String { fatalError("Callback method required") }
 }
 
 // For using OIDC based authorization, this protocol needs to be implemented and passed to configuration object.
