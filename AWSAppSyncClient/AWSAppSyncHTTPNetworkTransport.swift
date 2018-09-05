@@ -179,10 +179,14 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         
-        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
+        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest, onError: { error in
+            completionHandler?(nil, error)
+        })
     }
     
-    private func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void ) {        
+    /// Updates the sendRequest with the appropriate authentication parameters
+    /// In the case of a token retrieval error, the errorCallback is invoked
+    private func sendRequestWithAuth(mutableRequest: NSMutableURLRequest, sendRequest: @escaping (URLRequest) -> Void, onError errorCallback: @escaping ((Error) -> Void)) -> Void {
 
         switch self.authType {
             
@@ -199,28 +203,44 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         case .oidcToken:
             if let provider = self.oidcAuthProvider as? AWSOIDCAuthProviderAsync {
             
-                provider.getLatestAuthToken { token in
-                    mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
-                    sendRequest( mutableRequest as URLRequest)
+                provider.getLatestAuthToken { (token, error) in
+                    if let error = error {
+                        errorCallback(error)
+                    }
+                    else if let token = token {
+                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
+                        sendRequest( mutableRequest as URLRequest)
+                    }
+                    else {
+                        fatalError("Invalid data returned in token callback")
+                    }
                 }
             } else if let provider = self.oidcAuthProvider {
                  mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
                  sendRequest( mutableRequest as URLRequest)
             } else {
-                fatalError("Authentication provide not set")
+                fatalError("Authentication provider not set")
             }
         case .amazonCognitoUserPools:
             if let provider = self.userPoolsAuthProvider as? AWSOIDCAuthProviderAsync {
                 
-                provider.getLatestAuthToken { token in
-                    mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
-                    sendRequest( mutableRequest as URLRequest)
+                provider.getLatestAuthToken { (token, error) in
+                    if let error = error {
+                        errorCallback(error)
+                    }
+                    else if let token = token {
+                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
+                        sendRequest( mutableRequest as URLRequest)
+                    }
+                    else {
+                        fatalError("Invalid data returned in token callback")
+                    }
                 }
             } else if let provider = self.userPoolsAuthProvider {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
                 sendRequest( mutableRequest as URLRequest)
             } else {
-                fatalError("Authentication provide not set")
+                fatalError("Authentication provider not set")
             }
         }
         
@@ -286,7 +306,9 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         
-        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
+        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest, onError: { error in
+            completionHandler(nil, error)
+        })
         
         return networkTransportOperation
     }
@@ -352,7 +374,9 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         
-        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest)
+        sendRequestWithAuth(mutableRequest: mutableRequest, sendRequest: sendRequest, onError: { error in
+            completionHandler(nil, error)
+        })
         
         return networkTransportOperation
     }

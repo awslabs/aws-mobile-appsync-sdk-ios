@@ -21,16 +21,26 @@ import XCTest
 // These tests validate authentication using OIDC, API Key, and Cognito User Pools.
 // For both OIDC and Cognito User pools, tokens can be fetched either synchronously
 // or via a callback.
+
+class AuthProviderTestError: Error {}
+
 class AuthProviderTests: XCTestCase {
 
     class OIDCAuthProviderAsync: AWSOIDCAuthProviderAsync {
         var expectation: XCTestExpectation?
-        init(_ expectation: XCTestExpectation){
+        var forceError: Bool = false
+        init(_ expectation: XCTestExpectation, forceError: Bool = false){
             self.expectation = expectation;
+            self.forceError = forceError
         }
         
-        func getLatestAuthToken(_ callback: @escaping (String) -> Void) {
-            callback("CognitoUserPoolsAuthProviderAsync")
+        func getLatestAuthToken(_ callback: @escaping (String?, Error?) -> Void) {
+            if forceError {
+                callback(nil, AuthProviderTestError())
+            }
+            else {
+                callback("CognitoUserPoolsAuthProviderAsync", nil)
+            }
             self.expectation?.fulfill()
         }
     }
@@ -53,8 +63,8 @@ class AuthProviderTests: XCTestCase {
             self.expectation = expectation;
         }
         
-        func getLatestAuthToken(_ callback: @escaping (String) -> Void) {
-            callback("CognitoUserPoolsAuthProviderAsync")
+        func getLatestAuthToken(_ callback: @escaping (String?, Error?) -> Void) {
+            callback("CognitoUserPoolsAuthProviderAsync", nil)
             self.expectation?.fulfill()
         }
     }
@@ -98,9 +108,9 @@ class AuthProviderTests: XCTestCase {
         let client = try! AWSAppSyncClient(appSyncConfig: config!)
         let mutation = AddEventMutation(name: "test", when: "test", where: "test", description: "test")
         
-        client.perform(mutation: mutation)        
+        client.perform(mutation: mutation)
         
-        self.waitForExpectations(timeout: 1000, handler: nil)
+        self.waitForExpectations(timeout: 5, handler: nil)
     }
     
     func testCanAuthenticateWithOIDCToken(){
@@ -121,7 +131,32 @@ class AuthProviderTests: XCTestCase {
         
         client.perform(mutation: mutation)
         
-        self.waitForExpectations(timeout: 1000, handler: nil)
+        self.waitForExpectations(timeout: 5, handler: nil)
+    }
+    
+    func testCanHandleAsyncTokenErrors(){
+        let expectation1 = self.expectation(description: "token retrieved")
+        let expectation2 = self.expectation(description: "callback complete")
+        let erroringProvider = OIDCAuthProviderAsync(expectation1, forceError: true)
+        
+        // The test validates that an auth token is retrieved prior to sending the request, so
+        // its ok if the URL is invalid.
+        let url = URL(string: "https://localhost")!
+        
+        let config = try? AWSAppSyncClientConfiguration(url: url,
+                                                        serviceRegion: .USEast1,
+                                                        oidcAuthProvider: erroringProvider)
+        
+        let client = try! AWSAppSyncClient(appSyncConfig: config!)
+        let mutation = AddEventMutation(name: "test", when: "test", where: "test", description: "test")
+        
+        client.perform(mutation: mutation, resultHandler: { (_, error) in
+            XCTAssert(error != nil)
+            XCTAssert(error is AuthProviderTestError)
+            expectation2.fulfill()
+        })
+        
+        self.waitForExpectations(timeout: 5, handler: nil)
     }
     
     func testCanAuthenticateWithOIDCTokenAsync(){
@@ -143,7 +178,7 @@ class AuthProviderTests: XCTestCase {
         
         client.perform(mutation: mutation)
         
-        self.waitForExpectations(timeout: 1000, handler: nil)
+        self.waitForExpectations(timeout: 5, handler: nil)
     }
     
     func testCanAuthenticateWithCognitoUserPool(){
@@ -165,7 +200,7 @@ class AuthProviderTests: XCTestCase {
         
         client.perform(mutation: mutation)
         
-        self.waitForExpectations(timeout: 1000, handler: nil)
+        self.waitForExpectations(timeout: 5, handler: nil)
     }
     
     func testCanAuthenticateWithCognitoUserPoolAsync(){
@@ -187,7 +222,7 @@ class AuthProviderTests: XCTestCase {
         
         client.perform(mutation: mutation)
         
-        self.waitForExpectations(timeout: 1000, handler: nil)
+        self.waitForExpectations(timeout: 5, handler: nil)
     }
     
 }
