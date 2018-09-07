@@ -50,20 +50,20 @@ class AppSyncMQTTClientTests: XCTestCase {
     }
     
     override func tearDown() {
-        MQTTClient<AnyObject, AnyObject>.restoreSwizzledMethods()
+        AWSIoTMQTTClient<AnyObject, AnyObject>.restoreSwizzledMethods()
         super.tearDown()
     }
     
     func testMQTTConnectionAttempt() {
         
-        let expectation = XCTestExpectation(description: "MQTTClient should connect")
+        let expectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
             expectation.fulfill()
             return true
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
         
         let client = AppSyncMQTTClient()
         
@@ -76,16 +76,16 @@ class AppSyncMQTTClientTests: XCTestCase {
     
     func testSubscriptionsCoalescing() {
         
-        let expectation = XCTestExpectation(description: "Single call to MQTTClient connect should be made")
+        let expectation = XCTestExpectation(description: "Single call to AWSIoTMQTTClient connect should be made")
         expectation.isInverted = true
         expectation.expectedFulfillmentCount = 2
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
             expectation.fulfill()
             return true
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
         
         let client = AppSyncMQTTClient()
         
@@ -105,15 +105,15 @@ class AppSyncMQTTClientTests: XCTestCase {
     
     func testIgnoreSubscriptionsWithoutInterestedTopics() {
         
-        let expectation = XCTestExpectation(description: "No call to MQTTClient connect should be made")
+        let expectation = XCTestExpectation(description: "No call to AWSIoTMQTTClient connect should be made")
         expectation.isInverted = true
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
             expectation.fulfill()
             return true
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
         
         let client = AppSyncMQTTClient()
         
@@ -128,14 +128,14 @@ class AppSyncMQTTClientTests: XCTestCase {
     
     func testSubscriptionsWithInterestedTopics() {
         
-        let expectation = XCTestExpectation(description: "MQTTClient should connect")
+        let expectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
             expectation.fulfill()
             return true
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
         
         let client = AppSyncMQTTClient()
         
@@ -150,20 +150,20 @@ class AppSyncMQTTClientTests: XCTestCase {
     
     func testStopSubscriptionsOnWatcherDealloc() {
         
-        let connectExpectation = XCTestExpectation(description: "MQTTClient should connect")
-        let disconnectExpectation = XCTestExpectation(description: "MQTTClient should disconnect")
+        let connectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
+        let disconnectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should disconnect")
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
             connectExpectation.fulfill()
             return true
         }
         
-        let disconnect: @convention(block) (MQTTClient<AnyObject, AnyObject>) -> Void = { (_) in
+        let disconnect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>) -> Void = { (_) in
             disconnectExpectation.fulfill()
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.disconnect), withBlock: disconnect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.disconnect), withBlock: disconnect)
         
         let client = AppSyncMQTTClient()
         
@@ -189,14 +189,14 @@ class AppSyncMQTTClientTests: XCTestCase {
     
     func testSubscribeTopicsAfterConnected() {
         
-        let connectExpectation = XCTestExpectation(description: "MQTTClient should connect")
+        let connectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
         
-        let subscriptionExpectation = XCTestExpectation(description: "MQTTClient should subscribe to topic once connected")
+        let subscriptionExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should subscribe to topic once connected")
         subscriptionExpectation.expectedFulfillmentCount = 2
         
         var triggerConnectionStatusChangedToConnected: (() -> Void)?
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, client, url, wat) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, client, url, wat) -> Bool in
             connectExpectation.fulfill()
             triggerConnectionStatusChangedToConnected = {
                 instance.clientDelegate.connectionStatusChanged(.connected, client: instance)
@@ -206,13 +206,13 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         var subscribedTopics = [String]()
         
-        let subscribe: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, UInt8, Any?) -> Void = { (_, topic, _, _) in
+        let subscribe: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, UInt8, Any?) -> Void = { (_, topic, _, _) in
             subscribedTopics.append(topic as String)
             subscriptionExpectation.fulfill()
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.subscribe(toTopic:qos:extendedCallback:)), withBlock: subscribe)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.subscribe(toTopic:qos:extendedCallback:)), withBlock: subscribe)
         
         let client = AppSyncMQTTClient()
         
@@ -233,13 +233,13 @@ class AppSyncMQTTClientTests: XCTestCase {
     
     func testDisconnectDelegate() {
         
-        let connectExpectation = XCTestExpectation(description: "MQTTClient should connect")
+        let connectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
         
-        let errorDelegateExpectation = XCTestExpectation(description: "MQTTClient should subscribe to topic once connected")
+        let errorDelegateExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should subscribe to topic once connected")
         
         var triggerConnectionStatusChangedToConnectionError: (() -> Void)?
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, client, url, wat) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, client, url, wat) -> Bool in
             connectExpectation.fulfill()
             triggerConnectionStatusChangedToConnectionError = {
                 instance.clientDelegate.connectionStatusChanged(.connectionError, client: instance)
@@ -247,7 +247,7 @@ class AppSyncMQTTClientTests: XCTestCase {
             return true
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
         
         let client = AppSyncMQTTClient()
         
@@ -269,14 +269,14 @@ class AppSyncMQTTClientTests: XCTestCase {
     
     func testReceiveMessageDelegate() {
         
-        let connectExpectation = XCTestExpectation(description: "MQTTClient should connect")
+        let connectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
         
-        let receivedMessageExpectation = XCTestExpectation(description: "MQTTClient should trigger received messages delegate only for subscribed topics")
+        let receivedMessageExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should trigger received messages delegate only for subscribed topics")
         receivedMessageExpectation.expectedFulfillmentCount = 2
         
         var triggerReceivedMessageFromTopic: ((String) -> Void)?
         
-        let connect: @convention(block) (MQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, client, url, wat) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, client, url, wat) -> Bool in
             connectExpectation.fulfill()
             triggerReceivedMessageFromTopic = { (topic) in
                 instance.clientDelegate.receivedMessageData(Data(), onTopic: topic)
@@ -284,7 +284,7 @@ class AppSyncMQTTClientTests: XCTestCase {
             return true
         }
         
-        MQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(MQTTClient<AnyObject, AnyObject>.connect(withClientId:toHost:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
         
         let client = AppSyncMQTTClient()
         

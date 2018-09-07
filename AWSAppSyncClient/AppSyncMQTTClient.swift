@@ -5,7 +5,7 @@
 
 import Foundation
 
-class asdasdasd: AWSIoTMQTTClientDelegate {
+class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     
     var mqttClients = Set<AWSIoTMQTTClient<AnyObject, AnyObject>>()
     var mqttClientsWithTopics = [AWSIoTMQTTClient<AnyObject, AnyObject>: Set<String>]()
@@ -124,7 +124,12 @@ class asdasdasd: AWSIoTMQTTClientDelegate {
     /// - Parameter topic: String
     private func unsubscribeTopic(topic: String) {
         for (client, _)  in mqttClientsWithTopics.filter({ $0.value.contains(topic) }) {
-            client.unsubscribeTopic(topic)
+            switch client.mqttStatus {
+            case .connecting, .connected, .connectionError, .connectionRefused, .protocolError:
+                client.unsubscribeTopic(topic)
+            case .disconnected, .unknown:
+                break
+            }
             mqttClientsWithTopics[client]?.remove(topic)
         }
     }

@@ -37,6 +37,11 @@
                BlueprintName = "AWSAppSyncTests"
                ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "AWSAppSyncTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
       <MacroExpansion>
