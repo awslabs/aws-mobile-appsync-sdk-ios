@@ -5,10 +5,10 @@
 
 import Foundation
 
-class AppSyncMQTTClient: MQTTClientDelegate {
+class asdasdasd: AWSIoTMQTTClientDelegate {
     
-    var mqttClients = Set<MQTTClient<AnyObject, AnyObject>>()
-    var mqttClientsWithTopics = [MQTTClient<AnyObject, AnyObject>: Set<String>]()
+    var mqttClients = Set<AWSIoTMQTTClient<AnyObject, AnyObject>>()
+    var mqttClientsWithTopics = [AWSIoTMQTTClient<AnyObject, AnyObject>: Set<String>]()
     var topicSubscribers = TopicSubscribers()
     var allowCellularAccess = true
     var scheduledSubscription: DispatchSourceTimer?
@@ -26,7 +26,7 @@ class AppSyncMQTTClient: MQTTClientDelegate {
         }
     }
     
-    func connectionStatusChanged(_ status: MQTTStatus, client mqttClient: MQTTClient<AnyObject, AnyObject>) {
+    func connectionStatusChanged(_ status: AWSIoTMQTTStatus, client mqttClient: AWSIoTMQTTClient<AnyObject, AnyObject>) {
         self.subscriptionsQueue.async { [weak self] in
             guard let `self` = self, let topics = self.mqttClientsWithTopics[mqttClient] else {
                 return
@@ -91,12 +91,13 @@ class AppSyncMQTTClient: MQTTClientDelegate {
             return
         }
         
-        let mqttClient = MQTTClient<AnyObject, AnyObject>()
+        let mqttClient = AWSIoTMQTTClient<AnyObject, AnyObject>()
         mqttClient.clientDelegate = self
         
         mqttClients.insert(mqttClient)
         mqttClientsWithTopics[mqttClient] = Set(interestedTopics)
-        mqttClient.connect(withClientId: subscriptionInfo.clientId, toHost: subscriptionInfo.url, statusCallback: nil)
+        
+        mqttClient.connect(withClientId: subscriptionInfo.clientId, presignedURL: subscriptionInfo.url, statusCallback: nil)
     }
     
     public func stopSubscription(subscription: MQTTSubscritionWatcher) {

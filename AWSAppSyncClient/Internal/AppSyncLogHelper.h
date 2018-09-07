@@ -14,16 +14,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MQTTMessage.h"
+#import <AWSCore/AWSCore.h>
 
-@interface MQttTxFlow : NSObject 
+@interface AppSyncLogHelper : NSObject
 
-+ (id)flowWithMsg:(MQTTMessage*)aMsg
-         deadline:(unsigned int)aDeadline;
-- (id)initWithMsg:(MQTTMessage*)aMsg deadline:(unsigned int)aDeadline;
-
-@property (strong) MQTTMessage* msg;
-@property (assign) unsigned int deadline;
++(void)logVerbose:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
++(void)logDebug:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
++(void)logInfo:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
++(void)logWarn:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
++(void)logError:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
 
 @end
-

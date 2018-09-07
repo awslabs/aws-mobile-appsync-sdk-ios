@@ -21,7 +21,7 @@ Before getting started, you will need an API. See
 
 For this tutorial use the following schema with the [create resources flow](https://docs.aws.amazon.com/appsync/latest/devguide/provision-from-schema.html#aws-appsync-provision-from-schema):
 
-```javascript
+```graphql
 type Post {
       id: ID!
       author: String!
@@ -42,7 +42,7 @@ schema {
 }
 ```
 
-> Note: After creating your API, use this schema in the console, then select create resources, select **Post** as your type and then press **Create** at the bottom.
+**Note:** After creating your API, use this schema in the console, then select create resources, select **Post** as your type and then press **Create** at the bottom.
 
 If you want to do more customization of GraphQL resolvers, see the [Resolver Mapping Template Reference.](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-mapping-template-reference.html#aws-appsync-resolver-mapping-template-reference)
 
@@ -76,11 +76,9 @@ The AppSync iOS client generates a strongly typed API for your backend based on 
 To interact with AWS AppSync, your client needs to define GraphQL
 queries, mutations and subscriptions which are converted to strongly typed `Swift` objects.
 
-Save the  We will use this folder for storing our `GraphQL` related files.
-
 This can be done by creating a `posts.graphql` file in a folder with name like `GraphQLOperations.` Put the following operations in `posts.graphql`:
 
-```javascript
+```graphql
 query GetPost($id:ID!) {
  getPost(id:$id) {
      id
@@ -173,28 +171,28 @@ Add the generated `API.swift` file into your Xcode project. You can make this AP
 
 1. Open a terminal and navigate to the location of the project that you downloaded, and then run the following:
 
-	```sh
-	    pod init
-	```
+  ```sh
+      pod init
+  ```
 
-	This should create a `Podfile` in the root directory of the project. We will use this `Podfile` to declare dependency on the AWS AppSync SDK and other required components.
+  This should create a `Podfile` in the root directory of the project. We will use this `Podfile` to declare dependency on the AWS AppSync SDK and other required components.
 
-	> Note: You can skip the above step if you are integrating with an existing project and already have a `Podfile` for your project.
+  > Note: You can skip the above step if you are integrating with an existing project and already have a `Podfile` for your project.
 
 2. Open the `Podfile` and add the following lines in the application target:
 
-	```sh
-	    target 'PostsApp' do
-	      use_frameworks!
-	      pod 'AWSAppSync', '~>2.6.15'
-	    end
-	```
+  ```sh
+      target 'PostsApp' do
+        use_frameworks!
+        pod 'AWSAppSync', '~>2.6.19'
+      end
+  ```
 
 3. From the terminal, run the following command:
 
-	```sh
-	    pod install --repo-update
-	```
+  ```sh
+      pod install --repo-update
+  ```
 
 4. This should create a file named `PostsApp.xcworkspace`. DO NOT open the `*.xcodeproj` going forward. You can close the `PostsApp.xcodeproj` if it is open.
 
@@ -203,29 +201,276 @@ Add the generated `API.swift` file into your Xcode project. You can make this AP
 
 ## Update backend configuration
 
-The Posts app uses `AWS_IAM` as the authorization mechanism with `Cognito credentials` acting as the provider. Currently the client supports three authentication techniques:
+The Posts app uses `AWS_IAM` as the authorization mechanism with `Cognito credentials` acting as the provider. Currently the client supports the following authentication techniques:
 
-* AWS_IAM (Using Cognito credentials, static AWS credentials or STS)
-* Amazon Cognito User Pools
-* API Key
+* AWS IAM using Cognito credentials, static AWS credentials or STS (AWS_IAM)
+* Amazon Cognito User Pools (AMAZON\_COGNITO\_USER\_POOLS)
+* API Key (API_KEY)
+* OpenID Connect (OPENID_CONNECT)
 
 Please see the Authorization section for details on how to leverage different authorization techniques:
-
 
 In the app, edit the `Constants.swift` file, and update the GraphQL
 endpoint and your authentication mechanism.
 
 ```swift
-	let CognitoIdentityPoolId = "COGNITO_POOL_ID"
-	let CognitoIdentityRegion: AWSRegionType = .REGION
-	let AppSyncRegion: AWSRegionType = .REGION
-	let AppSyncEndpointURL: URL = URL(string: "https://APPSYNCURL/graphql")!
-	let database_name = "appsync-local-db"
+  let CognitoIdentityPoolId = "COGNITO_POOL_ID"
+  let CognitoIdentityRegion: AWSRegionType = .REGION
+  let AppSyncRegion: AWSRegionType = .REGION
+  let AppSyncEndpointURL: URL = URL(string: "https://APPSYNCURL/graphql")!
+  let database_name = "appsync-local-db"
+```
+
+## Create a client
+
+The following example demonstartes how to create an AWSAppSyncClient with API_KEY as the authentication mode.
+
+```swift
+// Set up API Key Provider
+class MyApiKeyAuthProvider: AWSAPIKeyAuthProvider {
+    func getAPIKey() -> String {
+        return "ApiKey"
+    }
+}
+
+// You can choose your database location, accessible by the SDK
+let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+
+do {
+    // Initialize the AWS AppSync configuration
+    let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
+                                                          serviceRegion: AppSyncRegion,
+                                                          apiKeyAuthProvider: MyApiKeyAuthProvider(),
+                                                          databaseURL:databaseURL)
+
+    // Initialize the AWS AppSync client
+    appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+} catch {
+    print("Error initializing appsync client. \(error)")
+}
+```
+
+## Authentication Modes
+
+When making calls to AWS AppSync, there are several ways to authenticate those calls. The API key authorization (**API_KEY**) is the simplest way to onboard, but we recommend you use either Amazon IAM (**AWS_IAM**) or Amazon Cognito UserPools (**AMAZON\_COGNITO\_USER_POOLS**) or any OpenID Connect Provider (**OPENID_CONNECT**) after you onboard with an API key.
+
+### API Key
+
+For authorization using the API key, update the `awsconfiguration.json` file and code snippet as follows:
+
+#### Configuration
+
+Add the following snippet to your `awsconfiguration.json` file.
+
+```
+{
+  "AppSync": {
+        "Default": {
+            "ApiUrl": "YOUR-GRAPHQL-ENDPOINT",
+            "Region": "us-east-1",
+            "ApiKey": "YOUR-API-KEY",
+            "AuthMode": "API_KEY"
+        }
+   }
+}
+```
+
+#### Code
+
+Add the following code to use the information in the `Default` section from `awsconfiguration.json` file.
+
+```swift
+// You can choose your database location, accessible by the SDK
+let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+    
+do {
+    // Initialize the AWS AppSync configuration
+    let appSyncConfig = try AWSAppSyncClientConfiguration(appSyncClientInfo: AWSAppSyncClientInfo(), 
+                                                                databaseURL: databaseURL)
+    
+    // Initialize the AWS AppSync client
+    appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+} catch {
+    print("Error initializing appsync client. \(error)")
+}
+```
+
+### AWS IAM
+
+For authorization using the Amazon IAM credentials using Amazon IAM or Amazon STS or Amazon Cognito, update the `awsconfiguration.json` file and code snippet as follows:
+
+#### Configuration
+
+Add the following snippet to your `awsconfiguration.json` file.
+
+```
+{
+  "CredentialsProvider": {
+      "CognitoIdentity": {
+          "Default": {
+              "PoolId": "YOUR-COGNITO-IDENTITY-POOLID",
+              "Region": "us-east-1"
+          }
+      }
+  },
+  "AppSync": {
+    "Default": {
+          "ApiUrl": "YOUR-GRAPHQL-ENDPOINT",
+          "Region": "us-east-1",
+          "AuthMode": "AWS_IAM"
+     }
+   }
+}
+```
+
+#### Code
+
+Add the following code to use the information in the `Default` section from `awsconfiguration.json` file.
+
+```swift
+// Set up the Amazon Cognito CredentialsProvider
+let credentialsProvider = AWSCognitoCredentialsProvider(regionType: CognitoIdentityRegion,
+                                                        identityPoolId: CognitoIdentityPoolId)
+                                                                
+// You can choose your database location, accessible by the SDK
+let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+    
+do {
+  // Initialize the AWS AppSync configuration
+            let appSyncConfig = try AWSAppSyncClientConfiguration(appSyncClientInfo: AWSAppSyncClientInfo(),
+                                                                  credentialsProvider: credentialsProvider,
+                                                                  databaseURL: databaseURL)
+    
+    // Initialize the AWS AppSync client
+    appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+} catch {
+    print("Error initializing appsync client. \(error)")
+}
+```
+
+### Amazon Cognito UserPools
+
+Follow the instructions in [Setup Email and Password based SignIn](https://docs.aws.amazon.com/aws-mobile/latest/developerguide/add-aws-mobile-user-sign-in.html#set-up-email-and-password) to configure Amazon Cognito User Pools as an Identity Provider to your app.
+
+For authorization using the Amazon Cognito UserPools, update the `awsconfiguration.json` file and code snippet as follows:
+
+#### Configuration
+
+Add the following snippet to your `awsconfiguration.json` file.
+
+```
+{
+  "CognitoUserPool": {
+        "Default": {
+            "PoolId": "POOL-ID",
+            "AppClientId": "APP-CLIENT-ID",
+            "AppClientSecret": "APP-CLIENT-SECRET",
+            "Region": "us-east-1"
+        }
+    },
+  "AppSync": {
+        "Default": {
+            "ApiUrl": "YOUR-GRAPHQL-ENDPOINT",
+            "Region": "us-east-1",
+            "AuthMode": "AMAZON_COGNITO_USER_POOLS"
+        }
+   }
+}
+```
+
+#### Code
+
+Add the following code to use the information in the `Default` section from `awsconfiguration.json` file.
+
+```swift
+import AWSUserPoolsSignIn
+import AWSAppSync
+
+class MyCognitoUserPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider {
+
+    // background thread - asynchronous
+    func getLatestAuthToken() -> String {
+        var token: String? = nil
+        AWSCognitoUserPoolsSignInProvider.sharedInstance().getUserPool().currentUser()?.getSession().continueOnSuccessWith(block: { (task) -> Any? in
+            token = task.result!.idToken!.tokenString
+            return nil
+        }).waitUntilFinished()
+        return token!
+    }
+}
+```
+
+```swift                                
+// You can choose your database location, accessible by the SDK
+let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+    
+do {
+  // Initialize the AWS AppSync configuration
+   let appSyncConfig = try AWSAppSyncClientConfiguration(appSyncClientInfo: AWSAppSyncClientInfo(),
+                                                         userPoolsAuthProvider: MyCognitoUserPoolsAuthProvider(),
+                                                         databaseURL:databaseURL)
+    
+    // Initialize the AWS AppSync client
+    appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+} catch {
+    print("Error initializing appsync client. \(error)")
+}
+```
+
+### OIDC (OpenID Connect)
+
+For authorization using any OIDC (OpenID Connect) Identity Provider, update the `awsconfiguration.json` file and code snippet as follows:
+
+#### Configuration
+
+Add the following snippet to your `awsconfiguration.json` file.
+
+```
+{
+  "AppSync": {
+        "Default": {
+            "ApiUrl": "YOUR-GRAPHQL-ENDPOINT",
+            "Region": "us-east-1",
+            "AuthMode": "OPENID_CONNECT"
+        }
+   }
+}
+```
+
+#### Code
+
+Add the following code to use the information in the `Default` section from `awsconfiguration.json` file.
+
+```swift
+class MyOidcProvider: AWSOIDCAuthProvider {
+    func getLatestAuthToken() -> String {
+        // Fetch the JWT token string from OIDC Identity provider
+        // after the user is successfully signed-in
+        return "token"
+    }
+}
+```
+
+```swift
+// You can choose your database location, accessible by the SDK
+let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+    
+do {
+  // Initialize the AWS AppSync configuration
+    let appSyncConfig = try AWSAppSyncClientConfiguration(appSyncClientInfo: AWSAppSyncClientInfo(),
+                                                          oidcAuthProvider: MyOidcProvider(),
+                                                          databaseURL:databaseURL)
+    
+    // Initialize the AWS AppSync client
+    appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+} catch {
+    print("Error initializing appsync client. \(error)")
+}
 ```
 
 ## Convert the App to Use AWS AppSync for the Backend
 
-Add the `AppSyncClient` as a instance member of the `AppDelegate` class. This enables us to access the same client easily across the app. Update the `didFinishLaunching` method in `AppDelegate.swift` with following code:
+Add the `AWSAppSyncClient` as a instance member of the `AppDelegate` class. This enables us to access the same client easily across the app. Update the `didFinishLaunching` method in `AppDelegate.swift` with following code:
 
 ```swift
 import UIKit
@@ -547,118 +792,118 @@ types for the file and a new mutation named `CreatePostWithFileInputMutation`:
 
   ```javascript
   input CreatePostInput {
-  	id: ID!
-  	author: String!
-  	title: String
-  	content: String
-  	url: String
-  	ups: Int
-  	downs: Int
-  	version: Int!
+    id: ID!
+    author: String!
+    title: String
+    content: String
+    url: String
+    ups: Int
+    downs: Int
+    version: Int!
   }
 
   input CreatePostWithFileInput {
-  	id: ID!
-  	author: String!
-  	title: String
-  	content: String
-  	url: String
-  	ups: Int
-  	downs: Int
-  	file: S3ObjectInput!
-  	version: Int!
+    id: ID!
+    author: String!
+    title: String
+    content: String
+    url: String
+    ups: Int
+    downs: Int
+    file: S3ObjectInput!
+    version: Int!
   }
 
   input DeletePostInput {
-  	id: ID!
+    id: ID!
   }
 
   type Mutation {
-  	createPost(input: CreatePostInput!): Post
-  	createPostWithFile(input: CreatePostWithFileInput!): Post
-  	updatePost(input: UpdatePostInput!): Post
-  	deletePost(input: DeletePostInput!): Post
+    createPost(input: CreatePostInput!): Post
+    createPostWithFile(input: CreatePostWithFileInput!): Post
+    updatePost(input: UpdatePostInput!): Post
+    deletePost(input: DeletePostInput!): Post
   }
 
   type Post {
-  	id: ID!
-  	author: String!
-  	title: String
-  	content: String
-  	url: String
-  	ups: Int
-  	downs: Int
-  	file: S3Object
-  	version: Int!
+    id: ID!
+    author: String!
+    title: String
+    content: String
+    url: String
+    ups: Int
+    downs: Int
+    file: S3Object
+    version: Int!
   }
 
   type PostConnection {
-  	items: [Post]
-  	nextToken: String
+    items: [Post]
+    nextToken: String
   }
 
   type Query {
-  	singlePost(id: ID!): Post
-  	getPost(id: ID!): Post
-  	listPosts(first: Int, after: String): PostConnection
+    singlePost(id: ID!): Post
+    getPost(id: ID!): Post
+    listPosts(first: Int, after: String): PostConnection
   }
 
   type S3Object {
-  	bucket: String!
-  	key: String!
-  	region: String!
+    bucket: String!
+    key: String!
+    region: String!
   }
 
   input S3ObjectInput {
-  	bucket: String!
-  	key: String!
-  	region: String!
-  	localUri: String!
-  	mimeType: String!
+    bucket: String!
+    key: String!
+    region: String!
+    localUri: String!
+    mimeType: String!
   }
 
   type Subscription {
-  	onCreatePost(
-  		id: ID,
-  		author: String,
-  		title: String,
-  		content: String,
-  		url: String
-  	): Post
-  		@aws_subscribe(mutations: ["createPost"])
-  	onUpdatePost(
-  		id: ID,
-  		author: String,
-  		title: String,
-  		content: String,
-  		url: String
-  	): Post
-  		@aws_subscribe(mutations: ["updatePost"])
-  	onDeletePost(
-  		id: ID,
-  		author: String,
-  		title: String,
-  		content: String,
-  		url: String
-  	): Post
-  		@aws_subscribe(mutations: ["deletePost"])
+    onCreatePost(
+      id: ID,
+      author: String,
+      title: String,
+      content: String,
+      url: String
+    ): Post
+      @aws_subscribe(mutations: ["createPost"])
+    onUpdatePost(
+      id: ID,
+      author: String,
+      title: String,
+      content: String,
+      url: String
+    ): Post
+      @aws_subscribe(mutations: ["updatePost"])
+    onDeletePost(
+      id: ID,
+      author: String,
+      title: String,
+      content: String,
+      url: String
+    ): Post
+      @aws_subscribe(mutations: ["deletePost"])
   }
 
   input UpdatePostInput {
-  	id: ID!
-  	author: String
-  	title: String
-  	content: String
-  	url: String
-  	ups: Int
-  	downs: Int
-  	version: Int
+    id: ID!
+    author: String
+    title: String
+    content: String
+    url: String
+    ups: Int
+    downs: Int
+    version: Int
   }
 
   schema {
-  	query: Query
-  	mutation: Mutation
-  	subscription: Subscription
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
   }
   ```
 
