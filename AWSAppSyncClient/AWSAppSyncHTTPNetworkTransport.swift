@@ -124,7 +124,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("aws-sdk-ios/2.6.18 AppSyncClient", forHTTPHeaderField: "User-Agent")
+        request.setValue("aws-sdk-ios/2.6.20 AppSyncClient", forHTTPHeaderField: "User-Agent")
     }
     
     /// Send a data payload to a server and return a response.
@@ -222,7 +222,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 fatalError("Authentication provider not set")
             }
         case .amazonCognitoUserPools:
-            if let provider = self.userPoolsAuthProvider as? AWSOIDCAuthProviderAsync {
+            if let provider = self.userPoolsAuthProvider as? AWSCognitoUserPoolsAuthProviderAsync {
                 
                 provider.getLatestAuthToken { (token, error) in
                     if let error = error {

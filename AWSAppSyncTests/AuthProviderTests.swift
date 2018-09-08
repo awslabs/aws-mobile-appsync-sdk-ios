@@ -56,7 +56,7 @@ class AuthProviderTests: XCTestCase {
         }
     }
     
-    class CognitoUserPoolsAuthProviderAsync: AWSCognitoUserPoolsAuthProvider, AWSOIDCAuthProviderAsync {
+    class CognitoUserPoolsAuthProviderAsync: AWSCognitoUserPoolsAuthProviderAsync {
         
         var expectation: XCTestExpectation?
         init(_ expectation: XCTestExpectation){

@@ -2,6 +2,18 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.6.20
+
+### Enhancements
+
+* Allow asynchronous fetching of User Pools / OIDC auth token. [See PR#62](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/62) Thanks @JohnRbk 🎉
+* Integrate logging with `AWSDDLog`. To print logs from the SDK, follow instructions mentioned [here](https://github.com/aws/aws-sdk-ios#logging).
+
+### Bug Fixes
+
+* Fixed a bug in loading configuration from `awsconfiguration.json`
+* Fixed a bug where receiving a non String or JSON object would cause SDK to crash. The SDK would now instead log an error message.
+
 ## 2.6.19
 
 ### New Features
