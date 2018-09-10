@@ -82,6 +82,7 @@
 		AC48F9842142949C001C7D35 /* AppSyncMQTTClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */; };
 		AC48F9852142949C001C7D35 /* Object+Swizzling.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC48F9832142949C001C7D35 /* Object+Swizzling.swift */; };
 		B8F9295CA5BD72C9EEE11027 /* Pods_AWSAppSync_AWSAppSyncTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */; };
+		741880B0213878B400523CA8 /* AuthProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741880AF213878B400523CA8 /* AuthProviderTests.swift */; };
 		DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */; };
 		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
 /* End PBXBuildFile section */
@@ -179,6 +180,7 @@
 		9EC1FC1920A99D7FCF1B4E50 /* Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTests/Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig"; sourceTree = "<group>"; };
 		AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSyncMQTTClientTests.swift; sourceTree = "<group>"; };
 		AC48F9832142949C001C7D35 /* Object+Swizzling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Object+Swizzling.swift"; sourceTree = "<group>"; };
+		741880AF213878B400523CA8 /* AuthProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthProviderTests.swift; sourceTree = "<group>"; };
 		AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.debug.xcconfig"; sourceTree = "<group>"; };
 		C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.release.xcconfig"; sourceTree = "<group>"; };
 		CF165C1FC5D3B19E5EEC4FD4 /* Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTests/Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -256,6 +258,7 @@
 			children = (
 				AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */,
 				AC48F9832142949C001C7D35 /* Object+Swizzling.swift */,
+				741880AF213878B400523CA8 /* AuthProviderTests.swift */,
 				174F80AE2109229C00775D0D /* AWSAppSyncTests.swift */,
 				174F80B02109229C00775D0D /* Info.plist */,
 				174F80B8210924B200775D0D /* EventsAPI.swift */,
@@ -570,6 +573,7 @@
 				174F80AF2109229C00775D0D /* AWSAppSyncTests.swift in Sources */,
 				174F80B9210924B200775D0D /* EventsAPI.swift in Sources */,
 				AC48F9842142949C001C7D35 /* AppSyncMQTTClientTests.swift in Sources */,
+				741880B0213878B400523CA8 /* AuthProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
