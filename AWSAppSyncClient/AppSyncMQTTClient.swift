@@ -165,7 +165,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         func remove(subscription: MQTTSubscritionWatcher) {
             synchronized() {
                 dictionary.forEach({ (element) in
-                    element.value.allObjects.filter({ $0.getIdentifier() != subscription.getIdentifier() }).forEach({ (watcher) in
+                    element.value.allObjects.filter({ $0.getIdentifier() == subscription.getIdentifier() }).forEach({ (watcher) in
                         element.value.remove(watcher)
                     })
                 })

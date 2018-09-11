@@ -306,4 +306,34 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         wait(for: [receivedMessageExpectation], timeout: 1)
     }
+    
+    func testSubscribeAndUnsubscribe() {
+        let expectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
+        let disconnectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should disconnect")
+        
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
+            expectation.fulfill()
+            return true
+        }
+        
+        let disconnect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>) -> Void = { (_) in
+            disconnectExpectation.fulfill()
+        }
+        
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.disconnect), withBlock: disconnect)
+        
+        let client = AppSyncMQTTClient()
+        
+        let watcher = MockSubscriptionWatcher(topics: ["1", "2"])
+        
+        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
+        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.topics)])
+        
+        wait(for: [expectation], timeout: 2)
+        
+        client.stopSubscription(subscription: watcher)
+        
+        wait(for: [disconnectExpectation], timeout: 1)
+    }
 }
