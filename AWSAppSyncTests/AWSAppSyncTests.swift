@@ -213,7 +213,7 @@ class AWSAppSyncTests: XCTestCase {
     
     func testSubscription() {
         let successfulSubscriptionExpectation = expectation(description: "Mutation done successfully.")
-        let receivedSubscriptioExpectation = self.expectation(description: "Subscription received successfully.")
+        let receivedSubscriptionExpectation = self.expectation(description: "Subscription received successfully.")
         
         let addEvent = AddEventMutation(name: EventName,
                                         when: EventTime,
@@ -228,10 +228,10 @@ class AWSAppSyncTests: XCTestCase {
             
             let eventId = result!.data!.createEvent!.id
             
-            let _ = try? self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId)) { (result, _, error) in
+            let subscription = try! self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId)) { (result, _, error) in
                 XCTAssertNil(error, "Error expected to be nil, but is not.")
                 print("Received new comment subscription response.")
-                receivedSubscriptioExpectation.fulfill()
+                receivedSubscriptionExpectation.fulfill()
             }
             // Wait 2 seconds to ensure subscription is active
             sleep(2)
@@ -241,9 +241,10 @@ class AWSAppSyncTests: XCTestCase {
                 print("Received create comment mutation response.")
             }
             successfulSubscriptionExpectation.fulfill()
+            XCTAssertNotNil(subscription, "Subscription expected to be non nil.")
         }
         
-        wait(for: [successfulSubscriptionExpectation, receivedSubscriptioExpectation], timeout: 10.0)
+        wait(for: [successfulSubscriptionExpectation, receivedSubscriptionExpectation], timeout: 10.0)
     }
     
     func testSubscription_Stress() {

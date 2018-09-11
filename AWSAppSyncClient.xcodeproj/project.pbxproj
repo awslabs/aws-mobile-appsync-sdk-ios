@@ -79,8 +79,10 @@
 		17E009DA1FCAB234005031DB /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B81FCAB233005031DB /* Result.swift */; };
 		17E009DB1FCAB234005031DB /* NormalizedCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B91FCAB234005031DB /* NormalizedCache.swift */; };
 		17E009DC1FCAB234005031DB /* ApolloClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009BA1FCAB234005031DB /* ApolloClient.swift */; };
+		AC48F9842142949C001C7D35 /* AppSyncMQTTClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */; };
+		AC48F9852142949C001C7D35 /* Object+Swizzling.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC48F9832142949C001C7D35 /* Object+Swizzling.swift */; };
+		B8F9295CA5BD72C9EEE11027 /* Pods_AWSAppSync_AWSAppSyncTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */; };
 		741880B0213878B400523CA8 /* AuthProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741880AF213878B400523CA8 /* AuthProviderTests.swift */; };
-		7C8D9BD0CFD94CE97870947D /* Pods_AWSAppSyncTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB93C78C2EEB30A1C3C24E2E /* Pods_AWSAppSyncTests.framework */; };
 		DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */; };
 		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
 /* End PBXBuildFile section */
@@ -174,12 +176,14 @@
 		17E009B91FCAB234005031DB /* NormalizedCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NormalizedCache.swift; path = Apollo/Sources/Apollo/NormalizedCache.swift; sourceTree = "<group>"; };
 		17E009BA1FCAB234005031DB /* ApolloClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ApolloClient.swift; path = Apollo/Sources/Apollo/ApolloClient.swift; sourceTree = "<group>"; };
 		621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6A5E9B8BFB35E672A4BA10CD /* Pods-AWSAppSyncTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTests/Pods-AWSAppSyncTests.release.xcconfig"; sourceTree = "<group>"; };
+		6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EC1FC1920A99D7FCF1B4E50 /* Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTests/Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig"; sourceTree = "<group>"; };
+		AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSyncMQTTClientTests.swift; sourceTree = "<group>"; };
+		AC48F9832142949C001C7D35 /* Object+Swizzling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Object+Swizzling.swift"; sourceTree = "<group>"; };
 		741880AF213878B400523CA8 /* AuthProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthProviderTests.swift; sourceTree = "<group>"; };
-		9A210F34AE9783A62B36F8F2 /* Pods-AWSAppSyncTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTests/Pods-AWSAppSyncTests.debug.xcconfig"; sourceTree = "<group>"; };
 		AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.debug.xcconfig"; sourceTree = "<group>"; };
 		C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.release.xcconfig"; sourceTree = "<group>"; };
-		CB93C78C2EEB30A1C3C24E2E /* Pods_AWSAppSyncTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF165C1FC5D3B19E5EEC4FD4 /* Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTests/Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig"; sourceTree = "<group>"; };
 		DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSNetworkTransport.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -189,7 +193,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				174F80B12109229C00775D0D /* AWSAppSync.framework in Frameworks */,
-				7C8D9BD0CFD94CE97870947D /* Pods_AWSAppSyncTests.framework in Frameworks */,
+				B8F9295CA5BD72C9EEE11027 /* Pods_AWSAppSync_AWSAppSyncTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,6 +256,8 @@
 		174F80AD2109229C00775D0D /* AWSAppSyncTests */ = {
 			isa = PBXGroup;
 			children = (
+				AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */,
+				AC48F9832142949C001C7D35 /* Object+Swizzling.swift */,
 				741880AF213878B400523CA8 /* AuthProviderTests.swift */,
 				174F80AE2109229C00775D0D /* AWSAppSyncTests.swift */,
 				174F80B02109229C00775D0D /* Info.plist */,
@@ -275,7 +281,7 @@
 			children = (
 				17915C5F1F5FA36300C4B73C /* AWSCore.framework */,
 				621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */,
-				CB93C78C2EEB30A1C3C24E2E /* Pods_AWSAppSyncTests.framework */,
+				6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -369,8 +375,8 @@
 			children = (
 				AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */,
 				C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */,
-				9A210F34AE9783A62B36F8F2 /* Pods-AWSAppSyncTests.debug.xcconfig */,
-				6A5E9B8BFB35E672A4BA10CD /* Pods-AWSAppSyncTests.release.xcconfig */,
+				9EC1FC1920A99D7FCF1B4E50 /* Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig */,
+				CF165C1FC5D3B19E5EEC4FD4 /* Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -504,13 +510,10 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-AWSAppSyncTests/Pods-AWSAppSyncTests-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/AWSCore-iOS11.2/AWSCore.framework",
-				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift-iOS11.2/Reachability.framework",
-				"${BUILT_PRODUCTS_DIR}/SQLite.swift-iOS11.2/SQLite.framework",
-				"${BUILT_PRODUCTS_DIR}/AWSCore-iOS9.0/AWSCore.framework",
-				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift-iOS9.0/Reachability.framework",
-				"${BUILT_PRODUCTS_DIR}/SQLite.swift-iOS9.0/SQLite.framework",
+				"${SRCROOT}/Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTests/Pods-AWSAppSync-AWSAppSyncTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AWSCore/AWSCore.framework",
+				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift/Reachability.framework",
+				"${BUILT_PRODUCTS_DIR}/SQLite.swift/SQLite.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -520,7 +523,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AWSAppSyncTests/Pods-AWSAppSyncTests-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTests/Pods-AWSAppSync-AWSAppSyncTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		37A9334DB9AF4C4235F5D117 /* [CP] Check Pods Manifest.lock */ = {
@@ -534,7 +537,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AWSAppSyncTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-AWSAppSync-AWSAppSyncTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -566,8 +569,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC48F9852142949C001C7D35 /* Object+Swizzling.swift in Sources */,
 				174F80AF2109229C00775D0D /* AWSAppSyncTests.swift in Sources */,
 				174F80B9210924B200775D0D /* EventsAPI.swift in Sources */,
+				AC48F9842142949C001C7D35 /* AppSyncMQTTClientTests.swift in Sources */,
 				741880B0213878B400523CA8 /* AuthProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -648,11 +653,10 @@
 /* Begin XCBuildConfiguration section */
 		174F80B52109229C00775D0D /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9A210F34AE9783A62B36F8F2 /* Pods-AWSAppSyncTests.debug.xcconfig */;
+			baseConfigurationReference = 9EC1FC1920A99D7FCF1B4E50 /* Pods-AWSAppSync-AWSAppSyncTests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = AWSAppSyncTests/Info.plist;
@@ -660,18 +664,17 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.amazonaws.AWSAppSyncTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
 		174F80B62109229C00775D0D /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6A5E9B8BFB35E672A4BA10CD /* Pods-AWSAppSyncTests.release.xcconfig */;
+			baseConfigurationReference = CF165C1FC5D3B19E5EEC4FD4 /* Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = AWSAppSyncTests/Info.plist;
@@ -679,7 +682,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.amazonaws.AWSAppSyncTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -712,7 +715,6 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -772,7 +774,6 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";

@@ -2,3 +2,4 @@ Pods/
 AWSAppSyncClient.xcworkspace/
 Podfile.lock
 docs/_site/
+xcuserdata
