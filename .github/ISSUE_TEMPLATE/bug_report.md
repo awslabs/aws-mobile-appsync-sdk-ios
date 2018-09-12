@@ -22,8 +22,10 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment(please complete the following information):**
  - AppSync SDK Version: [e.g. 2.6.21]
+ - Dependency Manager: [e.g. Cocoapods, Carthage]
+ - Swift Version : [e.g. 4.0]
 
-**Smartphone (please complete the following information):**
+**Device Information (please complete the following information):**
  - Device: [e.g. iPhone6, Simulator]
  - iOS Version: [e.g. iOS 11.4]
  - Specific to simulators:
