@@ -1,5 +1,5 @@
 language: swift
-osx_image: xcode9.1
+osx_image: xcode9.2
 env:
   global:
   - FRAMEWORK_NAME=AWSAppSync
@@ -16,7 +16,7 @@ before_deploy:
 - carthage build --no-skip-current
 - carthage archive $FRAMEWORK_NAME
 script:
-- xcodebuild -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync build test -destination 'platform=iOS Simulator,name=iPhone 7,OS=latest'
+- xcodebuild -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync build test -destination 'platform=iOS Simulator,name=iPhone 6,OS=latest'
 deploy:
 - provider: releases
   api_key:
