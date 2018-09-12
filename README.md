@@ -67,7 +67,7 @@ If you are contributing to the SDK, it is recommended to add some unit/ function
 
 - Functional Tests
 
-  For running funcitonal tests, we will need the following:
+  For running functional tests, we will need the following:
   - An AppSync API with an `Events App` schema
   - A Cognito Identity Pool with unauthenticated identities supported
   - The Cognito Identity Pool's unauth role should have the `AppSync Invoke Full Access` permission
@@ -78,7 +78,8 @@ If you are contributing to the SDK, it is recommended to add some unit/ function
   - Click on `Create New API` and then select `Event App` and hit `Create`, take a note of the `API URL` of the created API.
   - Once the creation completes, select `Settings` from left side of the console and then select `AWS Identity and Access Management (IAM)` as the authorization type.
   - Next, create a new Cognito Identity Pool and attach `AppSync Invoke Full Access` permission to the unauth role of the Identity Pool. Keep a note of the Identity Pool ID of newly created pool.
-  - Add a file appsync_test_credentials.json (see sample below) in the `AWSAppSyncTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId` and regions if required:
+
+  Finally, you will need to setup a config file locally to access the server. Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSyncTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId` and regions if required:
     ```json
     {
       "AppSyncEndpoint": "https://asd32hl34523454532.appsync-api.us-east-1.amazonaws.com/graphql",
@@ -87,7 +88,7 @@ If you are contributing to the SDK, it is recommended to add some unit/ function
       "CognitoIdentityPoolRegion": "us-east-1"
     }
     ```
-  - Now you should be able to run the functional tests!
+  Now you should be able to run the functional tests!
 
 ## License
 
