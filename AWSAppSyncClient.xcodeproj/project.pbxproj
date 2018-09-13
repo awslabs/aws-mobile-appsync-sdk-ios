@@ -47,6 +47,7 @@
 		1795778C21485FA400C834E1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1795778A21485FA400C834E1 /* Main.storyboard */; };
 		1795778E21485FA400C834E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1795778D21485FA400C834E1 /* Assets.xcassets */; };
 		1795779121485FA400C834E1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1795778F21485FA400C834E1 /* LaunchScreen.storyboard */; };
+		179577992149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */; };
 		17A2673D1F66465B009E50B7 /* AWSSQLLiteNormalizedCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17A2673C1F66465B009E50B7 /* AWSSQLLiteNormalizedCache.swift */; };
 		17A66BA41F59FF69008DDA11 /* AWSAppSyncClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17A66BA31F59FF69008DDA11 /* AWSAppSyncClient.swift */; };
 		17A7F8CA1FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17A7F8C91FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift */; };
@@ -155,6 +156,7 @@
 		1795778D21485FA400C834E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1795779021485FA400C834E1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1795779221485FA400C834E1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncRetryHandler.swift; sourceTree = "<group>"; };
 		17A2673C1F66465B009E50B7 /* AWSSQLLiteNormalizedCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSSQLLiteNormalizedCache.swift; sourceTree = "<group>"; };
 		17A66BA31F59FF69008DDA11 /* AWSAppSyncClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClient.swift; sourceTree = "<group>"; };
 		17A7F8C91FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSS3ObjectProtocol.swift; sourceTree = "<group>"; };
@@ -369,6 +371,7 @@
 				178B31061FCDB34100EA4619 /* AWSAppSyncClientConflictResolutionExtensions.swift */,
 				178B31051FCDB34100EA4619 /* AWSAppSyncClientS3ObjectsExtensions.swift */,
 				17A7F8C91FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift */,
+				179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */,
 			);
 			path = AWSAppSyncClient;
 			sourceTree = "<group>";
@@ -724,6 +727,7 @@
 				17E009D11FCAB234005031DB /* Utilities.swift in Sources */,
 				17E009DA1FCAB234005031DB /* Result.swift in Sources */,
 				174F80A42107F17700775D0D /* AWSIoTCSR.m in Sources */,
+				179577992149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift in Sources */,
 				17E009D21FCAB234005031DB /* RecordSet.swift in Sources */,
 				178C8DAA1FAAAC0600A7F725 /* AWSAppSyncAuthProvider.swift in Sources */,
 			);
