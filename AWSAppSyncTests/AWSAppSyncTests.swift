@@ -56,7 +56,6 @@ class AWSAppSyncTests: XCTestCase {
         super.setUp()
         
         // Read credentials from appsync_test_credentials.json
-        
         if let credentialsPath: String = Bundle.init(for: self.classForCoder).path(forResource: "appsync_test_credentials", ofType: "json"), let credentialsData = try? Data.init(contentsOf: URL(fileURLWithPath: credentialsPath)) {
             print("json path: \(credentialsPath)")
             let json = try? JSONSerialization.jsonObject(with: credentialsData, options: JSONSerialization.ReadingOptions.allowFragments)
@@ -83,6 +82,8 @@ class AWSAppSyncTests: XCTestCase {
         // Set up Amazon Cognito credentials
         let credentialsProvider = AWSCognitoCredentialsProvider(regionType: CognitoIdentityRegion,
                                                                 identityPoolId: CognitoIdentityPoolId)
+        credentialsProvider.clearCredentials()
+        credentialsProvider.clearKeychain()
         // You can choose your database location, accessible by the SDK
         let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
         
