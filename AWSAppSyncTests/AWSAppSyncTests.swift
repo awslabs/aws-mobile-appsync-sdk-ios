@@ -303,6 +303,48 @@ class AWSAppSyncTests: XCTestCase {
         wait(for: [receivedSubscriptionExpectation], timeout: 10.0)
     }
     
+    func testSubscriptionWithMutationSuperset() {
+        let successfulSubscriptionExpectation = expectation(description: "Mutation done successfully.")
+        let receivedSubscriptionExpectation = self.expectation(description: "Subscription received successfully.")
+        
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
+        var eventId: GraphQLID?
+        appSyncClient?.perform(mutation: addEvent) { (result, error) in
+            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
+            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            print("Received create event mutation response.")
+            
+            eventId = result!.data!.createEvent!.id
+            
+            successfulSubscriptionExpectation.fulfill()
+            
+        }
+        wait(for: [successfulSubscriptionExpectation], timeout: 10.0)
+        
+        let subscription = try! self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId!)) { (result, _, error) in
+            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            print("Received new comment subscription response.")
+            receivedSubscriptionExpectation.fulfill()
+        }
+        XCTAssertNotNil(subscription, "Subscription expected to be non nil.")
+        
+        // Wait 2 seconds to ensure subscription is active
+        DispatchQueue.global().async {
+            sleep(2)
+            self.appSyncClient?.perform(mutation: CommentOnEventLessFieldsMutation(eventId: eventId!, content: "content", createdAt: "2 pm")) { (result, error) in
+                XCTAssertNil(error, "Error expected to be nil, but is not.")
+                XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
+                print("Received create comment mutation response.")
+            }
+        }
+        
+        wait(for: [receivedSubscriptionExpectation], timeout: 10.0)
+    }
+    
     func testSubscription_Stress() {
         let mutationsDone = expectation(description: "Mutations done successfully.")
         var eventsCreated: [GraphQLID] = []
