@@ -300,30 +300,11 @@ class AWSAppSyncTests: XCTestCase {
     }
     
     func testSubscription_Stress() {
-        let m1 = expectation(description: "Mutation done successfully.")
-        let m2 = expectation(description: "Mutation done successfully.")
-        let m3 = expectation(description: "Mutation done successfully.")
-        let m4 = expectation(description: "Mutation done successfully.")
-        let m5 = expectation(description: "Mutation done successfully.")
-        let m6 = expectation(description: "Mutation done successfully.")
-        let m7 = expectation(description: "Mutation done successfully.")
-        let m8 = expectation(description: "Mutation done successfully.")
-        let m9 = expectation(description: "Mutation done successfully.")
-        let m10 = expectation(description: "Mutation done successfully.")
-        let m11 = expectation(description: "Mutation done successfully.")
-        let m12 = expectation(description: "Mutation done successfully.")
-        let m13 = expectation(description: "Mutation done successfully.")
-        let m14 = expectation(description: "Mutation done successfully.")
-        let m15 = expectation(description: "Mutation done successfully.")
-        let m16 = expectation(description: "Mutation done successfully.")
-        let m17 = expectation(description: "Mutation done successfully.")
-        let m18 = expectation(description: "Mutation done successfully.")
-        let expectations = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18]
+        let mutationsDone = expectation(description: "Mutations done successfully.")
         var eventsCreated: [GraphQLID] = []
         var subsWatchers: [Cancellable] = []
         
-        for i in 0..<expectations.count {
-            let expectationNum = i
+        for _ in 0..<18 {
             let addEvent = AddEventMutation(name: EventName,
                                             when: EventTime,
                                             where: EventLocation,
@@ -333,18 +314,16 @@ class AWSAppSyncTests: XCTestCase {
                 XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
                 XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
                 eventsCreated.append(result!.data!.createEvent!.id)
-                expectations[expectationNum].fulfill()
+                if eventsCreated.count == 18 {
+                    mutationsDone.fulfill()
+                }
             }
         }
         
-        waitForExpectations(timeout: 20.0) { (error) in
-            XCTAssertNil(error)
-        }
-        
+        wait(for: [mutationsDone], timeout: 20.0)
         XCTAssertTrue(eventsCreated.count == 18)
         
-        let subsExpectation = expectation(description: "18 subs")
-        
+        let subsExpectation = expectation(description: "18 subs should receive messages.")
         var receivedComments: [GraphQLID] = []
         
         for i in 0..<eventsCreated.count {
@@ -367,9 +346,9 @@ class AWSAppSyncTests: XCTestCase {
             appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventsCreated[i],
                                                                     content: "content",
                                                                     createdAt: "2 pm")) { (result, error) in
-                XCTAssertNil(error, "Error expected to be nil, but is not.")
-                XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
-                print("Received create comment mutation response. \(expectationNum)")
+                                                                        XCTAssertNil(error, "Error expected to be nil, but is not.")
+                                                                        XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
+                                                                        print("Received create comment mutation response. \(expectationNum)")
             }
             print("Performed Mutation: \(i)")
         }
@@ -379,4 +358,136 @@ class AWSAppSyncTests: XCTestCase {
         XCTAssertTrue(receivedComments.count == 18, "Expected 18 but was \(receivedComments.count)")
     }
     
+    func testInvalidAPIKeyAuth() {
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+        var invalidConfigAppSyncClient: AWSAppSyncClient?
+        do {
+            // Create AWSApiKeyAuthProvider
+            class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
+                var apiKey: String
+                public init(key: String) {
+                    apiKey = key
+                }
+                func getAPIKey() -> String {
+                    return self.apiKey
+                }
+            }
+            let apiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(key: apiKey)
+            
+            // Initialize the AWS AppSync configuration
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
+                                                                  serviceRegion: AppSyncRegion,
+                                                                  apiKeyAuthProvider: apiKeyAuthProvider,
+                                                                  databaseURL:databaseURL)
+            // Initialize the AWS AppSync client
+            invalidConfigAppSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+            
+            XCTAssertNotNil(appSyncConfig, "AppSyncConfig cannot be nil")
+            XCTAssertNotNil(invalidConfigAppSyncClient, "AppSyncClient cannot be nil")
+        } catch {
+            print("Error initializing appsync client. \(error)")
+        }
+        let failedMutationEventExpectation = expectation(description: "Mutation failed as expected.")
+        
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
+        
+        invalidConfigAppSyncClient?.perform(mutation: addEvent) { (result, error) in
+            XCTAssertNil(result, "Result expected to be nil, but is not.")
+            XCTAssertNotNil(error, "Expected service to return auth error.")
+            let appsyncError = error as? AWSAppSyncClientError
+            XCTAssertNotNil(appsyncError, "The error should be of type AWSAppSyncError")
+            XCTAssertTrue(appsyncError?.response?.statusCode == 403, "Error response should be 403 HTTP Code")
+            failedMutationEventExpectation.fulfill()
+        }
+        
+        wait(for: [failedMutationEventExpectation], timeout: 5.0)
+    }
+    
+    func testInvalidOIDCProvider() {
+        var invalidConfigAppSyncClient: AWSAppSyncClient?
+        // You can choose your database location, accessible by the SDK
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+        
+        do {
+            // Create AWSApiKeyAuthProvider
+            class BasicOidcAuthProvider: AWSOIDCAuthProvider {
+                func getLatestAuthToken() -> String {
+                    return "token"
+                }
+            }
+            let oidcAuthProvider = BasicOidcAuthProvider()
+            
+            // Initialize the AWS AppSync configuration
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
+                                                                  serviceRegion: AppSyncRegion,
+                                                                  oidcAuthProvider: oidcAuthProvider,
+                                                                  databaseURL:databaseURL)
+            // Initialize the AWS AppSync client
+            invalidConfigAppSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+            
+            XCTAssertNotNil(appSyncConfig, "AppSyncConfig cannot be nil")
+            XCTAssertNotNil(appSyncClient, "AppSyncClient cannot be nil")
+        } catch {
+            print("Error initializing appsync client. \(error)")
+        }
+        let failedMutationEventExpectation = expectation(description: "Mutation failed as expected.")
+        
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
+        
+        invalidConfigAppSyncClient?.perform(mutation: addEvent) { (result, error) in
+            XCTAssertNil(result, "Result expected to be nil, but is not.")
+            XCTAssertNotNil(error, "Expected service to return auth error.")
+            let appsyncError = error as? AWSAppSyncClientError
+            XCTAssertNotNil(appsyncError, "The error should be of type AWSAppSyncError")
+            XCTAssertTrue(appsyncError?.response?.statusCode == 403, "Error response should be 403 HTTP Code")
+            failedMutationEventExpectation.fulfill()
+        }
+        
+        wait(for: [failedMutationEventExpectation], timeout: 5.0)
+    }
+    
+    func testInvalidCredentials() {
+        var invalidConfigAppSyncClient: AWSAppSyncClient?
+        // Set up invalids static credentials
+        let credentialsProvider = AWSStaticCredentialsProvider(accessKey: "AKIAIAMINVALID", secretKey: "ABCDINVALIDSECRETSECRET ")
+        // You can choose your database location, accessible by the SDK
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
+        
+        do {
+            // Initialize the AWS AppSync configuration
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
+                                                                  serviceRegion: AppSyncRegion,
+                                                                  credentialsProvider: credentialsProvider,
+                                                                  databaseURL:databaseURL)
+            // Initialize the AWS AppSync client
+            invalidConfigAppSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
+            
+            XCTAssertNotNil(appSyncConfig, "AppSyncConfig cannot be nil")
+            XCTAssertNotNil(appSyncClient, "AppSyncClient cannot be nil")
+        } catch {
+            print("Error initializing appsync client. \(error)")
+        }
+        let failedMutationEventExpectation = expectation(description: "Mutation failed as expected.")
+        
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
+        
+        invalidConfigAppSyncClient?.perform(mutation: addEvent) { (result, error) in
+            XCTAssertNil(result, "Result expected to be nil, but is not.")
+            XCTAssertNotNil(error, "Expected service to return auth error.")
+            let appsyncError = error as? AWSAppSyncClientError
+            XCTAssertNotNil(appsyncError, "The error should be of type AWSAppSyncError")
+            XCTAssertTrue(appsyncError?.response?.statusCode == 403, "Error response should be 403 HTTP Code")
+            failedMutationEventExpectation.fulfill()
+        }
+        wait(for: [failedMutationEventExpectation], timeout: 5.0)
+    }
 }

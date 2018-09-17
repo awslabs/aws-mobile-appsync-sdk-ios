@@ -127,37 +127,58 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.setValue("aws-sdk-ios/2.6.21 AppSyncClient", forHTTPHeaderField: "User-Agent")
     }
     
-    /// Send a data payload to a server and return a response.
-    ///
-    /// - Parameters:
-    ///   - data: The data to send.
-    ///   - completionHandler: A closure to call when a request completes.
-    public func send(data: Data, completionHandler: ((JSONObject?, Error?) -> Void)? = nil) {
-        
-        var request = URLRequest(url: url)
-        initRequest(request: &request)
-        
-        let body = data
-        request.httpBody = body
-
-        let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        
+    func executeAfter(milliseconds interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
+        let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
+        #if swift(>=4)
+            timer.schedule(deadline: .now() + .milliseconds(interval))
+        #else
+            timer.scheduleOneshot(deadline: .now() + .milliseconds(interval))
+        #endif
+        timer.setEventHandler(handler: block)
+        timer.resume()
+        return timer
+    }
+    
+    internal func sendGraphQLRequest(mutableRequest: NSMutableURLRequest,
+                                    retryHandler: AWSAppSyncRetryHandler,
+                                    networkTransportOperation: AWSAppSyncHTTPNetworkTransportOperation,
+                                    completionHandler: @escaping (JSONObject?, Error?) -> Void) {
         updateRequestWithAuthInformation(mutableRequest: mutableRequest, completionHandler: { error in
             guard error == nil else {
-                completionHandler?(nil, error)
+                completionHandler(nil, error)
                 return
             }
-            _ = self.sendNetworkRequest(request: mutableRequest as URLRequest, completionHandler: { (jsonBody, httpResponse, error) in
+            let dataTask = self.sendNetworkRequest(request: mutableRequest as URLRequest, completionHandler: {[weak self] (jsonBody, httpResponse, error) in
                 guard error == nil else {
-                    completionHandler?(nil, error)
+                    if let appsyncError = error as? AWSAppSyncClientError,
+                        let response = appsyncError.response,
+                        let body = appsyncError.body {
+                        let (shouldRetry, backoffTime) = retryHandler.shouldRetryRequest(httpResponse: response, body: body)
+                        if (shouldRetry == true && backoffTime != nil) {
+                            let _ = self?.executeAfter(milliseconds: backoffTime!, queue: DispatchQueue.global(qos: .userInitiated), block: {
+                                self?.sendGraphQLRequest(mutableRequest: mutableRequest,
+                                                         retryHandler: retryHandler,
+                                                         networkTransportOperation: networkTransportOperation, completionHandler: completionHandler)
+                            })
+                        } else {
+                            completionHandler(nil, error)
+                        }
+                    }
                     return
                 }
-                completionHandler?(jsonBody, error)
+                completionHandler(jsonBody, nil)
             })
+            networkTransportOperation.dataTask = dataTask
         })
     }
     
-    private func sendNetworkRequest(request: URLRequest, completionHandler: @escaping ((JSONObject?, HTTPURLResponse?, Error?) -> Void)) -> URLSessionDataTask {
+    /// Invoke HTTP network request for all GraphQL operations
+    ///
+    /// - Parameters:
+    ///   - request: The URL request to be sent
+    ///   - completionHandler: The completion handler which will be called once the request is completed
+    /// - Returns: URLSessionDataTask cancellable object
+    internal func sendNetworkRequest(request: URLRequest, completionHandler: @escaping ((JSONObject?, HTTPURLResponse?, Error?) -> Void)) -> URLSessionDataTask {
         
         let dataTask = self.session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
             
@@ -282,26 +303,15 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = try! serializationFormat.serialize(value: body)
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        
-        updateRequestWithAuthInformation(mutableRequest: mutableRequest, completionHandler: { error in
-            guard error == nil else {
-                completionHandler(nil, error)
-                return
-            }
-            let dataTask = self.sendNetworkRequest(request: mutableRequest as URLRequest, completionHandler: { (jsonBody, httpResponse, error) in
-                guard error == nil else {
-                    completionHandler(nil, error)
-                    return
-                }
-                completionHandler(jsonBody, nil)
-            })
-            networkTransportOperation.dataTask = dataTask
-        })
-        
+        let retryHandler = AWSAppSyncRetryHandler()
+        sendGraphQLRequest(mutableRequest: mutableRequest,
+                           retryHandler: retryHandler,
+                           networkTransportOperation: networkTransportOperation,
+                           completionHandler:completionHandler)
+
         return networkTransportOperation
     }
-    
-    
+
     /// Send a GraphQL operation to a server and return a response.
     ///
     /// - Parameters:
@@ -321,24 +331,46 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = try! serializationFormat.serialize(value: body)
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
+        let retryHandler = AWSAppSyncRetryHandler()
         
-        updateRequestWithAuthInformation(mutableRequest: mutableRequest, completionHandler: { error in
+        let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
             guard error == nil else {
                 completionHandler(nil, error)
                 return
             }
-            let dataTask = self.sendNetworkRequest(request: mutableRequest as URLRequest, completionHandler: { (jsonBody, httpResponse, error) in
-                guard error == nil else {
-                    completionHandler(nil, error)
-                    return
-                }
-                let response = GraphQLResponse(operation: operation, body: jsonBody!)
-                completionHandler(response, nil)
-            })
-            networkTransportOperation.dataTask = dataTask
-        })
+            let response = GraphQLResponse(operation: operation, body: jsonObject!)
+            completionHandler(response, nil)
+        }
+        sendGraphQLRequest(mutableRequest: mutableRequest,
+                           retryHandler: retryHandler,
+                           networkTransportOperation: networkTransportOperation,
+                           completionHandler:completionHandlerInternal)
         
         return networkTransportOperation
+    }
+    
+    /// Send a data payload to a server and return a response.
+    ///
+    /// - Parameters:
+    ///   - data: The data to send.
+    ///   - completionHandler: A closure to call when a request completes.
+    public func send(data: Data, completionHandler: ((JSONObject?, Error?) -> Void)? = nil) {
+        
+        var request = URLRequest(url: url)
+        initRequest(request: &request)
+        
+        let body = data
+        request.httpBody = body
+        
+        let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
+        let retryHandler = AWSAppSyncRetryHandler()
+        let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
+            completionHandler?(jsonObject, error)
+        }
+        sendGraphQLRequest(mutableRequest: mutableRequest,
+                           retryHandler: retryHandler,
+                           networkTransportOperation: AWSAppSyncHTTPNetworkTransportOperation(),
+                           completionHandler: completionHandlerInternal)
     }
     
     private let sendOperationIdentifiers: Bool
@@ -353,7 +385,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         return ["query": type(of: operation).requestString, "variables": operation.variables]
     }
     
-    private class AWSAppSyncHTTPNetworkTransportOperation: Cancellable {
+    internal class AWSAppSyncHTTPNetworkTransportOperation: Cancellable {
         
         private var cancelled: Bool = false
         
