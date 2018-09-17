@@ -84,11 +84,15 @@ class AuthProviderTests: XCTestCase {
 
     class ApiKeyProvider: AWSAPIKeyAuthProvider {
         var expectation: XCTestExpectation?
+        var isExpectaionFulfilled: Bool = false
         init(_ expectation: XCTestExpectation){
             self.expectation = expectation;
         }
         func getAPIKey() -> String {
-            self.expectation?.fulfill()
+            if (!isExpectaionFulfilled) {
+                self.expectation?.fulfill()
+                isExpectaionFulfilled = true
+            }
             return "AuthTokenTests"
         }
     }

@@ -18,5 +18,3 @@ FOUNDATION_EXPORT const unsigned char AWSAppSyncClientVersionString[];
 #endif
 #import "AWSIoTMQTTClient.h"
 #import "AppSyncLogHelper.h"
-
-

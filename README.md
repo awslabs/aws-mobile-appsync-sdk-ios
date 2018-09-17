@@ -78,16 +78,23 @@ If you are contributing to the SDK, it is recommended to add some unit/ function
   - Click on `Create New API` and then select `Event App` and hit `Create`, take a note of the `API URL` of the created API.
   - Once the creation completes, select `Settings` from left side of the console and then select `AWS Identity and Access Management (IAM)` as the authorization type.
   - Next, create a new Cognito Identity Pool and attach `AppSync Invoke Full Access` permission to the unauth role of the Identity Pool. Keep a note of the Identity Pool ID of newly created pool.
+  - Create another AppSync API using the same steps above, but use API Key Auth mode instead which is available by default.
 
-  Finally, you will need to setup a config file locally to access the server. Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSyncTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId` and regions if required:
+  Finally, you will need to setup a config file locally to access the server. Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSyncTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId`, `AppSyncEndpointAPIKey`, `AppSyncAPIKey` and regions if required:
     ```json
     {
       "AppSyncEndpoint": "https://asd32hl34523454532.appsync-api.us-east-1.amazonaws.com/graphql",
       "AppSyncRegion": "us-east-1",
       "CognitoIdentityPoolId": "us-east-1:abcas234-1234-12324-b4b7-aaa0c0831234",
-      "CognitoIdentityPoolRegion": "us-east-1"
+      "CognitoIdentityPoolRegion": "us-east-1",
+      "AppSyncEndpointAPIKey": "https://apikeybasedendpoint.appsync-api.us-east-1.amazonaws.com/graphql",
+      "AppSyncEndpointAPIKeyRegion": "us-east-1",
+      "AppSyncAPIKey": "da2-sad3lkh23422"
     }
     ```
+
+    > Note: The `AppSyncEndpointAPIKey` endpoint uses `API_KEY` based auth, while `AppSyncEndpoint` uses the `AWS_IAM` based auth.
+
   Now you should be able to run the functional tests!
 
 ## License
