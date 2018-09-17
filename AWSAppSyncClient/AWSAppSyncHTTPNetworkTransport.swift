@@ -120,11 +120,45 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         self.authType = .oidcToken
     }
     
-    func initRequest(request: inout URLRequest) {
+    func initRequest(request: inout URLRequest, isSubscription: Bool = false) {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("aws-sdk-ios/2.6.21 AppSyncClient", forHTTPHeaderField: "User-Agent")
+        if (isSubscription) {
+            addDeviceId(request: &request)
+        }
+    }
+    
+    func addDeviceId(request: inout URLRequest) {
+        switch authType {
+        case .apiKey:
+            let data = self.apiKeyAuthProvider!.getAPIKey().data(using: .utf8)
+            request.setValue(fetchDeviceId(for: sha256(data: data!)), forHTTPHeaderField: "x-amz-subscriber-id")
+        default:
+            break
+        }
+    }
+    
+    func sha256(data : Data) -> String {
+        let hash = AWSSignatureSignerUtility.hash(data)
+        return hash!.base64EncodedString()
+    }
+    
+    /// Returns `deviceId` for the specified key from the keychain.
+    /// If the key does not exist in keychain, a `deviceId` is generated, stored and returned.
+    ///
+    /// - Parameter for key: The identifier to fetch deviceId
+    /// - Returns: deviceId for the device
+    func fetchDeviceId(for key: String) -> String {
+        let keychain = AWSUICKeyChainStore()
+        if let deviceId = keychain.string(forKey: key) {
+            return deviceId
+        } else {
+            let uuid = UUID().uuidString
+            keychain.setString(uuid, forKey: key)
+            return uuid
+        }
     }
     
     func executeAfter(milliseconds interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
@@ -297,7 +331,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         let networkTransportOperation = AWSAppSyncHTTPNetworkTransportOperation()
         var request = URLRequest(url: url)
-        initRequest(request: &request)
+        initRequest(request: &request, isSubscription: true)
         
         let body = requestBody(for: operation)
         request.httpBody = try! serializationFormat.serialize(value: body)

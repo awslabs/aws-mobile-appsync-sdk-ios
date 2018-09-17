@@ -46,10 +46,14 @@ class AWSAppSyncTests: XCTestCase {
        "AppSyncEndpoint": "https://abc2131absc.appsync-api.us-east-1.amazonaws.com/graphql",
        "AppSyncRegion": "us-east-1",
        "CognitoIdentityPoolId": "us-east-1:abc123-1234-123a-a123-12345fe123",
-       "CognitoIdentityPoolRegion": "us-east-1"
+       "CognitoIdentityPoolRegion": "us-east-1",
+       "AppSyncEndpointAPIKey": "https://apikeybasedendpoint.appsync-api.us-east-1.amazonaws.com/graphql",
+       "AppSyncAPIKey": "da2-sad3lkh23422"
     }
 
-    The tests use the events starter schema with AWS_IAM(Cognito Identity) auth which can be created from AWSAppSync Console.
+    The test uses 2 different backend setups for tests.
+        - the events starter schema with AWS_IAM(Cognito Identity) auth which can be created from AWSAppSync Console.
+        - the events starter schema with API_KEY auth which can be created from AWSAppSyncConsole.
     """
     
     override func setUp() {
