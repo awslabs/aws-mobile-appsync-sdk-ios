@@ -658,13 +658,15 @@ static __strong NSData *CRLFCRLF;
             networkServiceType = NSStreamNetworkServiceTypeVoice;
             break;
         case NSURLNetworkServiceTypeResponsiveData:
+            AWSDDLogInfo(@"SocketRocket: NSURLNetworkServiceTypeResponsiveData selected in requestNetworkServiceType. No suitable network stream service type found.");
+            break;
+        case NSURLNetworkServiceTypeCallSignaling:
+            if (@available(iOS 10.0, *)) {
+                networkServiceType = NSStreamNetworkServiceTypeCallSignaling;
+            }
             break;
         default:
-            if (@available(iOS 10.0, *)) {
-                if (requestNetworkServiceType == NSURLNetworkServiceTypeCallSignaling) {
-                    networkServiceType = NSStreamNetworkServiceTypeCallSignaling;
-                }
-            }
+            AWSDDLogInfo(@"SocketRocket: requestNetworkServiceType not recognized");
             break;
     }
     
