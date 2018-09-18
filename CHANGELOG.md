@@ -2,6 +2,13 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.6.22
+
+### Enhancements
+
+* Allow multiple active subscriptions while using `API_KEY` auth.
+* Add retry logic for the HTTP service calls.
+
 ## 2.6.21
 
 ### Enhancements
