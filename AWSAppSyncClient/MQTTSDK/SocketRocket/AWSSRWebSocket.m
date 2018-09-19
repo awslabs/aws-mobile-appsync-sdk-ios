@@ -663,11 +663,6 @@ static __strong NSData *CRLFCRLF;
                     networkServiceType = NSStreamNetworkServiceTypeCallSignaling;
                 }
             }
-            if (@available(iOS 12.0, *)) {
-                if (requestNetworkServiceType == NSURLNetworkServiceTypeResponsiveData) {
-                    AWSDDLogInfo(@"SocketRocket: NSURLNetworkServiceTypeResponsiveData selected in requestNetworkServiceType. No suitable network stream service type found.");
-                }
-            }
             break;
     }
     
