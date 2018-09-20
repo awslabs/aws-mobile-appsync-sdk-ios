@@ -249,7 +249,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             subsWatchers.append(watcher!!)
             print("Started subscription \(i)")
         }
-        sleep(10)
+        sleep(15)
         
         for i in 0..<eventsCreated.count {
             let expectationNum = i

@@ -10,6 +10,9 @@ target 'AWSAppSync' do
   pod 'ReachabilitySwift', '~> 4.0.0'
 
 
+  target 'ApolloTests' do
+  end
   target 'AWSAppSyncTests' do
   end
 end
+

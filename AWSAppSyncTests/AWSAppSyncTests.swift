@@ -326,7 +326,8 @@ class AWSAppSyncTests: XCTestCase {
         wait(for: [successfulSubscriptionExpectation], timeout: 10.0)
         
         let subscription = try! self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId!)) { (result, _, error) in
-            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            XCTAssertNotNil(error, "Error expected to be present, but is not.")
+            XCTAssertNil(result)
             print("Received new comment subscription response.")
             receivedSubscriptionExpectation.fulfill()
         }
