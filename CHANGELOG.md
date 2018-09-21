@@ -10,6 +10,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 * Add retry logic for the HTTP service calls.
 * Allow responses to have missing fields if they are optional.
 * Fix issue with optimistic writes which would incorrectly throw `JSONDecodingError.missingValue` error. See issues [#51](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/51) [#8](https://github.com/aws-samples/aws-mobile-appsync-events-starter-ios/issues/8)
+* Fix warnings imposed by iOS 12. [See PR#71](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/71)
 
 ## 2.6.21
 
