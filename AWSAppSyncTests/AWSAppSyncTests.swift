@@ -93,7 +93,7 @@ class AWSAppSyncTests: XCTestCase {
         let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
         
         do {
-            AWSDDLog.sharedInstance.logLevel = .verbose
+            AWSDDLog.sharedInstance.logLevel = .error
             AWSDDLog.add(AWSDDTTYLogger.sharedInstance) 
             
             // Initialize the AWS AppSync configuration

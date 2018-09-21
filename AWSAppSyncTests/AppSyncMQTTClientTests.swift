@@ -184,7 +184,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         XCTAssert(weakWatcher == nil, "Watcher should have been deallocated")
         
-        wait(for: [disconnectExpectation], timeout: 1)
+        wait(for: [disconnectExpectation], timeout: 2)
     }
     
     func testSubscribeTopicsAfterConnected() {
@@ -226,7 +226,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         triggerConnectionStatusChangedToConnected?()
         
-        wait(for: [subscriptionExpectation], timeout: 1)
+        wait(for: [subscriptionExpectation], timeout: 2)
         
         XCTAssertEqual(topics.count, subscribedTopics.count)
     }
@@ -264,7 +264,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         triggerConnectionStatusChangedToConnectionError?()
         
-        wait(for: [errorDelegateExpectation], timeout: 1)
+        wait(for: [errorDelegateExpectation], timeout: 2)
     }
     
     func testReceiveMessageDelegate() {
@@ -304,7 +304,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         triggerReceivedMessageFromTopic?("3")
         triggerReceivedMessageFromTopic?("1")
         
-        wait(for: [receivedMessageExpectation], timeout: 1)
+        wait(for: [receivedMessageExpectation], timeout: 2)
     }
     
     func testSubscribeAndUnsubscribe() {
@@ -334,6 +334,6 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         client.stopSubscription(subscription: watcher)
         
-        wait(for: [disconnectExpectation], timeout: 1)
+        wait(for: [disconnectExpectation], timeout: 2)
     }
 }

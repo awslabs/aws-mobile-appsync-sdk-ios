@@ -72,7 +72,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
         
         do {
-            AWSDDLog.sharedInstance.logLevel = .verbose
+            AWSDDLog.sharedInstance.logLevel = .error
             AWSDDLog.add(AWSDDTTYLogger.sharedInstance)
             // Create AWSApiKeyAuthProvider
             class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
