@@ -228,7 +228,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         wait(for: [subscriptionExpectation], timeout: 1)
         
-        XCTAssertEqual(topics, subscribedTopics)
+        XCTAssertEqual(topics.count, subscribedTopics.count)
     }
     
     func testDisconnectDelegate() {

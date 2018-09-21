@@ -60,7 +60,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             AppSyncEndpointURL = URL(string: endpoint)!
             apiKey = apiKeyValue
             AppSyncRegion = (jsonObject[AWSAppSyncAPIKeyAuthTests.REGION_KEY]! as! String).aws_regionTypeValue()
-            
         } else if (apiKey != "YOUR_API_KEY" && AppSyncEndpointURL.absoluteString != "https://localhost" ) {
             XCTFail(TestSetupErrorMessage)
             return
@@ -251,7 +250,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             subsWatchers.append(watcher!!)
             print("Started subscription \(i)")
         }
-        sleep(10)
+        sleep(15)
         
         for i in 0..<eventsCreated.count {
             let expectationNum = i

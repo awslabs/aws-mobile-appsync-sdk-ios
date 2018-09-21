@@ -26,8 +26,18 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      language = ""
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      codeCoverageEnabled = "YES"
+      onlyGenerateCoverageForSpecifiedTargets = "YES"
+      shouldUseLaunchSchemeArgsEnv = "NO">
+      <CodeCoverageTargets>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "17DECF5D1F59F5FF004B0512"
+            BuildableName = "AWSAppSync.framework"
+            BlueprintName = "AWSAppSync"
+            ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
+         </BuildableReference>
+      </CodeCoverageTargets>
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -36,6 +46,16 @@
                BlueprintIdentifier = "174F80AB2109229C00775D0D"
                BuildableName = "AWSAppSyncTests.xctest"
                BlueprintName = "AWSAppSyncTests"
+               ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1700503521543E41008B16B6"
+               BuildableName = "ApolloTests.xctest"
+               BlueprintName = "ApolloTests"
                ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -49,6 +69,13 @@
             ReferencedContainer = "container:AWSAppSyncClient.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "APOLLO_TEST_CACHE_PROVIDER"
+            value = "ApolloTests.InMemoryTestCacheProvider"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -56,7 +83,6 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      language = ""
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"

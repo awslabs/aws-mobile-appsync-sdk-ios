@@ -304,6 +304,70 @@ class AWSAppSyncTests: XCTestCase {
         wait(for: [receivedSubscriptionExpectation], timeout: 10.0)
     }
     
+    func testOptimisticWriteWithQueryParameter() {
+        let successfulMutationEventExpectation = expectation(description: "Mutation done successfully.")
+        let successfulMutationEvent2Expectation = expectation(description: "Mutation done successfully.")
+        let successfulOptimisticWriteExpectation = expectation(description: "Optimisitc write done successfully.")
+        let successfulQueryFetchExpectation = expectation(description: "Query fetch should success.")
+        let successfulLocalQueryFetchExpectation = expectation(description: "Local query fetch should success.")
+        
+        let addEvent = AddEventMutation(name: EventName,
+                                        when: EventTime,
+                                        where: EventLocation,
+                                        description: EventDescription)
+        
+        appSyncClient?.perform(mutation: addEvent) { (result, error) in
+            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
+            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            successfulMutationEventExpectation.fulfill()
+        }
+        
+        wait(for: [successfulMutationEventExpectation], timeout: 5.0)
+        
+        let fetchQuery = ListEventsQuery(limit: 10)
+        
+        var cacheCount = 0
+        
+        appSyncClient?.fetch(query: fetchQuery, cachePolicy: .fetchIgnoringCacheData, resultHandler: { (result, error) in
+            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be empty.")
+            XCTAssertTrue(result!.data!.listEvents!.items!.count > 0, "Expected service to return at least 1 event.")
+            cacheCount = result!.data!.listEvents!.items!.count
+            successfulQueryFetchExpectation.fulfill()
+        })
+        
+        wait(for: [successfulQueryFetchExpectation], timeout: 5.0)
+        
+        appSyncClient?.perform(mutation: addEvent, optimisticUpdate: { (transaction) in
+            do {
+            try transaction?.update(query: fetchQuery, { (data) in
+                data.listEvents?.items!.append(ListEventsQuery.Data.ListEvent.Item.init(id: "RandomId", description: self.EventDescription, name: self.EventName, when: self.EventTime, where: self.EventLocation, comments: nil))
+            })
+            successfulOptimisticWriteExpectation.fulfill()
+            } catch {
+                
+            }
+        }, resultHandler: { (result, error) in
+            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
+            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            successfulMutationEvent2Expectation.fulfill()
+        })
+        
+        wait(for: [successfulOptimisticWriteExpectation, successfulMutationEvent2Expectation], timeout: 5.0)
+        
+        appSyncClient?.fetch(query: fetchQuery, cachePolicy: .returnCacheDataDontFetch, resultHandler: { (result, error) in
+            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be empty.")
+            XCTAssertTrue(result!.data!.listEvents!.items!.count > 0, "Expected cache to return at least 1 event.")
+            XCTAssertTrue(result!.data!.listEvents!.items!.count == cacheCount + 1)
+            successfulLocalQueryFetchExpectation.fulfill()
+        })
+        
+        wait(for: [successfulLocalQueryFetchExpectation], timeout: 5.0)
+    }
+    
     func testSubscription_Stress() {
         let mutationsDone = expectation(description: "Mutations done successfully.")
         var eventsCreated: [GraphQLID] = []

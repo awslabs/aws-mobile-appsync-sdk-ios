@@ -122,7 +122,7 @@ public final class ApolloStore {
 
     fileprivate func makeExecutor() -> GraphQLExecutor {
       let executor = GraphQLExecutor { object, info in
-        let value = object[info.cacheKeyForField]
+        let value = object[info.cacheKeyForField] ?? object[info.responseKeyForField]
         return self.complete(value: value)
       }
 

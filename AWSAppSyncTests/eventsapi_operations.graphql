@@ -1,0 +1,89 @@
+mutation AddEvent($name: String!, $when: String!, $where: String!, $description: String!){
+  createEvent(name:$name, when:$when, where:$where, description:$description){
+      id
+      description
+      name
+      when
+      where
+      comments {
+        items {
+          eventId
+          commentId
+          content
+          createdAt
+        }
+      }
+  }
+}
+
+mutation DeleteEvent($id: ID!) {
+  deleteEvent(id: $id) {
+    id
+    description
+    name
+  }
+}
+
+mutation CommentOnEvent($eventId: ID!, $content: String!, $createdAt: String!) {
+  commentOnEvent(eventId:$eventId, content:$content, createdAt:$createdAt) {
+    eventId
+    content
+    commentId
+    createdAt
+  }
+}
+
+mutation CommentOnEventLessFields($eventId: ID!, $content: String!, $createdAt: String!) {
+  commentOnEvent(eventId:$eventId, content:$content, createdAt:$createdAt) {
+    eventId
+    commentId
+  }
+}
+
+query GetEvent($id:ID!) {
+ getEvent(id:$id) {
+     id
+      description
+      name
+      when
+      where
+      comments {
+        items {
+          eventId
+          commentId
+          content
+          createdAt
+        }
+      }
+	}
+}
+
+query ListEvents($limit: Int, $nextToken: String) {
+   listEvents(limit: $limit, nextToken: $nextToken) {
+       items {
+            id
+            description
+            name
+            when
+            where
+            comments {
+                items {
+                eventId
+                commentId
+                content
+                createdAt
+                }
+            }
+        }
+        nextToken
+   }
+}
+
+subscription NewCommentOnEvent($eventId: String!) {
+  subscribeToEventComments(eventId: $eventId) {
+    eventId
+    commentId
+    content
+    createdAt
+  }
+}
