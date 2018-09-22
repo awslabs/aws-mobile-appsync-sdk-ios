@@ -4,7 +4,7 @@ AWS AppSync SDK for iOS
 [![Release](https://img.shields.io/github/release/awslabs/aws-mobile-appsync-sdk-ios.svg)](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/releases)
 [![CocoaPods](https://img.shields.io/cocoapods/v/AWSAppSync.svg)](https://github.com/CocoaPods/CocoaPods)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![Build Status](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios.png?branch=master)](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios)
+[![Build Status](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios.svg?branch=master)](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios)
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://awslabs.github.io/aws-mobile-appsync-sdk-ios/)
 [![Twitter Follow](https://img.shields.io/twitter/follow/AWSforMobile.svg?style=social&label=Follow)](https://twitter.com/AWSforMobile)
 
@@ -17,7 +17,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
 ```
-  pod 'AWSAppSync', '~> 2.6.20'
+  pod 'AWSAppSync', '~> 2.6.22'
 ```
 
 Example:
@@ -31,7 +31,7 @@ target 'EventsApp' do
   use_frameworks!
 
   # Pods for EventsApp
-  pod 'AWSAppSync', '~> 2.6.20'
+  pod 'AWSAppSync', '~> 2.6.22'
 end
 ```
 
