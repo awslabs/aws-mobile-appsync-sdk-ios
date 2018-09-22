@@ -32,24 +32,21 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
                 return
             }
             
-            if status.rawValue == 2 {
-                for topic in topics {
-                    mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
-                }
-            } else if status.rawValue >= 3  {
-                let error = AWSAppSyncSubscriptionError(additionalInfo: "Subscription Terminated.", errorDetails:  [
-                    "recoverySuggestion" : "Restart subscription request.",
-                    "failureReason" : "Disconnected from service."])
-                
-                topics.map({ self.topicSubscribers[$0] })
-                      .flatMap({$0})
-                      .flatMap({$0})
-                      .forEach({$0.disconnectCallbackDelegate(error: error)})
+            switch status {
+            case .connected:
+                topics.forEach({ mqttClient.subscribe(toTopic: $0, qos: 1, extendedCallback: nil) })
+            default:
+                break
             }
+            
+            topics.map({ self.topicSubscribers[$0] })
+                  .flatMap({ $0 })
+                  .flatMap({ $0 })
+                  .forEach({ $0.status = SubscritionWatcherStatus(status: status) })
         }
     }
     
-    func addWatcher(watcher: MQTTSubscritionWatcher, topics: [String], identifier: Int) {
+    func addWatcher(watcher: MQTTSubscritionWatcher, topics: [String]) {
         topicSubscribers.add(watcher: watcher, topics: topics)
     }
     
@@ -136,14 +133,14 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     
     class TopicSubscribers {
         
-        private var dictionary = [String : NSHashTable<MQTTSubscritionWatcher>]()
+        private var dictionary = [String : NSHashTable<AnyObject>]()
         
         private var lock = NSLock()
         
         subscript(key: String) -> [MQTTSubscritionWatcher]? {
             get {
                 return synchronized() {
-                    return self.dictionary[key]?.allObjects
+                    return self.dictionary[key]?.allObjects as? [MQTTSubscritionWatcher]
                 }
             }
         }
@@ -154,7 +151,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
                     if let watchers = self.dictionary[topic] {
                         watchers.add(watcher)
                     } else {
-                        let watchers = NSHashTable<MQTTSubscritionWatcher>.weakObjects()
+                        let watchers = NSHashTable<AnyObject>.weakObjects()
                         watchers.add(watcher)
                         self.dictionary[topic] = watchers
                     }
@@ -165,7 +162,12 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         func remove(subscription: MQTTSubscritionWatcher) {
             synchronized() {
                 dictionary.forEach({ (element) in
-                    element.value.allObjects.filter({ $0.getIdentifier() == subscription.getIdentifier() }).forEach({ (watcher) in
+                    element.value.allObjects.filter({ (obj) -> Bool in
+                        guard let watcher = obj as? MQTTSubscritionWatcher, watcher === subscription else {
+                            return false
+                        }
+                        return true
+                    }).forEach({ (watcher) in
                         element.value.remove(watcher)
                     })
                 })
@@ -189,6 +191,27 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             lock.lock()
             defer { lock.unlock() }
             return try body()
+        }
+    }
+}
+
+internal extension SubscritionWatcherStatus {
+    internal init(status: AWSIoTMQTTStatus) {
+        switch status {
+        case .connecting:
+            self = .connecting
+        case .connected:
+            self = .connected
+        case .connectionError:
+            self = .connectionError
+        case .connectionRefused:
+            self = .connectionRefused
+        case .protocolError:
+            self = .protocolError
+        case .disconnected:
+            self = .disconnected
+        case .unknown:
+            self = .authenticated
         }
     }
 }

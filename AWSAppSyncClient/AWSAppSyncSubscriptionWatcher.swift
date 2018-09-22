@@ -16,40 +16,26 @@
 import Dispatch
 import os.log
 
-@objc protocol MQTTSubscritionWatcher: AnyObject {
-    func getIdentifier() -> Int
-    func getTopics() -> [String]
-    func messageCallbackDelegate(data: Data)
-    func disconnectCallbackDelegate(error: Error)
+public enum SubscritionWatcherStatus {
+    case authenticating
+    case authenticated
+    case connecting
+    case connected
+    case disconnected
+    case connectionRefused
+    case connectionError
+    case protocolError
+    case requestFailed(Error)
 }
 
-class SubscriptionsOrderHelper {
-    var count = 0
-    var previousCall = Date()
-    var pendingCount = 0
-    var dispatchLock = DispatchQueue(label: "SubscriptionsQueue")
-    var waitDictionary = [0: true]
-    static let sharedInstance = SubscriptionsOrderHelper()
+protocol MQTTSubscritionWatcher: class {
+    var status: SubscritionWatcherStatus { get set }
+    func getTopics() -> [String]
+    func messageCallbackDelegate(data: Data)
+    func statusDidChangeDelegate(status: SubscritionWatcherStatus)
     
-    func getLatestCount() -> Int {
-        count = count + 1
-        waitDictionary[count] = false
-        return count
-    }
-    
-    func markDone(id: Int) {
-        waitDictionary[id] = true
-    }
-    
-    func shouldWait(id: Int) -> Bool {
-        for i in 0..<id {
-            if (waitDictionary[i] == false) {
-                return true
-            }
-        }
-        return false
-    }
-    
+    @available(*, deprecated)
+    func getIdentifier() -> Int
 }
 
 /// A `AWSAppSyncSubscriptionWatcher` is responsible for watching the subscription, and calling the result handler with a new result whenever any of the data is published on the MQTT topic. It also normalizes the cache before giving the callback to customer.
@@ -60,11 +46,29 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     let subscription: Subscription?
     let handlerQueue: DispatchQueue
     let resultHandler: SubscriptionResultHandler<Subscription>
+    let statusObserver: SubscriptionStatusObserver?
     internal var subscriptionTopic: [String]?
     let store: ApolloStore
-    public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
+    @available(*, deprecated)
+    public var uniqueIdentifier: Int {
+        return internalUniqueIdentifier
+    }
+    private let internalUniqueIdentifier = UUID().hashValue
+    var status: SubscritionWatcherStatus = .authenticating {
+        didSet {
+            self.statusObserver?(status)
+            self.reportErrorIfNeeded()
+        }
+    }
     
-    init(client: AppSyncMQTTClient, httpClient: AWSNetworkTransport, store: ApolloStore, subscriptionsQueue: DispatchQueue, subscription: Subscription, handlerQueue: DispatchQueue, resultHandler: @escaping SubscriptionResultHandler<Subscription>) {
+    init(client: AppSyncMQTTClient,
+         httpClient: AWSNetworkTransport,
+         store: ApolloStore,
+         subscriptionsQueue: DispatchQueue,
+         subscription: Subscription,
+         handlerQueue: DispatchQueue,
+         resultHandler: @escaping SubscriptionResultHandler<Subscription>,
+         statusObserver: SubscriptionStatusObserver? = nil) {
         self.client = client
         self.httpClient = httpClient
         self.store = store
@@ -75,13 +79,22 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                 resultHandler(result, transaction, error)
             }
         }
+        if let statusObserver = statusObserver {
+            self.statusObserver = { (status) in
+                handlerQueue.async {
+                    statusObserver(status)
+                }
+            }
+        } else {
+            self.statusObserver = nil
+        }
         subscriptionsQueue.async { [weak self] in
             self?.startSubscription()
         }
     }
     
     func getIdentifier() -> Int {
-        return uniqueIdentifier
+        return internalUniqueIdentifier
     }
     
     private func startSubscription()  {
@@ -89,7 +102,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         
         self.performSubscriptionRequest(completionHandler: { [weak self] (success, error) in
             if let error = error {
-                self?.resultHandler(nil, nil, error)
+                self?.status = .requestFailed(error)
             }
             semaphore.signal()
         })
@@ -105,28 +118,24 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                         let subscriptionResult = try AWSGraphQLSubscriptionResponseParser(body: response).parseResult()
                         if let subscriptionInfo = subscriptionResult.subscriptionInfo {
                             self.subscriptionTopic = subscriptionResult.newTopics
-                            self.client?.addWatcher(watcher: self, topics: subscriptionResult.newTopics!, identifier: self.uniqueIdentifier)
+                            self.client?.addWatcher(watcher: self, topics: subscriptionResult.newTopics!)
                             self.client?.startSubscriptions(subscriptionInfo: subscriptionInfo)
                         }
                         completionHandler(true, nil)
                     } catch {
-                        completionHandler(false, AWSAppSyncSubscriptionError(additionalInfo: error.localizedDescription, errorDetails: nil))
+                        completionHandler(false, error)
                     }
                 } else if let error = error {
-                    completionHandler(false, AWSAppSyncSubscriptionError(additionalInfo: error.localizedDescription, errorDetails: nil))
+                    completionHandler(false, error)
                 }
             })
         } catch {
-            completionHandler(false, AWSAppSyncSubscriptionError(additionalInfo: error.localizedDescription, errorDetails: nil))
+            completionHandler(false, error)
         }
     }
     
     func getTopics() -> [String] {
         return subscriptionTopic ?? [String]()
-    }
-    
-    func disconnectCallbackDelegate(error: Error) {
-        self.resultHandler(nil, nil, error)
     }
     
     func messageCallbackDelegate(data: Data) {
@@ -160,10 +169,31 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                         }
                     }
                 }.catch { error in
-                    self.resultHandler(nil, nil, error)
+                    self.resultHandler(nil, nil, AWSAppSyncSubscriptionError.parseError(error))
             }
         } catch {
-            self.resultHandler(nil, nil, error)
+            self.resultHandler(nil, nil, AWSAppSyncSubscriptionError.parseError(error))
+        }
+    }
+    
+    func statusDidChangeDelegate(status: SubscritionWatcherStatus) {
+        self.status = status
+    }
+    
+    private func reportErrorIfNeeded() {
+        switch self.status {
+        case .authenticating, .authenticated, .connecting, .connected:
+            break
+        case .connectionRefused:
+            self.resultHandler(nil, nil, AWSAppSyncSubscriptionError.connectionRefused)
+        case .connectionError:
+            self.resultHandler(nil, nil, AWSAppSyncSubscriptionError.connectionError)
+        case .protocolError:
+            self.resultHandler(nil, nil, AWSAppSyncSubscriptionError.protocolError)
+        case .requestFailed(let error):
+            self.resultHandler(nil, nil, AWSAppSyncSubscriptionError.requestFailed(error))
+        case .disconnected:
+            self.resultHandler(nil, nil, AWSAppSyncSubscriptionError.disconnected)
         }
     }
     

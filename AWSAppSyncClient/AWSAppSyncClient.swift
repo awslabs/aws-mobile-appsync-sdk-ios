@@ -18,6 +18,8 @@ public protocol ConnectionStateChangeHandler {
 
 public typealias SubscriptionResultHandler<Operation: GraphQLSubscription> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
 
+public typealias SubscriptionStatusObserver = (_ status: SubscritionWatcherStatus) -> Void
+
 public typealias OptimisticResponseBlock = (ApolloStore.ReadWriteTransaction?) -> Void
 
 public typealias MutationConflictHandler<Mutation: GraphQLMutation> = (_ serverState: Snapshot?, _ taskCompletionSource: AWSTaskCompletionSource<Mutation>?, _ resultHandler: OperationResultHandler<Mutation>?) -> Void
@@ -541,22 +543,67 @@ public struct AWSAppSyncClientError: Error, LocalizedError {
     }
 }
 
-public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
-    let additionalInfo: String?
-    let errorDetails: [String:String]?
+public enum AWSAppSyncSubscriptionError: Error, LocalizedError {
+    case connectionRefused
+    case connectionError
+    case protocolError
+    case requestFailed(Error)
+    case parseError(Error)
+    case disconnected
     
     public var errorDescription: String? {
-        return additionalInfo ?? "Unable to start subscription."
+        switch self {
+        case .requestFailed(let error):
+            return error.localizedDescription
+        case .parseError(let error):
+            return error.localizedDescription
+        default:
+            return "Subscription Terminated."
+        }
     }
     
     public var recoverySuggestion: String? {
-        return errorDetails?["recoverySuggestion"]
+        switch self {
+        case .requestFailed(_), .parseError(_):
+            return nil
+        default:
+            return "Restart subscription request."
+        }
     }
     
     public var failureReason: String? {
-        return errorDetails?["failureReason"]
+        switch self {
+        case .requestFailed(_), .parseError(_):
+            return nil
+        default:
+            return "Disconnected from service."
+        }
+    }
+    
+    @available(*, deprecated, message: "use errorDescription instead")
+    var additionalInfo: String? {
+        switch self {
+        case .connectionRefused, .connectionError, .protocolError, .disconnected:
+            return "Subscription Terminated."
+        case .requestFailed(let error):
+            return error.localizedDescription
+        case .parseError(let error):
+            return error.localizedDescription
+        }
+    }
+    
+    @available(*, deprecated, message: "use recoverySuggestion and failureReason instead")
+    var errorDetails: [String: String]? {
+        switch self {
+        case .connectionRefused, .connectionError, .protocolError, .disconnected:
+            return ["recoverySuggestion" : "Restart subscription request.",
+                    "failureReason" : "Disconnected from service."]
+        default:
+            return nil
+        }
     }
 }
+
 
 protocol NetworkConnectionNotification {
     func onNetworkAvailabilityStatusChanged(isEndpointReachable: Bool)
@@ -682,7 +729,10 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         return apolloClient!.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
     
-    public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
+    public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription,
+                                                             queue: DispatchQueue = DispatchQueue.main,
+                                                             statusObserver: SubscriptionStatusObserver? = nil,
+                                                             resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
         
         return AWSAppSyncSubscriptionWatcher(client: self.appSyncMQTTClient,
                                               httpClient: self.httpTransport!,
@@ -690,7 +740,8 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
                                               subscriptionsQueue: self.subscriptionsQueue,
                                               subscription: subscription,
                                               handlerQueue: queue,
-                                              resultHandler: resultHandler)
+                                              resultHandler: resultHandler,
+                                              statusObserver: statusObserver)
     }
     
     /// Performs a mutation by sending it to the server.
