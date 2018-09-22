@@ -93,6 +93,7 @@ public class AWSAppSyncClientConfiguration {
     fileprivate var s3ObjectManager: AWSS3ObjectManager? = nil
     fileprivate var presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil
     fileprivate var connectionStateChangeHandler: ConnectionStateChangeHandler? = nil
+    fileprivate var subscriptionMetadataCache: AWSSubscriptionMetaDataCache?
     
     fileprivate var allowsCellularAccess: Bool = true
     fileprivate var autoSubmitOfflineMutations: Bool = true
@@ -368,6 +369,11 @@ public class AWSAppSyncClientConfiguration {
             } catch {
                 // Use in memory cache incase database init fails
             }
+            do {
+                self.subscriptionMetadataCache = try AWSSubscriptionMetaDataCache(fileURL: databaseURL)
+            } catch {
+                // Use in memory cache incase database init fails
+            }
         }
         self.s3ObjectManager = s3ObjectManager
         self.presignedURLClient = presignedURLClient
@@ -398,6 +404,11 @@ public class AWSAppSyncClientConfiguration {
         if let databaseURL = databaseURL {
             do {
                 self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
+            } catch {
+                // Use in memory cache incase database init fails
+            }
+            do {
+                self.subscriptionMetadataCache = try AWSSubscriptionMetaDataCache(fileURL: databaseURL)
             } catch {
                 // Use in memory cache incase database init fails
             }
@@ -467,6 +478,11 @@ public class AWSAppSyncClientConfiguration {
                 self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
             } catch {
                 // Use in memory cache (InMemoryNormalizedCache) incase database init fails
+            }
+            do {
+                self.subscriptionMetadataCache = try AWSSubscriptionMetaDataCache(fileURL: databaseURL)
+            } catch {
+                // Use in memory cache incase database init fails
             }
         }
         
@@ -631,8 +647,65 @@ public protocol AWSAppSyncOfflineMutationDelegate {
     func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?) -> Void
 }
 
+public struct AppSyncConnectionInfo {
+    public let isConnectionAvailable: Bool
+    public let isInitialConnection: Bool
+}
+
+internal extension Notification.Name {
+    internal static let appSyncReachabilityChanged = Notification.Name("AppSyncNetworkAvailabilityChangedNotification")
+}
+
+class AWSAppSyncNetworkStatusChangeNotifier {
+    var reachability: Reachability?
+    var allowsCellularAccess: Bool = true
+    var isInitialConnection: Bool = true
+    
+    static func setupSharedInstance(host: String, allowsCellular: Bool) {
+        sharedInstance = AWSAppSyncNetworkStatusChangeNotifier(host: host, allowsCellular: allowsCellular)
+    }
+    
+    static var sharedInstance: AWSAppSyncNetworkStatusChangeNotifier?
+    
+    init(host: String, allowsCellular: Bool) {
+        reachability = Reachability(hostname: host)
+        allowsCellularAccess = allowsCellular
+        NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
+        do{
+            try reachability?.startNotifier()
+        } catch {
+            
+        }
+    }
+    
+    @objc func checkForReachability(note: Notification) {
+        let reachability = note.object as! Reachability
+        var isReachable = false
+        
+        switch reachability.connection {
+        case .wifi:
+            isReachable = true
+        case .cellular:
+            if (self.allowsCellularAccess) {
+                isReachable = true
+            }
+        case .none:
+            isReachable = false
+        }
+        
+        let info = AppSyncConnectionInfo.init(isConnectionAvailable: isReachable, isInitialConnection: isInitialConnection)
+        
+        if (isInitialConnection) {
+            isInitialConnection = false
+            return
+        }
+        
+        NotificationCenter.default.post(name: .appSyncReachabilityChanged, object: info)
+    }
+}
+
 // The client for making `Mutation`, `Query` and `Subscription` requests.
-public class AWSAppSyncClient: NetworkConnectionNotification {
+public class AWSAppSyncClient {
     
     public let apolloClient: ApolloClient?
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
@@ -650,6 +723,8 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
     private var autoSubmitOfflineMutations: Bool = false
     private var appSyncMQTTClient = AppSyncMQTTClient()
     private var subscriptionsQueue = DispatchQueue(label: "SubscriptionsQueue", qos: .userInitiated)
+    fileprivate var subscriptionMetadataCache: AWSSubscriptionMetaDataCache?
+    fileprivate var accessState: ClientNetworkAccessState = .Offline
     
     internal var connectionStateChangeHandler: ConnectionStateChangeHandler?
     
@@ -666,6 +741,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         self.appSyncMQTTClient.allowCellularAccess = self.appSyncConfiguration.allowsCellularAccess
         self.presignedURLClient = appSyncConfig.presignedURLClient
         self.s3ObjectManager = appSyncConfig.s3ObjectManager
+        self.subscriptionMetadataCache = appSyncConfig.subscriptionMetadataCache
         
         self.httpTransport = appSyncConfig.networkTransport
         self.connectionStateChangeHandler = appSyncConfiguration.connectionStateChangeHandler
@@ -684,37 +760,33 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         self.offlineMutationExecutor = MutationExecutor(networkClient: self.httpTransport!, appSyncClient: self, snapshotProcessController: SnapshotProcessController(endpointURL:self.appSyncConfiguration.url), fileURL: self.appSyncConfiguration.databaseURL)
         networkStatusWatchers.append(self.offlineMutationExecutor!)
         
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
-        do{
-            try reachability?.startNotifier()
-        } catch {
+        if AWSAppSyncNetworkStatusChangeNotifier.sharedInstance == nil {
+            AWSAppSyncNetworkStatusChangeNotifier.setupSharedInstance(host: self.appSyncConfiguration.url.host!, allowsCellular: self.appSyncConfiguration.allowsCellularAccess)
         }
         
-        NotificationCenter.default.addObserver(self, selector: #selector(AWSAppSyncClient.checkForReachability), name: NSNotification.Name(rawValue: kAWSDefaultNetworkReachabilityChangedNotification), object: nil)
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(appsyncReachabilityChanged(note:)), name: .appSyncReachabilityChanged, object: nil)
     }
     
-    @objc func checkForReachability(note: Notification) {
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .appSyncReachabilityChanged, object: nil)
+    }
+    
+    @objc func appsyncReachabilityChanged(note: Notification) {
         
-        let reachability = note.object as! Reachability
-        var isReachable = false
-        
-        switch reachability.connection {
-        case .wifi:
-            isReachable = true
-        case .cellular:
-            if (self.appSyncConfiguration.allowsCellularAccess) {
-                isReachable = true
-            }
-        case .none:
-            print("")
-        }
-        
+        let connectionInfo = note.object as! AppSyncConnectionInfo
+        let isReachable = connectionInfo.isConnectionAvailable
         for watchers in networkStatusWatchers {
             watchers.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
         }
-        self.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
+
+        var accessState: ClientNetworkAccessState = .Offline
+        if (isReachable) {
+            accessState = .Online
+            self.accessState = .Online
+        } else {
+            self.accessState = .Offline
+        }
+        self.connectionStateChangeHandler?.stateChanged(networkState: accessState)
     }
     
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
@@ -755,6 +827,18 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
                                               subscription: subscription,
                                               handlerQueue: queue,
                                               resultHandler: resultHandler)
+    }
+    
+    internal func subscribeWithConnectCallback<Subscription: GraphQLSubscription>(subscription: Subscription, queue: DispatchQueue = DispatchQueue.main, connectCallback: @escaping (() -> Void), resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
+        
+        return AWSAppSyncSubscriptionWatcher(client: self.appSyncMQTTClient,
+                                             httpClient: self.httpTransport!,
+                                             store: self.store!,
+                                             subscriptionsQueue: self.subscriptionsQueue,
+                                             subscription: subscription,
+                                             handlerQueue: queue,
+                                             connectedCallback: connectCallback,
+                                             resultHandler: resultHandler)
     }
     
     /// Performs a mutation by sending it to the server.
@@ -809,6 +893,104 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         return PerformMutationOperation(offlineMutationRecord: record, client: self.apolloClient!, appSyncClient: self, offlineExecutor: self.offlineMutationExecutor!, mutation: mutation, handlerQueue: queue, mutationConflictHandler: conflictResolutionBlock, resultHandler: resultHandler)
     }
     
+    internal final class EmptySubscription: GraphQLSubscription {
+        public static var operationString: String = "No-op"
+        struct Data: GraphQLSelectionSet {
+            static var selections: [GraphQLSelection] = []
+            var snapshot: Snapshot = [:]
+        }
+    }
+    
+    internal final class EmptyQuery: GraphQLQuery {
+        public static var operationString: String = "No-op"
+        struct Data: GraphQLSelectionSet {
+            static var selections: [GraphQLSelection] = []
+            var snapshot: Snapshot = [:]
+        }
+    }
+    
+    public func sync<BaseQuery: GraphQLQuery>(
+        baseQuery: BaseQuery,
+        queue: DispatchQueue = DispatchQueue.main,
+        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration(),
+        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>) -> Cancellable {
+        let subs = EmptySubscription.init()
+        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (res, trans, err) in
+        }
+        let deltaQuery = EmptyQuery.init()
+        let deltaCallback: (GraphQLResult<EmptyQuery.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (res, trans, err) in
+        }
+        
+        return AppSyncDeltaSubscription<EmptySubscription, BaseQuery, EmptyQuery>.init(appsyncClient: self,
+                                                                                       isNetworkAvailable: accessState == .Online,
+                                                                                       baseQuery: baseQuery,
+                                                                                       deltaQuery: deltaQuery,
+                                                                                       subscription: subs,
+                                                                                       baseQueryHandler: baseQueryResultHandler,
+                                                                                       deltaQueryHandler: deltaCallback,
+                                                                                       subscriptionResultHandler: subsCallback,
+                                                                                       subscriptionMetadataCache: self.subscriptionMetadataCache,
+                                                                                       syncConfiguration: syncConfiguration, handlerQueue: queue)
+    }
+    
+    public func sync<BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>(
+        baseQuery: BaseQuery,
+        deltaQuery: DeltaQuery,
+        queue: DispatchQueue = DispatchQueue.main,
+        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration(),
+        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
+        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>) -> Cancellable {
+        let subs = EmptySubscription.init()
+        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (res, trans, err) in
+        }
+        
+        return AppSyncDeltaSubscription<EmptySubscription, BaseQuery, DeltaQuery>.init(appsyncClient: self,
+                                      isNetworkAvailable: accessState == .Online,
+                                      baseQuery: baseQuery,
+                                      deltaQuery: deltaQuery,
+                                      subscription: subs,
+                                      baseQueryHandler: baseQueryResultHandler,
+                                      deltaQueryHandler: deltaQueryResultHandler,
+                                      subscriptionResultHandler: subsCallback,
+                                      subscriptionMetadataCache: self.subscriptionMetadataCache,
+                                      syncConfiguration: syncConfiguration, handlerQueue: queue)
+    }
+    
+    /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
+    ///
+    /// - Parameters:
+    ///   - query: The query to fetch.
+    ///   - cachePolicy: A cache policy that specifies when results should be fetched from the server and when data should be loaded from the local cache.
+    ///   - queue: A dispatch queue on which the result handler will be called. Defaults to the main queue.
+    ///   - resultHandler: An optional closure that is called when query results are available or when an error occurs.
+    ///   - result: The result of the fetched query, or `nil` if an error occurred.
+    ///   - error: An error that indicates why the fetch failed, or `nil` if the fetch was succesful.
+    /// - Returns: An object that can be used to cancel an in progress fetch.
+    public func sync<BaseQuery: GraphQLQuery, Subscription: GraphQLSubscription, DeltaQuery: GraphQLQuery>(
+        baseQuery: BaseQuery,
+        subscription: Subscription,
+        deltaQuery: DeltaQuery,
+        queue: DispatchQueue = DispatchQueue.main,
+        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration(),
+        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
+        subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
+        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>)
+    -> Cancellable {
+        
+        return AppSyncDeltaSubscription<Subscription, BaseQuery, DeltaQuery>(
+            appsyncClient: self,
+            isNetworkAvailable: accessState == .Online,
+            baseQuery: baseQuery,
+            deltaQuery: deltaQuery,
+            subscription: subscription,
+            baseQueryHandler: baseQueryResultHandler,
+            deltaQueryHandler: deltaQueryResultHandler,
+            subscriptionResultHandler: subscriptionResultHandler,
+            subscriptionMetadataCache: self.subscriptionMetadataCache,
+            syncConfiguration: syncConfiguration,
+            handlerQueue: queue) as Cancellable
+    }
+    
     private func checkAndFetchS3Object(variables:GraphQLMap?) -> (bucket: String, key: String, region: String, contentType: String, localUri: String)? {
         if let variables = variables {
             for key in variables.keys {
@@ -825,20 +1007,12 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         return nil
     }
     
-    func onNetworkAvailabilityStatusChanged(isEndpointReachable: Bool) {
-        var accessState: ClientNetworkAccessState = .Offline
-        if (isEndpointReachable) {
-            accessState = .Online
-        }
-        self.connectionStateChangeHandler?.stateChanged(networkState: accessState)
-    }
-    
     private func requestBody<Operation: GraphQLOperation>(for operation: Operation) -> GraphQLMap {
         return ["query": type(of: operation).requestString, "variables": operation.variables]
     }
 }
 
-protocol InMemoryMutationDelegate {
+protocol InMemoryMutationDelegate: class {
     func performMutation(dispatchGroup: DispatchGroup)
 }
 

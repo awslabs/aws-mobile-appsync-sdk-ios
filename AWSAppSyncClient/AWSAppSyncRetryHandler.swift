@@ -10,6 +10,17 @@ internal class AWSAppSyncRetryHandler {
     var currentAttemptNumber = 0
     static let MAX_RETRY_WAIT_MILLIS = 300 * 1000 // 5 minutes of max retry duration.
     static let JITTER: Float = 100.0
+    static let NSURLNetworkRequestCancelledCode = -999
+    static let NSURLNetworkRequestUnauthorizedCode = 401
+    static let NSURLErrorDomainNotFound = -1003
+    static let NSURLSoftwareTaskCancelled = 53
+    
+    static let ErrorCodes: [Int] = [NSURLErrorNotConnectedToInternet,
+                                    NSURLErrorNetworkConnectionLost,
+                                    NSURLNetworkRequestUnauthorizedCode,
+                                    NSURLErrorDomainNotFound,
+                                    NSURLSoftwareTaskCancelled,
+                                    NSURLErrorTimedOut]
     
     internal  init() { }
     
@@ -17,10 +28,20 @@ internal class AWSAppSyncRetryHandler {
     ///
     /// - Parameter error: The error returned by the service.
     /// - Returns: If the request should be retried and if yes, after how much time.
+
     func shouldRetryRequest(for error: AWSAppSyncClientError) -> (Bool, Int?) {
-        let httpResponse: HTTPURLResponse?
+        currentAttemptNumber += 1
+        var waitMillis = Int(Double(truncating: pow(2.0, currentAttemptNumber) as NSNumber) * 100.0 + Double(getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
+        
+        var httpResponse: HTTPURLResponse?
+
         switch error {
-        case .requestFailed(_, let reponse, _):
+        case .requestFailed(_, let reponse, let networkError):
+            if let networkError = networkError {
+                if AWSAppSyncRetryHandler.ErrorCodes.contains(networkError._code) {
+                    return(true, waitMillis)
+                }
+            }
             httpResponse = reponse
         case .noData(let response):
             httpResponse = response
@@ -30,20 +51,19 @@ internal class AWSAppSyncRetryHandler {
             httpResponse = nil
         }
         
+        /// If no known error and we did not receive an HTTP response, we return false.
         guard let unwrappedResponse = httpResponse  else {
             return (false, nil)
         }
         
-        currentAttemptNumber += 1
         let waitTime = unwrappedResponse.allHeaderFields["Retry-After"] as? Int
         if let waitTime = waitTime {
-            let waitMillis = waitTime * 1000
+            waitMillis = waitTime * 1000
             return (true, waitMillis)
         }
         
         switch unwrappedResponse.statusCode {
         case 500 ... 599, 429:
-            let waitMillis = Int(Double(pow(2.0, currentAttemptNumber) as NSNumber) * 100.0 + Double(getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
             if (waitMillis > AWSAppSyncRetryHandler.MAX_RETRY_WAIT_MILLIS) {
                 break
             } else {

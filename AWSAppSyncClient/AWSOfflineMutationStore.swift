@@ -62,7 +62,7 @@ public class AWSAppSyncMutationRecord {
     var timestamp: Date
     var selections: [GraphQLSelection]?
     var operationTypeClass: String?
-    var inmemoryExecutor: InMemoryMutationDelegate?
+    weak var inmemoryExecutor: InMemoryMutationDelegate?
     var type: MutationType
     var s3ObjectInput: InternalS3ObjectDetails?
     var operationString: String?
