@@ -11,6 +11,10 @@ import XCTest
 @testable import AWSAppSync
 
 class MockSubscriptionWatcher: MQTTSubscritionWatcher {
+    func connectedCallbackDelegate() {
+        
+    }
+    
     let identifier: Int
     let topics: [String]
     let messageCallbackBlock: ((Data) -> Void)?

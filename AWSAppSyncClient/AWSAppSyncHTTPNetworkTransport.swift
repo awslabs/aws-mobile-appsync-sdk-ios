@@ -45,6 +45,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     var oidcAuthProvider: AWSOIDCAuthProvider? = nil
     var endpoint:AWSEndpoint? = nil
     let authType: AuthType
+    var activeTimers: [String: DispatchSourceTimer] = [:]
     
     /// Creates a network transport with the specified server URL and session configuration.
     ///
@@ -183,13 +184,16 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                     case .success(let jsonBody):
                         completionHandler(jsonBody, nil)
                     case .failure(let error):
+                        let taskUUID = UUID().uuidString
                         let (shouldRetry, backoffTime) = retryHandler.shouldRetryRequest(for: error)
                         if (shouldRetry && backoffTime != nil) {
-                            let _ = self?.executeAfter(milliseconds: backoffTime!, queue: DispatchQueue.global(qos: .userInitiated), block: {
+                            let timer = self?.executeAfter(milliseconds: backoffTime!, queue: DispatchQueue.global(qos: .userInitiated), block: {
                                 self?.sendGraphQLRequest(mutableRequest: mutableRequest,
                                                          retryHandler: retryHandler,
                                                          networkTransportOperation: networkTransportOperation, completionHandler: completionHandler)
+                                self?.activeTimers.removeValue(forKey: taskUUID)
                             })
+                            self?.activeTimers[taskUUID] = timer
                         } else {
                             completionHandler(nil, error)
                         }
@@ -343,24 +347,27 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
 
         return networkTransportOperation
     }
-
+    
     /// Send a GraphQL operation to a server and return a response.
     ///
     /// - Parameters:
     ///   - operation: The operation to send.
+    ///   - overrideMap: The override map which will replace the specified key with corresponding value.
     ///   - completionHandler: A closure to call when a request completes.
     ///   - response: The response received from the server, or `nil` if an error occurred.
     ///   - error: An error that indicates why a request failed, or `nil` if the request was succesful.
     /// - Returns: An object that can be used to cancel an in progress request.
-    public func send<Operation>(operation: Operation, completionHandler: @escaping (GraphQLResponse<Operation>?, Error?) -> Void) -> Cancellable {
+    internal func send<Operation>(operation: Operation, overrideMap: GraphQLMap? = [:], completionHandler: @escaping (GraphQLResponse<Operation>?, Error?) -> Void) -> Cancellable {
         
+        // We will have to invoke this directly from DeltaSubs.
         let networkTransportOperation = AWSAppSyncHTTPNetworkTransportOperation()
         
         var request = URLRequest(url: url)
         initRequest(request: &request)
         
-        let body = requestBody(for: operation)
-        request.httpBody = try! serializationFormat.serialize(value: body)
+        let string = String(data: try! serializationFormat.serialize(value: requestBody(for: operation, overrideMap: overrideMap)), encoding: String.Encoding.utf8)
+        
+        request.httpBody = string!.data(using: String.Encoding.utf8)
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         let retryHandler = AWSAppSyncRetryHandler()
@@ -379,6 +386,19 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                            completionHandler:completionHandlerInternal)
         
         return networkTransportOperation
+    }
+    
+
+    /// Send a GraphQL operation to a server and return a response.
+    ///
+    /// - Parameters:
+    ///   - operation: The operation to send.
+    ///   - completionHandler: A closure to call when a request completes.
+    ///   - response: The response received from the server, or `nil` if an error occurred.
+    ///   - error: An error that indicates why a request failed, or `nil` if the request was succesful.
+    /// - Returns: An object that can be used to cancel an in progress request.
+    public func send<Operation>(operation: Operation, completionHandler: @escaping (GraphQLResponse<Operation>?, Error?) -> Void) -> Cancellable {
+        return send(operation: operation, overrideMap: [:], completionHandler: completionHandler)
     }
     
     /// Send a data payload to a server and return a response.
@@ -407,14 +427,21 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     
     private let sendOperationIdentifiers: Bool
     
-    private func requestBody<Operation: GraphQLOperation>(for operation: Operation) -> GraphQLMap {
+    private func requestBody<Operation: GraphQLOperation>(for operation: Operation, overrideMap: GraphQLMap? = nil) -> GraphQLMap {
+        var operationVariables = operation.variables
+        if overrideMap != nil && overrideMap!.count > 0 {
+            for (key, value) in overrideMap! {
+                operationVariables?[key] = value
+            }
+        }
+        
         if sendOperationIdentifiers {
             guard let operationIdentifier = type(of: operation).operationIdentifier else {
                 preconditionFailure("To send operation identifiers, Apollo types must be generated with operationIdentifiers")
             }
-            return ["id": operationIdentifier, "variables": operation.variables]
+            return ["id": operationIdentifier, "variables": operationVariables]
         }
-        return ["query": type(of: operation).requestString, "variables": operation.variables]
+        return ["query": type(of: operation).requestString, "variables": operationVariables]
     }
     
     internal class AWSAppSyncHTTPNetworkTransportOperation: Cancellable {

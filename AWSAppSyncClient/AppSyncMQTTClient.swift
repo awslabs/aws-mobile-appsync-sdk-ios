@@ -37,6 +37,10 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
                 for topic in topics {
                     mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
                 }
+                topics.map({ self.topicSubscribers[$0] })
+                    .flatMap({$0})
+                    .flatMap({$0})
+                    .forEach({$0.connectedCallbackDelegate()})
             } else if status.rawValue >= 3  {
                 let error = AWSAppSyncSubscriptionError(additionalInfo: "Subscription Terminated.", errorDetails:  [
                     "recoverySuggestion" : "Restart subscription request.",
@@ -81,6 +85,16 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     }
     
     private func resetAndStartSubscriptions(subscriptionInfo: [AWSSubscriptionInfo], identifier: String){
+
+        var oldMQTTClients: [AWSIoTMQTTClient<AnyObject, AnyObject>] = []
+        
+        for client in mqttClients {
+            oldMQTTClients.append(client)
+        }
+        
+        mqttClients.removeAll()
+        mqttClientsWithTopics.removeAll()
+
         
         // identify if we still need to establish new connection; if yes, we proceed, else return.
         if (shouldSubscribe(subscriptionInfo: subscriptionInfo, identifier: identifier)) {
@@ -95,6 +109,11 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             for subscription in subscriptionInfo {
                 startNewSubscription(subscriptionInfo: subscription)
             }
+        }
+        
+        for client in oldMQTTClients {
+            client.clientDelegate = nil
+            client.disconnect()
         }
     }
     

@@ -21,6 +21,7 @@ import os.log
     func getTopics() -> [String]
     func messageCallbackDelegate(data: Data)
     func disconnectCallbackDelegate(error: Error)
+    func connectedCallbackDelegate()
 }
 
 class SubscriptionsOrderHelper {
@@ -58,17 +59,21 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     weak var client: AppSyncMQTTClient?
     weak var httpClient: AWSNetworkTransport?
     var subscription: Subscription?
+    let handlerQueue: DispatchQueue
     var resultHandler: SubscriptionResultHandler<Subscription>?
+    var connectedCallback: (() -> Void)?
     internal var subscriptionTopic: [String]?
     let store: ApolloStore
     public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
     internal var isCancelled: Bool = false
     
-    init(client: AppSyncMQTTClient, httpClient: AWSNetworkTransport, store: ApolloStore, subscriptionsQueue: DispatchQueue, subscription: Subscription, handlerQueue: DispatchQueue, resultHandler: @escaping SubscriptionResultHandler<Subscription>) {
+    init(client: AppSyncMQTTClient, httpClient: AWSNetworkTransport, store: ApolloStore, subscriptionsQueue: DispatchQueue, subscription: Subscription, handlerQueue: DispatchQueue, connectedCallback: (() -> Void)? = nil, resultHandler: @escaping SubscriptionResultHandler<Subscription>) {
         self.client = client
         self.httpClient = httpClient
         self.store = store
         self.subscription = subscription
+        self.handlerQueue = handlerQueue
+        self.connectedCallback = connectedCallback
         self.resultHandler = { (result, transaction, error) in
             handlerQueue.async {
                 resultHandler(result, transaction, error)
@@ -131,6 +136,11 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     
     func disconnectCallbackDelegate(error: Error) {
         self.resultHandler?(nil, nil, error)
+    }
+    
+    func connectedCallbackDelegate() {
+        AppSyncLog.debug("DS: connectedCallback attempted. connected callback is null: \(connectedCallback == nil)")
+        connectedCallback?()
     }
     
     func messageCallbackDelegate(data: Data) {
