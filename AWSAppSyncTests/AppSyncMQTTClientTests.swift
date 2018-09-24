@@ -264,7 +264,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         triggerConnectionStatusChangedToConnectionError?()
         
-        wait(for: [errorDelegateExpectation], timeout: 2)
+        wait(for: [errorDelegateExpectation], timeout: 5)
     }
     
     func testReceiveMessageDelegate() {
