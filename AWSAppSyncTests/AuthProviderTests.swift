@@ -156,7 +156,11 @@ class AuthProviderTests: XCTestCase {
         
         client.perform(mutation: mutation, resultHandler: { (_, error) in
             XCTAssert(error != nil)
-            XCTAssert(error is AuthProviderTestError)
+            if case AWSAppSyncClientError.authenticationError(let authError) = error as! AWSAppSyncClientError {
+                XCTAssert(authError is AuthProviderTestError)
+            } else {
+                XCTAssertTrue(false, "Error of unexpected type")
+            }
             expectation2.fulfill()
         })
         
