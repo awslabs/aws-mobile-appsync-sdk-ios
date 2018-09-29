@@ -571,7 +571,7 @@ public enum AWSAppSyncClientError: Error, LocalizedError {
             return data
         case .requestFailed(let data, _, _):
             return data
-        case .noData:
+        case .noData, .authenticationError(_):
             return nil
         }
     }
@@ -580,10 +580,10 @@ public enum AWSAppSyncClientError: Error, LocalizedError {
     public var response: HTTPURLResponse? {
         switch self {
         case .parseError(_, let response, _):
-            return response as? HTTPURLResponse
+            return response
         case .requestFailed(_, let response, _):
-            return response as? HTTPURLResponse
-        case .noData:
+            return response
+        case .noData, .authenticationError(_):
             return nil
         }
     }
@@ -600,7 +600,7 @@ public enum AWSAppSyncClientError: Error, LocalizedError {
             return "Could not parse response data."
         case .requestFailed(_, _, _):
             return "Did not receive a successful HTTP code."
-        case .noData:
+        case .noData, .authenticationError(_):
             return "No Data received in response."
         }
     }
