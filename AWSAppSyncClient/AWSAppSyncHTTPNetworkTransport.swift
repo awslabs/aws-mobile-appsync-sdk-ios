@@ -264,13 +264,13 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 if let error = task.error {
                     completionHandler(.failure(error))
                 } else {
-                    completionHandler(.success())
+                    completionHandler(.success(()))
                 }
                 return nil
             }
         case .apiKey:
             mutableRequest.setValue(self.apiKeyAuthProvider!.getAPIKey(), forHTTPHeaderField: "x-api-key")
-            completionHandler(.success())
+            completionHandler(.success(()))
         case .oidcToken:
             if let provider = self.oidcAuthProvider as? AWSOIDCAuthProviderAsync {
             
@@ -280,7 +280,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                     }
                     else if let token = token {
                         mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
-                        completionHandler(.success())
+                        completionHandler(.success(()))
                     }
                     else {
                         fatalError("Invalid data returned in token callback")
@@ -288,7 +288,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 }
             } else if let provider = self.oidcAuthProvider {
                  mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
-                 completionHandler(.success())
+                 completionHandler(.success(()))
             } else {
                 fatalError("Authentication provider not set")
             }
@@ -301,7 +301,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                     }
                     else if let token = token {
                         mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
-                        completionHandler(.success())
+                        completionHandler(.success(()))
                     }
                     else {
                         fatalError("Invalid data returned in token callback")
@@ -309,7 +309,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 }
             } else if let provider = self.userPoolsAuthProvider {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
-                completionHandler(.success())
+                completionHandler(.success(()))
             } else {
                 fatalError("Authentication provider not set")
             }
