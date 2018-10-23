@@ -139,7 +139,7 @@ class MutationExecutor: NetworkConnectionNotification {
     let isExecutingDispatchGroup = DispatchGroup()
     var currentMutation: AWSAppSyncMutationRecord?
     var networkClient: AWSNetworkTransport
-    var appSyncClient: AWSAppSyncClient
+    weak var appSyncClient: AWSAppSyncClient?
     var handlerQueue = DispatchQueue.main
     var store: ApolloStore?
     var apolloClient: ApolloClient?
@@ -232,7 +232,7 @@ class MutationExecutor: NetworkConnectionNotification {
         func notifyResultHandler(record: AWSAppSyncMutationRecord, result: JSONObject?, success: Bool, error: Error?) {
             handlerQueue.async {
                 // call master delegate
-                self.appSyncClient.offlineMutationDelegate?.mutationCallback(recordIdentifier: record.recordIdentitifer, operationString: record.operationString!, snapshot: result, error: error)
+                self.appSyncClient?.offlineMutationDelegate?.mutationCallback(recordIdentifier: record.recordIdentitifer, operationString: record.operationString!, snapshot: result, error: error)
             }
         }
         
@@ -263,7 +263,7 @@ class MutationExecutor: NetworkConnectionNotification {
         dispatchGroup.enter()
         if let s3Object = mutation.s3ObjectInput {
             
-            self.appSyncClient.s3ObjectManager!.upload(s3Object: s3Object) { (isSuccessful, error) in
+            self.appSyncClient?.s3ObjectManager!.upload(s3Object: s3Object) { (isSuccessful, error) in
                 if (isSuccessful) {
                     sendDataRequest(mutation: mutation)
                 } else {
