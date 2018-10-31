@@ -222,11 +222,11 @@ class AppSyncMQTTClientTests: XCTestCase {
         client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
         client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: topics)])
         
-        wait(for: [connectExpectation], timeout: 2)
+        wait(for: [connectExpectation], timeout: 5)
         
         triggerConnectionStatusChangedToConnected?()
         
-        wait(for: [subscriptionExpectation], timeout: 2)
+        wait(for: [subscriptionExpectation], timeout: 5)
         
         XCTAssertEqual(topics.count, subscribedTopics.count)
     }
