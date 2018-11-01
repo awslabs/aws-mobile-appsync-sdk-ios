@@ -619,7 +619,6 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         
         self.offlineMutationExecutor = MutationExecutor(networkClient: self.httpTransport!, appSyncClient: self, snapshotProcessController: SnapshotProcessController(endpointURL:self.appSyncConfiguration.url), fileURL: self.appSyncConfiguration.databaseURL)
         networkStatusWatchers.append(self.offlineMutationExecutor!)
-        networkStatusWatchers.append(self)
         
         
         NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
@@ -651,6 +650,7 @@ public class AWSAppSyncClient: NetworkConnectionNotification {
         for watchers in networkStatusWatchers {
             watchers.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
         }
+        self.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
     }
     
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.

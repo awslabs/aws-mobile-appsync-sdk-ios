@@ -559,4 +559,30 @@ class AWSAppSyncTests: XCTestCase {
         }
         wait(for: [failedMutationEventExpectation], timeout: 5.0)
     }
+    
+    func testClientDeinit() {
+        class TestableAppSyncClient: AWSAppSyncClient {
+            var deinitCalled: (() -> Void)?
+            deinit { deinitCalled?() }
+        }
+        
+        let e = expectation(description: "AWSAppSyncClient deinitialized")
+        
+        let credentialsProvider = AWSCognitoCredentialsProvider(regionType: CognitoIdentityRegion, identityPoolId: CognitoIdentityPoolId)
+        credentialsProvider.clearCredentials()
+        credentialsProvider.clearKeychain()
+        
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("testDB")
+        
+        do {
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL, serviceRegion: AppSyncRegion, credentialsProvider: credentialsProvider, databaseURL:databaseURL)
+            var client: TestableAppSyncClient? = try TestableAppSyncClient(appSyncConfig: appSyncConfig)
+            client?.deinitCalled = { e.fulfill() }
+            
+            DispatchQueue.global(qos: .background).async { client = nil }
+            waitForExpectations(timeout: 5)
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
 }
