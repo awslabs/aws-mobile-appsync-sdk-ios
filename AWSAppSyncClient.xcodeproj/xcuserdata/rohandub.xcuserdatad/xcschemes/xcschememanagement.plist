@@ -14,6 +14,11 @@
 			<key>orderHint</key>
 			<integer>8</integer>
 		</dict>
+		<key>AWSAppSyncTestApp.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>8</integer>
+		</dict>
 		<key>AWSAppSyncTests.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -30,6 +35,11 @@
 			<integer>7</integer>
 		</dict>
 		<key>StarWarsAPI.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>9</integer>
+		</dict>
+		<key>StarWarsAPI.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>9</integer>

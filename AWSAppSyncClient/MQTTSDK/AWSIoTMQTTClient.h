@@ -50,7 +50,7 @@
  Delegate object that is called by the AWSIotMQTTClient object as per the AWSiOTMQTTCLientDelegate protocol to communicate changes in communication status and messages received.
  */
  
-@property(nonatomic, strong) id<AWSIoTMQTTClientDelegate> clientDelegate;
+@property(nonatomic, weak) id<AWSIoTMQTTClientDelegate> clientDelegate;
 
 /**
  Boolean flag to indicate whether auto-resubscribe feature is enabled. This flag may
@@ -97,7 +97,7 @@
 /**
  An optional associated object (nil by default).
  */
-@property(nonatomic, strong) NSObject *associatedObject;
+@property(nonatomic, weak) NSObject *associatedObject;
 
 /**
  Initalizer with the Delegate object
