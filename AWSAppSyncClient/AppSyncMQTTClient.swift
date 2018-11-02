@@ -13,6 +13,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     var allowCellularAccess = true
     var scheduledSubscription: DispatchSourceTimer?
     var subscriptionsQueue = DispatchQueue.global(qos: .userInitiated)
+    var cancelledSubscriptions = [String:Bool]()
     
     func receivedMessageData(_ data: Data!, onTopic topic: String!) {
         self.subscriptionsQueue.async { [weak self] in
@@ -53,7 +54,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         topicSubscribers.add(watcher: watcher, topics: topics)
     }
     
-    func startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo]) {
+    func startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo], identifier: String) {
         func createTimer(_ interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
             let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
             #if swift(>=4)
@@ -67,20 +68,33 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         }
         
         self.scheduledSubscription = createTimer(1, queue: subscriptionsQueue, block: { [weak self] in
-            self?.resetAndStartSubscriptions(subscriptionInfo: subscriptionInfo)
+            self?.resetAndStartSubscriptions(subscriptionInfo: subscriptionInfo, identifier: identifier)
         })
     }
     
-    private func resetAndStartSubscriptions(subscriptionInfo: [AWSSubscriptionInfo]){
-        for client in mqttClients {
-            client.clientDelegate = nil
-            client.disconnect()
+    func shouldSubscribe(subscriptionInfo: [AWSSubscriptionInfo], identifier: String) -> Bool {
+        if (cancelledSubscriptions[identifier] != nil) {
+            cancelledSubscriptions[identifier] = true
+            return false
         }
-        mqttClients.removeAll()
-        mqttClientsWithTopics.removeAll()
+        return true
+    }
+    
+    private func resetAndStartSubscriptions(subscriptionInfo: [AWSSubscriptionInfo], identifier: String){
         
-        for subscription in subscriptionInfo {
-            startNewSubscription(subscriptionInfo: subscription)
+        // identify if we still need to establish new connection; if yes, we proceed, else return.
+        if (shouldSubscribe(subscriptionInfo: subscriptionInfo, identifier: identifier)) {
+            for client in mqttClients {
+                client.clientDelegate = nil
+                client.disconnect()
+                
+            }
+            mqttClients.removeAll()
+            mqttClientsWithTopics.removeAll()
+            
+            for subscription in subscriptionInfo {
+                startNewSubscription(subscriptionInfo: subscription)
+            }
         }
     }
     
@@ -100,9 +114,9 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         mqttClient.connect(withClientId: subscriptionInfo.clientId, presignedURL: subscriptionInfo.url, statusCallback: nil)
     }
     
-    public func stopSubscription(subscription: MQTTSubscritionWatcher) {
+    internal func stopSubscription(subscription: MQTTSubscritionWatcher, subscriptionId: String) {
         self.topicSubscribers.remove(subscription: subscription)
-
+        self.cancelledSubscriptions[subscriptionId] = false
         self.subscriptionsQueue.async { [weak self] in
 
             guard let `self` = self else {
@@ -113,7 +127,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
 
             for (client, _) in self.mqttClientsWithTopics.filter({ $0.value.isEmpty }) {
                 client.disconnect()
-                self.mqttClientsWithTopics[client] = nil
+                self.mqttClientsWithTopics.removeValue(forKey: client)
                 self.mqttClients.remove(client)
             }
         }

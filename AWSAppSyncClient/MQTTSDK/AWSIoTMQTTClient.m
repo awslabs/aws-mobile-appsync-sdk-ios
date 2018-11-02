@@ -503,7 +503,6 @@ static const NSString *SDK_VERSION = @"2.6.19";
 }
 
 - (void)disconnect {
-    
     if (self.userDidIssueDisconnect ) {
         //Issuing disconnect multiple times. Turn this function into a noop by returning here.
         return;
@@ -522,6 +521,15 @@ static const NSString *SDK_VERSION = @"2.6.19";
     
     //Set the flag to signal to the runloop that it can terminate
     self.runLoopShouldContinue = NO;
+    
+    [self.webSocket close];
+    self.encoderWriteStream = nil;
+    self.decoderReadStream = nil;
+    self.decoderWriteStream = nil;
+    [self.encoderStream close];
+    self.reconnectTimer = nil;
+    self.clientDelegate = nil;
+    
 
     AWSDDLogInfo(@"AWSIoTMQTTClient: Disconnect message issued.");
 }
@@ -636,6 +644,18 @@ static const NSString *SDK_VERSION = @"2.6.19";
     [defaultRunLoopTimer invalidate];
     
     if (!self.runLoopShouldContinue ) {
+        if (@available(iOS 10.0, *)) {
+            [runLoopForStreamsThread performBlock:^{
+                if (self.connectionAgeTimer != nil ) {
+                    [self.connectionAgeTimer invalidate];
+                    self.connectionAgeTimer = nil;
+                }
+            }];
+        } else {
+            // Fallback on earlier versions
+            [runLoopForStreamsThread performSelector:@selector(invalidateTimer)];
+        }
+        [runLoopForStreamsThread runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:10]];
         [self.session close];
     
         //Set status
@@ -643,6 +663,13 @@ static const NSString *SDK_VERSION = @"2.6.19";
         
         // Let the client know it has been disconnected.
         [self notifyConnectionStatus];
+    }
+}
+    
+- (void)invalidateTimer {
+    if (self.connectionAgeTimer != nil ) {
+        [self.connectionAgeTimer invalidate];
+        self.connectionAgeTimer = nil;
     }
 }
 

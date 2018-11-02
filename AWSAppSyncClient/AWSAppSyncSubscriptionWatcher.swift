@@ -57,26 +57,28 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     
     weak var client: AppSyncMQTTClient?
     weak var httpClient: AWSNetworkTransport?
-    let subscription: Subscription?
-    let handlerQueue: DispatchQueue
-    let resultHandler: SubscriptionResultHandler<Subscription>
+    var subscription: Subscription?
+    var resultHandler: SubscriptionResultHandler<Subscription>?
     internal var subscriptionTopic: [String]?
     let store: ApolloStore
     public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
+    internal var isCancelled: Bool = false
     
     init(client: AppSyncMQTTClient, httpClient: AWSNetworkTransport, store: ApolloStore, subscriptionsQueue: DispatchQueue, subscription: Subscription, handlerQueue: DispatchQueue, resultHandler: @escaping SubscriptionResultHandler<Subscription>) {
         self.client = client
         self.httpClient = httpClient
         self.store = store
         self.subscription = subscription
-        self.handlerQueue = handlerQueue
         self.resultHandler = { (result, transaction, error) in
             handlerQueue.async {
                 resultHandler(result, transaction, error)
             }
         }
         subscriptionsQueue.async { [weak self] in
-            self?.startSubscription()
+            guard let self = self else {return}
+            if (!self.isCancelled) {
+                self.startSubscription()
+            }
         }
     }
     
@@ -89,7 +91,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         
         self.performSubscriptionRequest(completionHandler: { [weak self] (success, error) in
             if let error = error {
-                self?.resultHandler(nil, nil, error)
+                self?.resultHandler?(nil, nil, error)
             }
             semaphore.signal()
         })
@@ -99,14 +101,16 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     
     private func performSubscriptionRequest(completionHandler: @escaping (Bool, Error?) -> Void) {
         do {
-            let _ = try self.httpClient?.sendSubscriptionRequest(operation: subscription!, completionHandler: { (response, error) in
+            let _ = try self.httpClient?.sendSubscriptionRequest(operation: subscription!, completionHandler: {[weak self] (response, error) in
+                guard let self = self else {return}
+                guard self.isCancelled == false else {return}
                 if let response = response {
                     do {
                         let subscriptionResult = try AWSGraphQLSubscriptionResponseParser(body: response).parseResult()
                         if let subscriptionInfo = subscriptionResult.subscriptionInfo {
                             self.subscriptionTopic = subscriptionResult.newTopics
                             self.client?.addWatcher(watcher: self, topics: subscriptionResult.newTopics!, identifier: self.uniqueIdentifier)
-                            self.client?.startSubscriptions(subscriptionInfo: subscriptionInfo)
+                            self.client?.startSubscriptions(subscriptionInfo: subscriptionInfo, identifier: self.uniqueIdentifier.description)
                         }
                         completionHandler(true, nil)
                     } catch {
@@ -126,7 +130,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     }
     
     func disconnectCallbackDelegate(error: Error) {
-        self.resultHandler(nil, nil, error)
+        self.resultHandler?(nil, nil, error)
     }
     
     func messageCallbackDelegate(data: Data) {
@@ -151,7 +155,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                 try response.parseResult(cacheKeyForObject: self.store.cacheKeyForObject)
                 }.andThen { (result, records) in
                     let _ = self.store.withinReadWriteTransaction { transaction in
-                        self.resultHandler(result, transaction, nil)
+                        self.resultHandler?(result, transaction, nil)
                     }
                     
                     if let records = records {
@@ -160,10 +164,10 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                         }
                     }
                 }.catch { error in
-                    self.resultHandler(nil, nil, error)
+                    self.resultHandler?(nil, nil, error)
             }
         } catch {
-            self.resultHandler(nil, nil, error)
+            self.resultHandler?(nil, nil, error)
         }
     }
     
@@ -174,7 +178,13 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     
     /// Cancel any in progress fetching operations and unsubscribe from the messages.
     public func cancel() {
-        client?.stopSubscription(subscription: self)
+        self.isCancelled = true
+        client?.stopSubscription(subscription: self, subscriptionId: uniqueIdentifier.description)
+        self.client = nil
+        self.httpClient = nil
+        self.resultHandler = nil
+        self.subscriptionTopic = nil
+        self.subscription = nil
     }
 }
 
