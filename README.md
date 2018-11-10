@@ -17,7 +17,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
 ```
-  pod 'AWSAppSync', '~> 2.6.22'
+  pod 'AWSAppSync', '~> 2.6.24'
 ```
 
 Example:
@@ -49,7 +49,7 @@ You can find a sample app which uses the AppSync SDK here: https://github.com/aw
 
 ## Documentation
 
-You can find a step by step walk through of setting up codegena backend and accessing it via the iOS client here: https://aws-amplify.github.io/docs/ios/api
+You can find a step by step walk through of setting up codegen backend and accessing it via the iOS client here: https://aws-amplify.github.io/docs/ios/api
 
 ## Contributing
 
