@@ -41,7 +41,7 @@ end
 
 - Codegen
 
-To use the AppSync SDK, you will need to use `aws-appsync-codegen` which helps generated a strongly typed API for your schema. You can find the instructions to use the codegen here: https://github.com/awslabs/aws-appsync-codegen 
+To use the AppSync SDK, you will need to use `amplify codegen` from the [AWS Amplify CLI](https://aws-amplify.github.io/docs/cli/codegen?sdk=ios) which helps generate a strongly typed API for your schema. You can find the instructions to use the codegen here: https://aws-amplify.github.io/docs/ios/api
 
 ## Sample
 
@@ -49,7 +49,7 @@ You can find a sample app which uses the AppSync SDK here: https://github.com/aw
 
 ## Documentation
 
-You can find a step by step walk through of setting up a backend and accessing it via the iOS client here: https://aws-amplify.github.io/docs/ios/api
+You can find a step by step walk through of setting up codegena backend and accessing it via the iOS client here: https://aws-amplify.github.io/docs/ios/api
 
 ## Contributing
 
