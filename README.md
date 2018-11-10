@@ -49,9 +49,7 @@ You can find a sample app which uses the AppSync SDK here: https://github.com/aw
 
 ## Documentation
 
-You can find a step by step walk through of setting up a backend and accessing it via the iOS client here: https://awslabs.github.io/aws-mobile-appsync-sdk-ios/
-
-Additional resources: https://docs.aws.amazon.com/appsync/latest/devguide/building-a-client-app.html 
+You can find a step by step walk through of setting up a backend and accessing it via the iOS client here: https://aws-amplify.github.io/docs/ios/api
 
 ## Contributing
 
