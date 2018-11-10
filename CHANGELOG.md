@@ -6,7 +6,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Misc. Updates
 
-* `AWSAppSync` now depends on `AWSCore` version `2.7.0` instead of `2.6.x`.
+* `AWSAppSync` now depends on `AWSCore` version `2.7.x` instead of `2.6.x`.
 
 ## 2.6.23
 
