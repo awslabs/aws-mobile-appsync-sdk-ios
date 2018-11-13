@@ -12,28 +12,30 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ## Setup
 
+> Note: AWS AppSync uses Swift 4.2. Use Xcode 10.0 or greater to build.
+
 - Consuming through cocoapods:
 
 1. Add the following line to your Podfile:
 
-```
-  pod 'AWSAppSync', '~> 2.6.24'
-```
+    ```
+    pod 'AWSAppSync', '~> 2.6.24'
+    ```
 
-Example:
+    Example:
 
-```
-# Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+    ```
+    # Uncomment the next line to define a global platform for your project
+    # platform :ios, '9.0'
 
-target 'EventsApp' do
-  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
-  use_frameworks!
+    target 'EventsApp' do
+      # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+      use_frameworks!
 
-  # Pods for EventsApp
-  pod 'AWSAppSync', '~> 2.6.24'
-end
-```
+      # Pods for EventsApp
+      pod 'AWSAppSync', '~> 2.6.24'
+    end
+    ```
 
 2. Run `pod install` to install the AppSync SDK
 
@@ -41,7 +43,8 @@ end
 
 - Codegen
 
-To use the AppSync SDK, you will need to use `amplify codegen` from the [AWS Amplify CLI](https://aws-amplify.github.io/docs/cli/codegen?sdk=ios) which helps generate a strongly typed API for your schema. You can find the instructions to use the codegen here: https://aws-amplify.github.io/docs/ios/api
+    To use the AppSync SDK, you will need to use `amplify codegen` from the [AWS Amplify CLI](https://aws-amplify.github.io/docs/cli/codegen?sdk=ios) which helps generate a strongly typed API for your schema. You can find the instructions to use the codegen here: https://aws-amplify.github.io/docs/ios/api
+
 
 ## Sample
 
@@ -69,7 +72,7 @@ If you are contributing to the SDK, it is recommended to add some unit/ function
   - An AppSync API with an `Events App` schema
   - A Cognito Identity Pool with unauthenticated identities supported
   - The Cognito Identity Pool's unauth role should have the `AppSync Invoke Full Access` permission
-  
+
    You can get the backend setup by following the steps below:
 
   - Go to [AWS AppSync console](https://console.aws.amazon.com/appsync/home).
@@ -97,4 +100,4 @@ If you are contributing to the SDK, it is recommended to add some unit/ function
 
 ## License
 
-This library is licensed under the Amazon Software License.
+This library is licensed under the [Amazon Software License](https://aws.amazon.com/asl/).

@@ -9,6 +9,7 @@ Pod::Spec.new do |s|
                      :tag => s.version}
   s.requires_arc = true
   s.ios.deployment_target = '9.0'
+  s.swift_version = '4.2'
   s.dependency 'AWSCore', '~> 2.7.0'
   s.dependency 'SQLite.swift', '0.11.4'
   s.dependency 'ReachabilitySwift', '~> 4.3.0'

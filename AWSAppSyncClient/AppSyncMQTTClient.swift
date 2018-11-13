@@ -17,7 +17,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     
     func receivedMessageData(_ data: Data!, onTopic topic: String!) {
         self.subscriptionsQueue.async { [weak self] in
-            guard let `self` = self, let topics = self.topicSubscribers[topic] else {
+            guard let self = self, let topics = self.topicSubscribers[topic] else {
                 return
             }
             
@@ -29,7 +29,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     
     func connectionStatusChanged(_ status: AWSIoTMQTTStatus, client mqttClient: AWSIoTMQTTClient<AnyObject, AnyObject>) {
         self.subscriptionsQueue.async { [weak self] in
-            guard let `self` = self, let topics = self.mqttClientsWithTopics[mqttClient] else {
+            guard let self = self, let topics = self.mqttClientsWithTopics[mqttClient] else {
                 return
             }
             
@@ -43,7 +43,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
                     "failureReason" : "Disconnected from service."])
                 
                 topics.map({ self.topicSubscribers[$0] })
-                      .flatMap({$0})
+                      .compactMap({$0})
                       .flatMap({$0})
                       .forEach({$0.disconnectCallbackDelegate(error: error)})
             }
@@ -119,7 +119,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         self.cancelledSubscriptions[subscriptionId] = false
         self.subscriptionsQueue.async { [weak self] in
 
-            guard let `self` = self else {
+            guard let self = self else {
                 return
             }
             
