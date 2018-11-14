@@ -524,20 +524,85 @@ public struct AWSAppSyncClientInfoError: Error, LocalizedError {
     }
 }
 
-public struct AWSAppSyncClientError: Error, LocalizedError {
-    
-    /// The body of the response.
-    public let body: Data?
-    /// Information about the response as provided by the server.
-    public let response: HTTPURLResponse?
-    let isInternalError: Bool
-    let additionalInfo: String?
+public enum AWSAppSyncClientError: Error, LocalizedError {
+    case requestFailed(Data?, HTTPURLResponse?, Error?)
+    case noData(HTTPURLResponse)
+    case parseError(Data, HTTPURLResponse, Error?)
+    case authenticationError(Error)
     
     public var errorDescription: String? {
-        if (isInternalError) {
-            return additionalInfo
+        let underlyingError: Error?
+        var message: String
+        let errorResponse: HTTPURLResponse?
+        switch self {
+        case .requestFailed(_, let response, let error):
+            errorResponse = response
+            underlyingError = error
+            message = "Did not receive a successful HTTP code."
+        case .noData(let response):
+            errorResponse = response
+            underlyingError = nil
+            message = "No Data received in response."
+        case .parseError(_, let response, let error):
+            underlyingError = error
+            errorResponse = response
+            message = "Could not parse response data."
+        case .authenticationError(let error):
+            underlyingError = error
+            errorResponse = nil
+            message = "Failed to authenticate request."
         }
-        return "(\(response!.statusCode) \(response!.statusCodeDescription)) \(additionalInfo ?? "")"
+        
+        if let error = underlyingError {
+            message += " Error: \(error)"
+        }
+        
+        if let unwrappedResponse = errorResponse {
+            return "(\(unwrappedResponse.statusCode) \(unwrappedResponse.statusCodeDescription)) \(message)"
+        } else {
+            return "\(message)"
+        }
+    }
+    
+    @available(*, deprecated, message: "use the enum pattern matching instead")
+    public var body: Data? {
+        switch self {
+        case .parseError(let data, _, _):
+            return data
+        case .requestFailed(let data, _, _):
+            return data
+        case .noData, .authenticationError(_):
+            return nil
+        }
+    }
+    
+    @available(*, deprecated, message: "use the enum pattern matching instead")
+    public var response: HTTPURLResponse? {
+        switch self {
+        case .parseError(_, let response, _):
+            return response
+        case .requestFailed(_, let response, _):
+            return response
+        case .noData, .authenticationError(_):
+            return nil
+        }
+    }
+    
+    @available(*, deprecated)
+    var isInternalError: Bool {
+        return false
+    }
+    
+    @available(*, deprecated, message: "use errorDescription instead")
+    var additionalInfo: String? {
+        switch self {
+        case .parseError(_, _, _):
+            return "Could not parse response data."
+        case .requestFailed(_, _, _):
+            return "Did not receive a successful HTTP code."
+        case .noData, .authenticationError(_):
+            return "No Data received in response."
+        }
     }
 }
 
