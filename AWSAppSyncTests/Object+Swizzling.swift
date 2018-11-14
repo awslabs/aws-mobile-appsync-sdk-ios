@@ -44,9 +44,7 @@ extension NSObject {
         
         let swizzledBlock = imp_implementationWithBlock(block)
         
-        guard let newMethod = method_setImplementation(originalMethod, swizzledBlock) else {
-            return
-        }
+        let newMethod = method_setImplementation(originalMethod, swizzledBlock)
         
         let block: () -> Void = {
             method_setImplementation(originalMethod, newMethod)
