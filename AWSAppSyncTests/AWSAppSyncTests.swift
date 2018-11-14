@@ -369,62 +369,13 @@ class AWSAppSyncTests: XCTestCase {
     }
     
     func testSubscription_Stress() {
-        let mutationsDone = expectation(description: "Mutations done successfully.")
-        var eventsCreated: [GraphQLID] = []
-        var subsWatchers: [Cancellable] = []
-        
-        for _ in 0..<18 {
-            let addEvent = AddEventMutation(name: EventName,
-                                            when: EventTime,
-                                            where: EventLocation,
-                                            description: EventDescription)
-            appSyncClient?.perform(mutation: addEvent) { (result, error) in
-                XCTAssertNil(error, "Error expected to be nil, but is not.")
-                XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-                XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
-                eventsCreated.append(result!.data!.createEvent!.id)
-                if eventsCreated.count == 18 {
-                    mutationsDone.fulfill()
-                }
-            }
+        guard let appSyncClient = appSyncClient else {
+            XCTFail("appSyncClient must not be nil")
+            return
         }
-        
-        wait(for: [mutationsDone], timeout: 20.0)
-        XCTAssertTrue(eventsCreated.count == 18)
-        
-        let subsExpectation = expectation(description: "18 subs should receive messages.")
-        var receivedComments: [GraphQLID] = []
-        
-        for i in 0..<eventsCreated.count {
-            let expectationNum = i
-            let watcher = try? appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventsCreated[i])) { (result, _, error) in
-                XCTAssertNil(error, "Error expected to be nil, but is not.")
-                print("Received new comment subscription response. \(expectationNum)")
-                receivedComments.append(result!.data!.subscribeToEventComments!.eventId)
-                if receivedComments.count == 18 {
-                    subsExpectation.fulfill()
-                }
-            }
-            subsWatchers.append(watcher!!)
-            print("Started subscription \(i)")
-        }
-        sleep(10)
-        
-        for i in 0..<eventsCreated.count {
-            let expectationNum = i
-            appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventsCreated[i],
-                                                                    content: "content",
-                                                                    createdAt: "2 pm")) { (result, error) in
-                                                                        XCTAssertNil(error, "Error expected to be nil, but is not.")
-                                                                        XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
-                                                                        print("Received create comment mutation response. \(expectationNum)")
-            }
-            print("Performed Mutation: \(i)")
-        }
-        
-        wait(for: [subsExpectation], timeout: 20.0)
-        
-        XCTAssertTrue(receivedComments.count == 18, "Expected 18 but was \(receivedComments.count)")
+
+        let subscriptionStressTestHelper = SubscriptionStressTestHelper()
+        subscriptionStressTestHelper.stressTestSubscriptions(withAppSyncClient: appSyncClient)
     }
     
     func testInvalidAPIKeyAuth() {
