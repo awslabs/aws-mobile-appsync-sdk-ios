@@ -14,11 +14,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     let database_name = "appsync-local-db"
     var appSyncClient: AWSAppSyncClient?
     
-    let EventName = "Testing Event"
-    let EventTime = "July 26 2018, 12:30"
-    let EventLocation = "Seattle, WA"
-    let EventDescription = "Event Description"
-    
     static let ENDPOINT_KEY = "AppSyncEndpointAPIKey"
     static let API_KEY = "AppSyncAPIKey"
     static let REGION_KEY = "AppSyncEndpointAPIKeyRegion"
@@ -101,36 +96,77 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     
     override func tearDown() {
         super.tearDown()
+        deleteAll()
+    }
+
+    func deleteAll() {
+        guard let appSyncClient = appSyncClient else {
+            return
+        }
+
         let query = ListEventsQuery(limit: 99)
-        let successfulExpectation = expectation(description: "Fetch done successfully.")
-        
-        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
+        let listEventsExpectation = expectation(description: "Fetch done successfully.")
+
+        var events: [ListEventsQuery.Data.ListEvent.Item?]?
+
+        appSyncClient.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be nil.")
-            guard let events = result?.data?.listEvents?.items else { return }
-            
-            for event in events {
-                self.appSyncClient?.perform(mutation: DeleteEventMutation(id: event!.id))
-            }
-            successfulExpectation.fulfill()
+            events = result?.data?.listEvents?.items
+            listEventsExpectation.fulfill()
         }
-        
-        // Wait for the mutations(delete event actions) to complete.
-        wait(for: [successfulExpectation], timeout: 5.0)
+
+        // Wait for the list to complete
+        wait(for: [listEventsExpectation], timeout: 5.0)
+
+        guard let eventsToDelete = events else {
+            return
+        }
+
+        var deleteExpectations = [XCTestExpectation]()
+        for event in eventsToDelete {
+            guard let event = event else {
+                continue
+            }
+
+            let deleteExpectation = self.expectation(description: "Delete event \(event.id)")
+            deleteExpectations.append(deleteExpectation)
+
+            appSyncClient.perform(
+                mutation: DeleteEventMutation(id: event.id),
+                queue: DispatchQueue.main,
+                optimisticUpdate: nil,
+                conflictResolutionBlock: nil,
+                resultHandler: {
+                    (result, error) in
+                    guard let _ = result else {
+                        if let error = error {
+                            XCTFail(error.localizedDescription)
+                        } else {
+                            XCTFail("Error deleting \(event.id)")
+                        }
+                        return
+                    }
+                    deleteExpectation.fulfill()
+                }
+            )
+        }
+
+        wait(for: deleteExpectations, timeout: 5.0)
     }
-    
+
     func testQuery() {
         let successfulMutationEventExpectation = expectation(description: "Mutation done successfully.")
         
-        let addEvent = AddEventMutation(name: EventName,
-                                        when: EventTime,
-                                        where: EventLocation,
-                                        description: EventDescription)
+        let addEvent = AddEventMutation(name: DefaultEventTestData.EventName,
+                                        when: DefaultEventTestData.EventTime,
+                                        where: DefaultEventTestData.EventLocation,
+                                        description: DefaultEventTestData.EventDescription)
         
         appSyncClient?.perform(mutation: addEvent) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            XCTAssert(DefaultEventTestData.EventName == result!.data!.createEvent!.name!, "Event names should match.")
             successfulMutationEventExpectation.fulfill()
         }
         
@@ -153,34 +189,35 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     func testMutation() {
         let successfulMutationEventExpectation = expectation(description: "Mutation done successfully.")
         
-        let addEvent = AddEventMutation(name: EventName,
-                                        when: EventTime,
-                                        where: EventLocation,
-                                        description: EventDescription)
+        let addEvent = AddEventMutation(name: DefaultEventTestData.EventName,
+                                        when: DefaultEventTestData.EventTime,
+                                        where: DefaultEventTestData.EventLocation,
+                                        description: DefaultEventTestData.EventDescription)
         
         appSyncClient?.perform(mutation: addEvent) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            XCTAssert(DefaultEventTestData.EventName == result!.data!.createEvent!.name!, "Event names should match.")
             successfulMutationEventExpectation.fulfill()
         }
         
         wait(for: [successfulMutationEventExpectation], timeout: 5.0)
     }
-    
+
+    // TODO: Unstable test
     func testSubscription() {
         let successfulSubscriptionExpectation = expectation(description: "Mutation done successfully.")
         let receivedSubscriptionExpectation = self.expectation(description: "Subscription received successfully.")
         
-        let addEvent = AddEventMutation(name: EventName,
-                                        when: EventTime,
-                                        where: EventLocation,
-                                        description: EventDescription)
+        let addEvent = AddEventMutation(name: DefaultEventTestData.EventName,
+                                        when: DefaultEventTestData.EventTime,
+                                        where: DefaultEventTestData.EventLocation,
+                                        description: DefaultEventTestData.EventDescription)
         var eventId: GraphQLID?
         appSyncClient?.perform(mutation: addEvent) { (result, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-            XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            XCTAssert(DefaultEventTestData.EventName == result!.data!.createEvent!.name!, "Event names should match.")
             print("Received create event mutation response.")
             
             eventId = result!.data!.createEvent!.id
@@ -211,61 +248,13 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     }
     
     func testSubscription_Stress() {
-        let mutationsDone = expectation(description: "Mutations done successfully.")
-        var eventsCreated: [GraphQLID] = []
-        var subsWatchers: [Cancellable] = []
-        
-        for _ in 0..<18 {
-            let addEvent = AddEventMutation(name: EventName,
-                                            when: EventTime,
-                                            where: EventLocation,
-                                            description: EventDescription)
-            appSyncClient?.perform(mutation: addEvent) { (result, error) in
-                XCTAssertNil(error, "Error expected to be nil, but is not.")
-                XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
-                XCTAssert(self.EventName == result!.data!.createEvent!.name!, "Event names should match.")
-                eventsCreated.append(result!.data!.createEvent!.id)
-                if eventsCreated.count == 18 {
-                    mutationsDone.fulfill()
-                }
-            }
+        deleteAll()
+        guard let appSyncClient = appSyncClient else {
+            XCTFail("appSyncClient must not be nil")
+            return
         }
-        
-        wait(for: [mutationsDone], timeout: 20.0)
-        XCTAssertTrue(eventsCreated.count == 18)
-        
-        let subsExpectation = expectation(description: "18 subs should receive messages.")
-        var receivedComments: [GraphQLID] = []
-        
-        for i in 0..<eventsCreated.count {
-            let expectationNum = i
-            let watcher = try? appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventsCreated[i])) { (result, _, error) in
-                XCTAssertNil(error, "Error expected to be nil, but is not.")
-                print("Received new comment subscription response. \(expectationNum)")
-                receivedComments.append(result!.data!.subscribeToEventComments!.eventId)
-                if receivedComments.count == 18 {
-                    subsExpectation.fulfill()
-                }
-            }
-            subsWatchers.append(watcher!!)
-            print("Started subscription \(i)")
-        }
-        sleep(15)
-        
-        for i in 0..<eventsCreated.count {
-            let expectationNum = i
-            appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventsCreated[i],
-                                                                    content: "content",
-                                                                    createdAt: "2 pm")) { (result, error) in
-                                                                        XCTAssertNil(error, "Error expected to be nil, but is not.")
-                                                                        XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
-                                                                        print("Received create comment mutation response. \(expectationNum)")
-            }
-            print("Performed Mutation: \(i)")
-        }
-        
-        wait(for: [subsExpectation], timeout: 20.0)
-        
-        XCTAssertTrue(receivedComments.count == 18, "Expected 18 but was \(receivedComments.count)")
+
+        let subscriptionStressTestHelper = SubscriptionStressTestHelper()
+        subscriptionStressTestHelper.stressTestSubscriptions(withAppSyncClient: appSyncClient)
     }
 }
