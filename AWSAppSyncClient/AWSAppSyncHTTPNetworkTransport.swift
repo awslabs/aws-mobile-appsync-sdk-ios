@@ -195,6 +195,8 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                         } else {
                             completionHandler(nil, error)
                         }
+                    } else {
+                        completionHandler(nil, error)
                     }
                     return
                 }
