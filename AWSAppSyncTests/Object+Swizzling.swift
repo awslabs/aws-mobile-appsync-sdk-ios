@@ -25,7 +25,7 @@ extension NSObject {
         static var swizzledMethodsRestorations = "swizzledMethodsRestorations"
     }
     
-    class var swizzledMethodsRestorations: NSMutableArray? {
+    @objc class var swizzledMethodsRestorations: NSMutableArray? {
         get {
             return getAssociatedObject(object: self, associativeKey: &AssociatedKey.swizzledMethodsRestorations)
         }
@@ -37,16 +37,14 @@ extension NSObject {
         }
     }
     
-    static func swizzle(selector: Selector, withBlock block: Any) {
+    @objc static func swizzle(selector: Selector, withBlock block: Any) {
         guard let originalMethod = class_getInstanceMethod(self, selector) else {
             return
         }
         
         let swizzledBlock = imp_implementationWithBlock(block)
         
-        guard let newMethod = method_setImplementation(originalMethod, swizzledBlock) else {
-            return
-        }
+        let newMethod = method_setImplementation(originalMethod, swizzledBlock)
         
         let block: () -> Void = {
             method_setImplementation(originalMethod, newMethod)
@@ -59,7 +57,7 @@ extension NSObject {
         }
     }
     
-    static func restoreSwizzledMethods() {
+    @objc static func restoreSwizzledMethods() {
         if let array = self.swizzledMethodsRestorations {
             array.forEach { (object) in
                 if let block = object as? () -> Void {

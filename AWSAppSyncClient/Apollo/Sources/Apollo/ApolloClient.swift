@@ -152,8 +152,8 @@ private final class FetchQueryOperation<Query: GraphQLQuery>: AsynchronousOperat
     let client: ApolloClient
     let query: Query
     let cachePolicy: CachePolicy
-    let context: UnsafeMutableRawPointer?
-    let handlerQueue: DispatchQueue
+    @objc let context: UnsafeMutableRawPointer?
+    @objc let handlerQueue: DispatchQueue
     let resultHandler: OperationResultHandler<Query>?
     
     private var networkTask: Cancellable?
@@ -205,7 +205,7 @@ private final class FetchQueryOperation<Query: GraphQLQuery>: AsynchronousOperat
         }
     }
     
-    func fetchFromNetwork() {
+    @objc func fetchFromNetwork() {
         networkTask = client.send(operation: query, context: context, handlerQueue: handlerQueue) { (result, error) in
             self.notifyResultHandler(result: result, error: error)
             self.state = .finished
