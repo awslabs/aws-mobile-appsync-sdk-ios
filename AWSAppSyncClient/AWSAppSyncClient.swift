@@ -921,8 +921,7 @@ public class AWSAppSyncClient {
         let deltaCallback: (GraphQLResult<EmptyQuery.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (res, trans, err) in
         }
         
-        return AppSyncDeltaSubscription<EmptySubscription, BaseQuery, EmptyQuery>.init(appsyncClient: self,
-                                                                                       isNetworkAvailable: accessState == .Online,
+        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, EmptyQuery>.init(appsyncClient: self,
                                                                                        baseQuery: baseQuery,
                                                                                        deltaQuery: deltaQuery,
                                                                                        subscription: subs,
@@ -944,8 +943,7 @@ public class AWSAppSyncClient {
         let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (res, trans, err) in
         }
         
-        return AppSyncDeltaSubscription<EmptySubscription, BaseQuery, DeltaQuery>.init(appsyncClient: self,
-                                      isNetworkAvailable: accessState == .Online,
+        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, DeltaQuery>.init(appsyncClient: self,
                                       baseQuery: baseQuery,
                                       deltaQuery: deltaQuery,
                                       subscription: subs,
@@ -977,9 +975,8 @@ public class AWSAppSyncClient {
         deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>)
     -> Cancellable {
         
-        return AppSyncDeltaSubscription<Subscription, BaseQuery, DeltaQuery>(
+        return AppSyncSubscriptionWithSync<Subscription, BaseQuery, DeltaQuery>(
             appsyncClient: self,
-            isNetworkAvailable: accessState == .Online,
             baseQuery: baseQuery,
             deltaQuery: deltaQuery,
             subscription: subscription,
