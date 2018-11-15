@@ -10,17 +10,6 @@ internal class AWSAppSyncRetryHandler {
     var currentAttemptNumber = 0
     static let MAX_RETRY_WAIT_MILLIS = 300 * 1000 // 5 minutes of max retry duration.
     static let JITTER: Float = 100.0
-    static let NSURLNetworkRequestCancelledCode = -999
-    static let NSURLNetworkRequestUnauthorizedCode = 401
-    static let NSURLErrorDomainNotFound = -1003
-    static let NSURLSoftwareTaskCancelled = 53
-    
-    static let ErrorCodes: [Int] = [NSURLErrorNotConnectedToInternet,
-                                    NSURLErrorNetworkConnectionLost,
-                                    NSURLNetworkRequestUnauthorizedCode,
-                                    NSURLErrorDomainNotFound,
-                                    NSURLSoftwareTaskCancelled,
-                                    NSURLErrorTimedOut]
     
     internal  init() { }
     
@@ -31,17 +20,12 @@ internal class AWSAppSyncRetryHandler {
 
     func shouldRetryRequest(for error: AWSAppSyncClientError) -> (Bool, Int?) {
         currentAttemptNumber += 1
-        var waitMillis = Int(Double(truncating: pow(2.0, currentAttemptNumber) as NSNumber) * 100.0 + Double(getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
+        var waitMillis = Int(Double(truncating: pow(2.0, currentAttemptNumber) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
         
         var httpResponse: HTTPURLResponse?
 
         switch error {
-        case .requestFailed(_, let reponse, let networkError):
-            if let networkError = networkError {
-                if AWSAppSyncRetryHandler.ErrorCodes.contains(networkError._code) {
-                    return(true, waitMillis)
-                }
-            }
+        case .requestFailed(_, let reponse,_):
             httpResponse = reponse
         case .noData(let response):
             httpResponse = response
@@ -75,7 +59,7 @@ internal class AWSAppSyncRetryHandler {
         return(false, nil)
     }
     
-    private func getRandomBetween0And1() -> Float {
+    static func getRandomBetween0And1() -> Float {
         return Float(arc4random()) / Float(UINT32_MAX)
     }
 }

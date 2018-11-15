@@ -111,8 +111,13 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             }
         }
         
+        // Mute the old clients by setting the delegate to nil
         for client in oldMQTTClients {
             client.clientDelegate = nil
+        }
+        
+        // Disconnect the old clients
+        for client in oldMQTTClients {
             client.disconnect()
         }
     }

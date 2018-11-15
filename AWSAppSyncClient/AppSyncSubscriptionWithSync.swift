@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import Reachability
 
 public enum DeltaSyncState {
     case active, failed(error: Error), interrupted, terminated(error: Error), cancelled
@@ -15,15 +14,13 @@ public typealias DeltaSyncStatusCallback = ((_ currentState: DeltaSyncState) -> 
 public class SyncConfiguration {
     
     internal let seconds: Int
-    internal let initialSyncTime: Date?
     
     internal var syncIntervalInSeconds: Int {
         return seconds
     }
     
-    public init(seconds: Int, initialSyncTime: Date? = nil) {
+    public init(seconds: Int) {
         self.seconds = seconds
-        self.initialSyncTime = initialSyncTime
     }
     
     // utility for setting default sync to 1 day
@@ -34,7 +31,7 @@ public class SyncConfiguration {
 
 public typealias DeltaQueryResultHandler<Operation: GraphQLQuery> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
 
-internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>: Cancellable {
+internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>: Cancellable {
     
     weak var appsyncClient: AWSAppSyncClient?
     weak var subscriptionMetadataCache: AWSSubscriptionMetaDataCache?
@@ -49,24 +46,17 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
     var userCancelledSubscription: Bool = false
     var shouldQueueSubscriptionMessages: Bool = false
     var subscriptionMessagesQueue: [(GraphQLResult<Subscription.Data>, Date)] = []
-    var reachability: Reachability? = Reachability.init()
     var isNetworkAvailable: Bool = true
     var lastSyncTime: Date?
-    var lastBaseQueryFetchTime: Date?
-    var serialQueue: DispatchQueue?
-    var deltaSyncQueue: DispatchQueue?
     var deltaSyncOperationQueue: OperationQueue?
-    var deltaSyncSerialQueue: DispatchQueue?
+    var subscriptionMessageDispatchQueue: DispatchQueue?
     weak var handlerQueue: DispatchQueue?
     var activeTimer: DispatchSourceTimer?
     var deltaSyncStatusCallback: DeltaSyncStatusCallback?
-    var isFirstSync: Bool = true
-    var isFirstSyncOperation: Bool = true
-    var initialNetworkState: Bool = true
-    var didBaseQueryRunFromNetwork: Bool = false
+    var isSyncOperationSuccessful: Bool = false
+    var currentAttempt: Int = 0
     
     internal init(appsyncClient: AWSAppSyncClient,
-                  isNetworkAvailable: Bool,
                   baseQuery: BaseQuery,
                   deltaQuery: DeltaQuery,
                   subscription: Subscription,
@@ -91,26 +81,23 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
             self.deltaQueryHandler = deltaQueryHandler
         }
         self.baseQueryHandler = baseQueryHandler
-        self.initialNetworkState = isNetworkAvailable
         // self.deltaSyncStatusCallback = deltaSyncStatusCallback
-        self.serialQueue = DispatchQueue(label: "AppSync.LastSyncTimeSerialQueue")
-        self.deltaSyncQueue = DispatchQueue(label: "AppSync.DeltaSyncAsyncQueue.\(getOperationHash())")
         self.deltaSyncOperationQueue = OperationQueue()
         deltaSyncOperationQueue?.maxConcurrentOperationCount = 1
         deltaSyncOperationQueue?.name = "AppSync.DeltaSyncOperationQueue.\(getOperationHash())"
-        self.deltaSyncSerialQueue = DispatchQueue(label: "AppSync.DeltaSyncSerialQueue.\(getOperationHash())")
-        
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(AppSyncDeltaSubscription.applicationWillEnterForeground),
-                                               name: .UIApplicationWillEnterForeground, object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(AppSyncDeltaSubscription.didConnectivityChange(notification:)),
-                                               name: .appSyncReachabilityChanged, object: nil)
-        
-        loadSyncTimeFromCache()
+        subscriptionMessageDispatchQueue = DispatchQueue(label: "SubscriptionMessagesQueue.\(getOperationHash())")
+
         self.deltaSyncOperationQueue?.addOperation {
-            AppSyncLog.debug("DS: =============== Perform Sync Main =============== ")
+            NotificationCenter.default.addObserver(self,
+                                                   selector: #selector(AppSyncSubscriptionWithSync.applicationWillEnterForeground),
+                                                   name: .UIApplicationWillEnterForeground, object: nil)
+            
+            NotificationCenter.default.addObserver(self,
+                                                   selector: #selector(AppSyncSubscriptionWithSync.didConnectivityChange(notification:)),
+                                                   name: .appSyncReachabilityChanged, object: nil)
+            self.loadSyncTimeFromCache()
+            self.runBaseQueryFromCache()
+            AppSyncLog.debug("DS: =============== Perform Initial Sync =============== ")
             self.performDeltaSync()
         }
     }
@@ -120,59 +107,69 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
     }
     
     func performDeltaSync() {
-        AppSyncLog.debug("DS: =============== Perform Sync =============== ")
-         self.deltaSyncSerialQueue!.sync {
-            AppSyncLog.debug("DS: =============== Got Thread =============== ")
-            shouldQueueSubscriptionMessages = true
-            didBaseQueryRunFromNetwork = false
-            
-            defer{
-                // setup the timer to force catch up using the base query
-                activeTimer = setupAsyncPoll(pollDuration: syncConfiguration.syncIntervalInSeconds)
-                // deltaSyncStatusCallback?(.active)
-                shouldQueueSubscriptionMessages = false
+            // TODO: Capture timestamp here and use it start the asyncTimer
+        AppSyncLog.debug("DS: =============== Starting Sync =============== ")
+        shouldQueueSubscriptionMessages = true
+        currentAttempt += 1
+        
+        let baseQueryDispatchTime = DispatchTime.now()
+        
+        defer{
+            subscriptionMessageDispatchQueue?.sync {
                 drainSubscriptionMessagesQueue()
+                shouldQueueSubscriptionMessages = false
             }
             
-            if (isFirstSyncOperation) {
-                runBaseQueryFromCache()
-                isFirstSyncOperation = false
+            // setup the timer to force catch up using the base query or retry in case of failed state
+            if (isSyncOperationSuccessful) {
+                let deadline = baseQueryDispatchTime + .seconds(syncConfiguration.syncIntervalInSeconds)
+                AppSyncLog.debug("DS: Setting up baseQuery timer")
+                activeTimer = setupAsyncPoll(deadline: deadline)
+            } else {
+                let waitMillis = Int(Double(truncating: pow(2.0, currentAttempt) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
+                let deadline = DispatchTime.now() + .milliseconds(waitMillis)
+                AppSyncLog.debug("DS: Setting up retry timer")
+                activeTimer = setupAsyncPoll(deadline: deadline)
             }
-            
-            guard startSubscription() == true else {
-                return
-            }
-            
+        }
+        
+        guard startSubscription() == true else {
+            return
+        }
+        
+        // If within time frame, fetch from cache
+        if (lastSyncTime == nil ||
+            (Date() > Date(timeInterval: TimeInterval(exactly: syncConfiguration.syncIntervalInSeconds)!, since: self.lastSyncTime!))){
             guard runBaseQuery() == true else {
                 return
             }
-            
+        } else {
             // If we ran baseQuery in this iteration of sync, we do not run the delta query
-            if !self.didBaseQueryRunFromNetwork {
-                guard runDeltaQuery() == true else {
-                    return
-                }
+            guard runDeltaQuery() == true else {
+                return
             }
         }
+        
+        isSyncOperationSuccessful = true
     }
     
-    func executeAfter(milliseconds interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
+    func executeAfter(deadline: DispatchTime, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
         #if swift(>=4)
-        timer.schedule(deadline: .now() + .milliseconds(interval))
+        timer.schedule(deadline: deadline)
         #else
-        timer.scheduleOneshot(deadline: .now() + .milliseconds(interval))
+        timer.scheduleOneshot(deadline: deadline)
         #endif
         timer.setEventHandler(handler: block)
         timer.resume()
         return timer
     }
     
-    func setupAsyncPoll(pollDuration: Int) -> DispatchSourceTimer {
+    func setupAsyncPoll(deadline: DispatchTime) -> DispatchSourceTimer {
         // Invalidate existing time and restart again
         activeTimer?.cancel()
         
-        return executeAfter(milliseconds: pollDuration * 1000, queue: self.handlerQueue!) {
+        return executeAfter(deadline: deadline, queue: self.handlerQueue!) {
             AppSyncLog.debug("DS: Timer fired. Performing sync.")
             self.deltaSyncOperationQueue?.addOperation {
                 AppSyncLog.debug("DS: =============== Perform Sync Timer =============== ")
@@ -192,7 +189,6 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
                 dispatchGroup.leave()
             })
             dispatchGroup.wait()
-            isFirstSyncOperation = false
         }
     }
     
@@ -200,36 +196,32 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
     func runBaseQuery() -> Bool {
         var success: Bool = true
         if let baseQuery = baseQuery {
-            // If within time frame, fetch from cache
-            if lastSyncTime == nil || (Date() > Date(timeInterval: TimeInterval(exactly: syncConfiguration.syncIntervalInSeconds)!, since: self.lastSyncTime!)){
-                AppSyncLog.info("DS: Running Base Query Now")
-                self.didBaseQueryRunFromNetwork = true
-                let dispatchGroup = DispatchGroup()
-                dispatchGroup.enter()
-                let networkFetchTime = Date()
-                AppSyncLog.info("DS: Running base query from network.")
-                appsyncClient?.fetch(query: baseQuery, cachePolicy: .fetchIgnoringCacheData, resultHandler: {[weak self] (result, error) in
-                    // call customer if successful or error
-                    // return false to parent if failed
-                    if error == nil {
-                        self?.baseQueryHandler?(result, error)
-                        success = true
-                    } else if error != nil && result != nil {
-                        self?.baseQueryHandler?(result, error)
-                        success = true
-                    } else {
-                        self?.baseQueryHandler?(result, error)
-                        success = false
-                    }
-                    if (success) {
-                        AppSyncLog.debug("DS: Updating base query fetch time and last sync time.")
-                        self?.updateLastBaseQueryFetchTimeInMemoryAndCache(date: networkFetchTime)
-                        self?.updateLastSyncTimeInMemoryAndCache(date: networkFetchTime)
-                    }
-                    dispatchGroup.leave()
-                })
-                dispatchGroup.wait()
-            }
+            AppSyncLog.info("DS: Running Base Query Now")
+            let dispatchGroup = DispatchGroup()
+            dispatchGroup.enter()
+            let networkFetchTime = Date()
+            AppSyncLog.info("DS: Running base query from network.")
+            appsyncClient?.fetch(query: baseQuery, cachePolicy: .fetchIgnoringCacheData, resultHandler: {[weak self] (result, error) in
+                // call customer if successful or error
+                // return false to parent if failed
+                if error == nil {
+                    self?.baseQueryHandler?(result, error)
+                    success = true
+                } else if error != nil && result != nil {
+                    self?.baseQueryHandler?(result, error)
+                    success = true
+                } else {
+                    self?.baseQueryHandler?(result, error)
+                    success = false
+                }
+                if (success) {
+                    AppSyncLog.debug("DS: Updating last sync time.")
+                    self?.updateLastSyncTimeInMemoryAndCache(date: networkFetchTime)
+                }
+                dispatchGroup.leave()
+            })
+            dispatchGroup.wait()
+            
         }
         return success
     }
@@ -241,15 +233,11 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
     func runDeltaQuery() -> Bool {
         if let deltaQuery = deltaQuery, let lastSyncTime = self.lastSyncTime {
             let dispatchGroup = DispatchGroup()
-            AppSyncLog.info("DS: Running Delta Query Now \(self.didBaseQueryRunFromNetwork)")
+            AppSyncLog.info("DS: Running Delta Query now")
             if let networkTransport = appsyncClient?.httpTransport as? AWSAppSyncHTTPNetworkTransport {
                 dispatchGroup.enter()
                 var overrideMap: [String:Int] = [:]
-                // we allow developer to override the previous sync time while making the request.
-                if isFirstSync && syncConfiguration.initialSyncTime != nil {
-                    AppSyncLog.debug("DS: Using the specified override time. \(syncConfiguration.initialSyncTime!.description)")
-                    overrideMap = ["lastSync": Int(Float(syncConfiguration.initialSyncTime!.timeIntervalSince1970.description)!)]
-                } else if let lastSyncTime = self.lastSyncTime {
+                if let lastSyncTime = self.lastSyncTime {
                     AppSyncLog.debug("DS: Using last sync time from cache. \(lastSyncTime.description)")
                     overrideMap = ["lastSync": Int(Float(lastSyncTime.timeIntervalSince1970.description)!)]
                 } else {
@@ -313,6 +301,11 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
                         dispatchGroup.leave()
                     }
                 }), resultHandler: {[weak self] (result, transaction, error) in
+                    // TODO: Improve error checking.
+                    if let _ = error as? AWSAppSyncSubscriptionError {
+                            success = false
+                            dispatchGroup.leave()
+                    }
                     self?.handleSubscriptionCallback(result, transaction, error)
                 })
                 
@@ -329,19 +322,22 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
     }
     
     func handleSubscriptionCallback(_ result: GraphQLResult<Subscription.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) {
+        // TODO: Improve error checking.
         if let error = error as? AWSAppSyncSubscriptionError, error.additionalInfo == "Subscription Terminated." {
             // Do not give the developer a disconnect callback here. We have to retry the subscription once app comes from background to foreground or internet becomes available.
             AppSyncLog.debug("DS: Subscription terminated. Waiting for network to restart.")
             deltaSyncStatusCallback?(.interrupted)
         } else if let result = result, let transaction = transaction {
-            if shouldQueueSubscriptionMessages {
-                // store arriaval timestamp as well to make sure we use it for maintaining last sync time.
-                AppSyncLog.debug("DS: Received subscription message, saving subscription message in queue.")
-                subscriptionMessagesQueue.append((result, Date()))
-            } else {
-                AppSyncLog.debug("DS: Received subscription message, invoking customer callback.")
-                subscriptionHandler?(result, transaction, nil)
-                updateLastSyncTimeInMemoryAndCache(date: Date())
+            subscriptionMessageDispatchQueue?.sync {
+                if shouldQueueSubscriptionMessages {
+                    // store arriaval timestamp as well to make sure we use it for maintaining last sync time.
+                    AppSyncLog.debug("DS: Received subscription message, saving subscription message in queue.")
+                    subscriptionMessagesQueue.append((result, Date()))
+                } else {
+                    AppSyncLog.debug("DS: Received subscription message, invoking customer callback.")
+                    subscriptionHandler?(result, transaction, nil)
+                    updateLastSyncTimeInMemoryAndCache(date: Date())
+                }
             }
         } else {
             AppSyncLog.error("DS: Unable to start subscription.")
@@ -399,47 +395,23 @@ internal class AppSyncDeltaSubscription<Subscription: GraphQLSubscription, BaseQ
     
     /// Responsible to update the last sync time in cache. Expected to be called when subs message is given to the customer or if base query or delta query is run.
     func updateLastSyncTimeInMemoryAndCache(date: Date) {
-        serialQueue!.sync {
-            do {
-                let adjustedDate = date.addingTimeInterval(TimeInterval.init(exactly: -2)!)
-                self.lastSyncTime = adjustedDate
-                AppSyncLog.debug("DS: Updating lastSync time \(self.lastSyncTime.debugDescription)")
-                try self.subscriptionMetadataCache?.updateLasySyncTime(operationHash: getOperationHash(), lastSyncDate: adjustedDate)
-            } catch {
-                // ignore cache write failure, will be updated in next operation, is backed up by in-memory cache
-            }
-        }
-    }
-    
-    /// Responsible to update the last base query fetch time in cache. Expected to be called when base query fetch is done from network.
-    func updateLastBaseQueryFetchTimeInMemoryAndCache(date: Date) {
-        serialQueue!.sync {
-            do {
-                let adjustedDate = date.addingTimeInterval(TimeInterval.init(exactly: -2)!)
-                self.lastBaseQueryFetchTime = adjustedDate
-                try self.subscriptionMetadataCache?.updateBaseQueryFetchTime(operationHash: getOperationHash(), baseQueryFetchTime: adjustedDate)
-            } catch {
-                // ignore cache write failure, will be updated in next operation, is backed up by in-memory cache time
-            }
-            
+        do {
+            let adjustedDate = date.addingTimeInterval(TimeInterval.init(exactly: -2)!)
+            self.lastSyncTime = adjustedDate
+            AppSyncLog.debug("DS: Updating lastSync time \(self.lastSyncTime.debugDescription)")
+            try self.subscriptionMetadataCache?.updateLasySyncTime(operationHash: getOperationHash(), lastSyncDate: adjustedDate)
+        } catch {
+            // ignore cache write failure, will be updated in next operation, is backed up by in-memory cache
         }
     }
     
     /// Fetches last sync time from the cache.
     func loadSyncTimeFromCache() {
-        serialQueue!.sync {
-            do {
-                self.lastSyncTime = try self.subscriptionMetadataCache?.getLastSyncTime(operationHash: getOperationHash())
-                AppSyncLog.debug("DS: lastSync \(self.lastSyncTime.debugDescription)")
-            } catch {
-                // could not find it in cache, do not update the instance variable of lasy sync time; assume no sync was done previously
-            }
-            do {
-                self.lastBaseQueryFetchTime = try self.subscriptionMetadataCache?.getLastBaseQueryFetchTime(operationHash: getOperationHash())
-                AppSyncLog.debug("DS: lastBaseQuery \(self.lastBaseQueryFetchTime.debugDescription)")
-            } catch {
-                // could not find it in cache, do not update the instance variable of lasy base query fetch time; assume was not fetched previously
-            }
+        do {
+            self.lastSyncTime = try self.subscriptionMetadataCache?.getLastSyncTime(operationHash: getOperationHash())
+            AppSyncLog.debug("DS: lastSync \(self.lastSyncTime.debugDescription)")
+        } catch {
+            // could not find it in cache, do not update the instance variable of lasy sync time; assume no sync was done previously
         }
     }
     

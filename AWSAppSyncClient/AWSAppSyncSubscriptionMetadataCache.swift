@@ -13,7 +13,6 @@ internal final class AWSSubscriptionMetaDataCache {
     private let id = Expression<Int64>("_id")
     private let operationHash = Expression<String>("operationHash")
     private let lastSyncDate = Expression<Date?>("lastSyncDate")
-    private let lastBaseQueryFetchDate = Expression<Date?>("lastBaseQueryFetchDate")
     
     public init(fileURL: URL) throws {
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
@@ -26,7 +25,6 @@ internal final class AWSSubscriptionMetaDataCache {
             table.column(id, primaryKey: .autoincrement)
             table.column(operationHash, unique: true)
             table.column(lastSyncDate)
-            table.column(lastBaseQueryFetchDate)
         })
     }
     
@@ -46,22 +44,6 @@ internal final class AWSSubscriptionMetaDataCache {
         try db.run(insert)
     }
     
-    internal func updateBaseQueryFetchTime(operationHash: String, baseQueryFetchTime: Date) throws {
-        
-        let sqlRecord = subscriptionMetadataRecords.filter(self.operationHash == operationHash)
-        
-        let recordCount = try db.scalar(sqlRecord.count)
-        
-        guard recordCount == 0 else {
-            try db.run(sqlRecord.update(self.operationHash <- operationHash, self.lastBaseQueryFetchDate <- baseQueryFetchTime))
-            return
-        }
-        
-        let insert = subscriptionMetadataRecords.insert(self.lastBaseQueryFetchDate <- baseQueryFetchTime,
-                                                        self.operationHash <- operationHash)
-        try db.run(insert)
-    }
-    
     internal func getLastSyncTime(operationHash: String) throws -> Date? {
         let sqlRecord = subscriptionMetadataRecords.filter(self.operationHash == operationHash)
         
@@ -74,22 +56,6 @@ internal final class AWSSubscriptionMetaDataCache {
         var syncDate: Date?
         for record in try db.prepare(sqlRecord) {
             syncDate = try record.get(lastSyncDate)
-        }
-        return syncDate
-    }
-    
-    internal func getLastBaseQueryFetchTime(operationHash: String) throws -> Date? {
-        let sqlRecord = subscriptionMetadataRecords.filter(self.operationHash == operationHash)
-        
-        let recordCount = try db.scalar(sqlRecord.count)
-        
-        guard recordCount != 0 else {
-            return nil
-        }
-        
-        var syncDate: Date?
-        for record in try db.prepare(sqlRecord) {
-            syncDate = try record.get(lastBaseQueryFetchDate)
         }
         return syncDate
     }
