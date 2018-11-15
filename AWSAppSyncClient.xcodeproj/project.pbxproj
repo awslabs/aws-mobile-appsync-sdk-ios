@@ -29,7 +29,7 @@
 		1700507B215445BE008B16B6 /* ReadWriteFromStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17005077215445BE008B16B6 /* ReadWriteFromStoreTests.swift */; };
 		1700507C215445BE008B16B6 /* WatchQueryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17005078215445BE008B16B6 /* WatchQueryTests.swift */; };
 		1700507D215445BE008B16B6 /* LoadQueryFromStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17005079215445BE008B16B6 /* LoadQueryFromStoreTests.swift */; };
-		170051032155A7B9008B16B6 /* AWSAppSyncDeltaSubscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170051022155A7B9008B16B6 /* AWSAppSyncDeltaSubscription.swift */; };
+		17185D2D219DEA7900092934 /* AppSyncSubscriptionWithSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17185D2C219DEA7800092934 /* AppSyncSubscriptionWithSync.swift */; };
 		171A3FDB1FC4995A0040C400 /* AWSAppSync.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DECF611F59F5FF004B0512 /* AWSAppSync.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1729A0BE1F9DAB2400F88594 /* AWSSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 1729A0941F9DAB2300F88594 /* AWSSRWebSocket.h */; };
 		1729A0BF1F9DAB2400F88594 /* AWSSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 1729A0951F9DAB2300F88594 /* AWSSRWebSocket.m */; };
@@ -192,7 +192,7 @@
 		17005077215445BE008B16B6 /* ReadWriteFromStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadWriteFromStoreTests.swift; sourceTree = "<group>"; };
 		17005078215445BE008B16B6 /* WatchQueryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WatchQueryTests.swift; sourceTree = "<group>"; };
 		17005079215445BE008B16B6 /* LoadQueryFromStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoadQueryFromStoreTests.swift; sourceTree = "<group>"; };
-		170051022155A7B9008B16B6 /* AWSAppSyncDeltaSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncDeltaSubscription.swift; sourceTree = "<group>"; };
+		17185D2C219DEA7800092934 /* AppSyncSubscriptionWithSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSyncSubscriptionWithSync.swift; sourceTree = "<group>"; };
 		1729A0941F9DAB2300F88594 /* AWSSRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSSRWebSocket.h; sourceTree = "<group>"; };
 		1729A0951F9DAB2300F88594 /* AWSSRWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AWSSRWebSocket.m; sourceTree = "<group>"; };
 		1729A0961F9DAB2300F88594 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -523,7 +523,7 @@
 				178B31051FCDB34100EA4619 /* AWSAppSyncClientS3ObjectsExtensions.swift */,
 				17A7F8C91FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift */,
 				179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */,
-				170051022155A7B9008B16B6 /* AWSAppSyncDeltaSubscription.swift */,
+				17185D2C219DEA7800092934 /* AppSyncSubscriptionWithSync.swift */,
 				179E0A66215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift */,
 			);
 			path = AWSAppSyncClient;
@@ -1011,6 +1011,7 @@
 				17E009C41FCAB234005031DB /* AsynchronousOperation.swift in Sources */,
 				174F809C2107E75C00775D0D /* AWSIoTMQTTClient.m in Sources */,
 				175698072134A62D00319ABC /* AppSyncLogWrapper.swift in Sources */,
+				17185D2D219DEA7900092934 /* AppSyncSubscriptionWithSync.swift in Sources */,
 				17915B051F5F106600C4B73C /* AWSAppSyncHTTPNetworkTransport.swift in Sources */,
 				17E009D51FCAB234005031DB /* GraphQLInputValue.swift in Sources */,
 				17E009D71FCAB234005031DB /* GraphQLResult.swift in Sources */,
@@ -1039,7 +1040,6 @@
 				174F80A42107F17700775D0D /* AWSIoTCSR.m in Sources */,
 				179577992149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift in Sources */,
 				17E009D21FCAB234005031DB /* RecordSet.swift in Sources */,
-				170051032155A7B9008B16B6 /* AWSAppSyncDeltaSubscription.swift in Sources */,
 				178C8DAA1FAAAC0600A7F725 /* AWSAppSyncAuthProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
