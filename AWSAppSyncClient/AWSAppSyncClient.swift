@@ -911,9 +911,9 @@ public class AWSAppSyncClient {
     
     public func sync<BaseQuery: GraphQLQuery>(
         baseQuery: BaseQuery,
+        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
         queue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration(),
-        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>) -> Cancellable {
+        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
         let subs = EmptySubscription.init()
         let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (res, trans, err) in
         }
@@ -934,11 +934,11 @@ public class AWSAppSyncClient {
     
     public func sync<BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>(
         baseQuery: BaseQuery,
-        deltaQuery: DeltaQuery,
-        queue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration(),
         baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
-        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>) -> Cancellable {
+        deltaQuery: DeltaQuery,
+        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
+        queue: DispatchQueue = DispatchQueue.main,
+        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
         let subs = EmptySubscription.init()
         let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (res, trans, err) in
         }
@@ -966,13 +966,13 @@ public class AWSAppSyncClient {
     /// - Returns: An object that can be used to cancel an in progress fetch.
     public func sync<BaseQuery: GraphQLQuery, Subscription: GraphQLSubscription, DeltaQuery: GraphQLQuery>(
         baseQuery: BaseQuery,
-        subscription: Subscription,
-        deltaQuery: DeltaQuery,
-        queue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration(),
         baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
+        subscription: Subscription,
         subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
-        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>)
+        deltaQuery: DeltaQuery,
+        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
+        queue: DispatchQueue = DispatchQueue.main,
+        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration())
     -> Cancellable {
         
         return AppSyncSubscriptionWithSync<Subscription, BaseQuery, DeltaQuery>(
