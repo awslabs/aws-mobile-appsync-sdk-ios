@@ -16,7 +16,7 @@
 import Dispatch
 import os.log
 
-@objc protocol MQTTSubscritionWatcher: AnyObject {
+@objc protocol MQTTSubscriptionWatcher: AnyObject {
     func getIdentifier() -> Int
     func getTopics() -> [String]
     func messageCallbackDelegate(data: Data)
@@ -54,7 +54,7 @@ class SubscriptionsOrderHelper {
 }
 
 /// A `AWSAppSyncSubscriptionWatcher` is responsible for watching the subscription, and calling the result handler with a new result whenever any of the data is published on the MQTT topic. It also normalizes the cache before giving the callback to customer.
-public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscription>: MQTTSubscritionWatcher, Cancellable {
+public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscription>: MQTTSubscriptionWatcher, Cancellable {
     
     weak var client: AppSyncMQTTClient?
     weak var httpClient: AWSNetworkTransport?

@@ -10,7 +10,7 @@ import Foundation
 import XCTest
 @testable import AWSAppSync
 
-class MockSubscriptionWatcher: MQTTSubscritionWatcher {
+class MockSubscriptionWatcher: MQTTSubscriptionWatcher {
     func connectedCallbackDelegate() {
         
     }
@@ -19,9 +19,9 @@ class MockSubscriptionWatcher: MQTTSubscritionWatcher {
     let topics: [String]
     let messageCallbackBlock: ((Data) -> Void)?
     let disconnectCallbackBlock: ((Error) -> Void)?
-    let deallocBlock: ((MQTTSubscritionWatcher) -> Void)?
+    let deallocBlock: ((MQTTSubscriptionWatcher) -> Void)?
     
-    init(topics: [String], deallocBlock:((MQTTSubscritionWatcher) -> Void)? = nil, messageCallbackBlock:((Data) -> Void)? = nil, disconnectCallbackBlock:((Error) -> Void)? = nil) {
+    init(topics: [String], deallocBlock:((MQTTSubscriptionWatcher) -> Void)? = nil, messageCallbackBlock:((Data) -> Void)? = nil, disconnectCallbackBlock:((Error) -> Void)? = nil) {
         self.identifier = NSUUID().hash
         self.topics = topics
         self.deallocBlock = deallocBlock
@@ -174,7 +174,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         weak var weakWatcher: MockSubscriptionWatcher?
         
         autoreleasepool {
-            let deallocBlock: (MQTTSubscritionWatcher) -> Void = { (object) in
+            let deallocBlock: (MQTTSubscriptionWatcher) -> Void = { (object) in
                 client.stopSubscription(subscription: object, subscriptionId: "1")
             }
             

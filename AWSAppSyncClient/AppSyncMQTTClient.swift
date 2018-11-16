@@ -54,7 +54,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         }
     }
     
-    func addWatcher(watcher: MQTTSubscritionWatcher, topics: [String], identifier: Int) {
+    func addWatcher(watcher: MQTTSubscriptionWatcher, topics: [String], identifier: Int) {
         topicSubscribers.add(watcher: watcher, topics: topics)
     }
     
@@ -88,6 +88,9 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
 
         var oldMQTTClients: [AWSIoTMQTTClient<AnyObject, AnyObject>] = []
         
+        // Retain the old clients which we are going to replace with newer ones.
+        // We retain them so that we can have both old and new active clients active at the same time ensuring no messages are dropped.
+        // Once the new connections are active, we mute and disconnect the old clients.
         for client in mqttClients {
             oldMQTTClients.append(client)
         }
@@ -138,7 +141,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         mqttClient.connect(withClientId: subscriptionInfo.clientId, presignedURL: subscriptionInfo.url, statusCallback: nil)
     }
     
-    internal func stopSubscription(subscription: MQTTSubscritionWatcher, subscriptionId: String) {
+    internal func stopSubscription(subscription: MQTTSubscriptionWatcher, subscriptionId: String) {
         self.topicSubscribers.remove(subscription: subscription)
         self.cancelledSubscriptions[subscriptionId] = false
         self.subscriptionsQueue.async { [weak self] in
@@ -174,11 +177,11 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     
     class TopicSubscribers {
         
-        private var dictionary = [String : NSHashTable<MQTTSubscritionWatcher>]()
+        private var dictionary = [String : NSHashTable<MQTTSubscriptionWatcher>]()
         
         private var lock = NSLock()
         
-        subscript(key: String) -> [MQTTSubscritionWatcher]? {
+        subscript(key: String) -> [MQTTSubscriptionWatcher]? {
             get {
                 return synchronized() {
                     return self.dictionary[key]?.allObjects
@@ -186,13 +189,13 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             }
         }
         
-        func add(watcher: MQTTSubscritionWatcher, topics: [String]) {
+        func add(watcher: MQTTSubscriptionWatcher, topics: [String]) {
             synchronized() {
                 for topic in topics {
                     if let watchers = self.dictionary[topic] {
                         watchers.add(watcher)
                     } else {
-                        let watchers = NSHashTable<MQTTSubscritionWatcher>.weakObjects()
+                        let watchers = NSHashTable<MQTTSubscriptionWatcher>.weakObjects()
                         watchers.add(watcher)
                         self.dictionary[topic] = watchers
                     }
@@ -200,7 +203,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             }
         }
         
-        func remove(subscription: MQTTSubscritionWatcher) {
+        func remove(subscription: MQTTSubscriptionWatcher) {
             synchronized() {
                 dictionary.forEach({ (element) in
                     element.value.allObjects.filter({ $0.getIdentifier() == subscription.getIdentifier() }).forEach({ (watcher) in

@@ -186,8 +186,8 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                     case .failure(let error):
                         let taskUUID = UUID().uuidString
                         let (shouldRetry, backoffTime) = retryHandler.shouldRetryRequest(for: error)
-                        if (shouldRetry && backoffTime != nil) {
-                            let timer = self?.executeAfter(milliseconds: backoffTime!, queue: DispatchQueue.global(qos: .userInitiated), block: {
+                        if shouldRetry, let backoffTime = backoffTime  {
+                            let timer = self?.executeAfter(milliseconds: backoffTime, queue: DispatchQueue.global(qos: .userInitiated), block: {
                                 self?.sendGraphQLRequest(mutableRequest: mutableRequest,
                                                          retryHandler: retryHandler,
                                                          networkTransportOperation: networkTransportOperation, completionHandler: completionHandler)
