@@ -5,11 +5,11 @@
 
 import Foundation
 
-public enum DeltaSyncState {
+enum SyncState {
     case active, failed(error: Error), interrupted, terminated(error: Error), cancelled
 }
 
-public typealias DeltaSyncStatusCallback = ((_ currentState: DeltaSyncState) -> Void)
+typealias DeltaSyncStatusCallback = ((_ currentState: SyncState) -> Void)
 
 public class SyncConfiguration {
     
@@ -59,7 +59,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
     internal init(appsyncClient: AWSAppSyncClient,
                   baseQuery: BaseQuery,
                   deltaQuery: DeltaQuery,
-                  subscription: Subscription,
+                  subscription: Subscription?,
                   baseQueryHandler: @escaping OperationResultHandler<BaseQuery>,
                   deltaQueryHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
                   subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
@@ -81,7 +81,6 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
             self.deltaQueryHandler = deltaQueryHandler
         }
         self.baseQueryHandler = baseQueryHandler
-        // self.deltaSyncStatusCallback = deltaSyncStatusCallback
         self.deltaSyncOperationQueue = OperationQueue()
         deltaSyncOperationQueue?.maxConcurrentOperationCount = 1
         deltaSyncOperationQueue?.name = "AppSync.DeltaSyncOperationQueue.\(getOperationHash())"
@@ -90,14 +89,14 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         self.deltaSyncOperationQueue?.addOperation {
             NotificationCenter.default.addObserver(self,
                                                    selector: #selector(AppSyncSubscriptionWithSync.applicationWillEnterForeground),
-                                                   name: .UIApplicationWillEnterForeground, object: nil)
+                                                   name: UIApplication.willEnterForegroundNotification, object: nil)
             
             NotificationCenter.default.addObserver(self,
                                                    selector: #selector(AppSyncSubscriptionWithSync.didConnectivityChange(notification:)),
                                                    name: .appSyncReachabilityChanged, object: nil)
             self.loadSyncTimeFromCache()
             self.runBaseQueryFromCache()
-            AppSyncLog.debug("DS: =============== Perform Initial Sync =============== ")
+            AppSyncLog.debug("DS: Perform Initial Sync")
             self.performDeltaSync()
         }
     }
@@ -108,7 +107,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
     
     func performDeltaSync() {
             // TODO: Capture timestamp here and use it start the asyncTimer
-        AppSyncLog.debug("DS: =============== Starting Sync =============== ")
+        AppSyncLog.debug("DS: Starting Sync")
         shouldQueueSubscriptionMessages = true
         currentAttempt += 1
         
@@ -174,7 +173,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         return executeAfter(deadline: deadline, queue: self.handlerQueue!) {
             AppSyncLog.debug("DS: Timer fired. Performing sync.")
             self.deltaSyncOperationQueue?.addOperation {
-                AppSyncLog.debug("DS: =============== Perform Sync Timer =============== ")
+                AppSyncLog.debug("DS: Perform Sync Timer")
                 self.performDeltaSync()
             }
         }
@@ -405,7 +404,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
             let adjustedDate = date.addingTimeInterval(TimeInterval.init(exactly: -2)!)
             self.lastSyncTime = adjustedDate
             AppSyncLog.debug("DS: Updating lastSync time \(self.lastSyncTime.debugDescription)")
-            try self.subscriptionMetadataCache?.updateLasySyncTime(operationHash: getOperationHash(), lastSyncDate: adjustedDate)
+            try self.subscriptionMetadataCache?.updateLasySyncTime(for: getOperationHash(), with: adjustedDate)
         } catch {
             // ignore cache write failure, will be updated in next operation, is backed up by in-memory cache
         }
@@ -425,7 +424,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         // perform delta sync here
         // disconnect from sub and reconnect
         self.deltaSyncOperationQueue?.addOperation {
-            AppSyncLog.debug("DS: =============== Perform Sync Foreground =============== ")
+            AppSyncLog.debug("DS: Perform Sync Foreground")
             self.performDeltaSync()
         }
     }
@@ -438,7 +437,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         
         if (connectionInfo.isConnectionAvailable) {
             self.deltaSyncOperationQueue?.addOperation {
-                AppSyncLog.debug("DS: =============== Perform Sync Network =============== ")
+                AppSyncLog.debug("DS: Perform Sync Network")
                 self.performDeltaSync()
             }
         }

@@ -10,7 +10,6 @@ internal final class AWSSubscriptionMetaDataCache {
     
     private let db: Connection
     private let subscriptionMetadataRecords = Table("subscription_metadata")
-    private let id = Expression<Int64>("_id")
     private let operationHash = Expression<String>("operationHash")
     private let lastSyncDate = Expression<Date?>("lastSyncDate")
     
@@ -22,16 +21,13 @@ internal final class AWSSubscriptionMetaDataCache {
     
     private func createTableIfNeeded() throws {
         try db.run(subscriptionMetadataRecords.create(ifNotExists: true) { table in
-            table.column(id, primaryKey: .autoincrement)
-            table.column(operationHash, unique: true)
+            table.column(operationHash, primaryKey: true)
             table.column(lastSyncDate)
         })
     }
     
-    internal func updateLasySyncTime(operationHash: String, lastSyncDate: Date) throws {
-        
+    internal func updateLasySyncTime(for operationHash: String, with lastSyncTime: Date) throws {
         let sqlRecord = subscriptionMetadataRecords.filter(self.operationHash == operationHash)
-        
         let recordCount = try db.scalar(sqlRecord.count)
         
         guard recordCount == 0 else {
@@ -46,7 +42,6 @@ internal final class AWSSubscriptionMetaDataCache {
     
     internal func getLastSyncTime(operationHash: String) throws -> Date? {
         let sqlRecord = subscriptionMetadataRecords.filter(self.operationHash == operationHash)
-        
         let recordCount = try db.scalar(sqlRecord.count)
         
         guard recordCount != 0 else {

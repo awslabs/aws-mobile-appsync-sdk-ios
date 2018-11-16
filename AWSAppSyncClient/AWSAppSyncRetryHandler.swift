@@ -25,7 +25,7 @@ internal class AWSAppSyncRetryHandler {
         var httpResponse: HTTPURLResponse?
 
         switch error {
-        case .requestFailed(_, let reponse,_):
+        case .requestFailed(_, let reponse, _):
             httpResponse = reponse
         case .noData(let response):
             httpResponse = response
