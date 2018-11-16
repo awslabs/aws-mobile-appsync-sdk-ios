@@ -137,8 +137,10 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
             return
         }
         
-        // If within time frame, fetch from cache
+        // If within time frame, fetch using delta query.
+        // If lastSyncTime or deltaQuery not available, run base query.
         if (lastSyncTime == nil ||
+            deltaQuery == nil ||
             (Date() > Date(timeInterval: TimeInterval(exactly: syncConfiguration.syncIntervalInSeconds)!, since: self.lastSyncTime!))){
             guard runBaseQuery() == true else {
                 return
@@ -282,7 +284,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
     }
     
     func startSubscription() -> Bool {
-        var success = false
+        var success: Bool? = nil
         if let subscription = subscription {
             AppSyncLog.info("DS: Starting Sub Now")
             let dispatchGroup = DispatchGroup()
@@ -303,22 +305,26 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                 }), resultHandler: {[weak self] (result, transaction, error) in
                     // TODO: Improve error checking.
                     if let _ = error as? AWSAppSyncSubscriptionError {
-                            success = false
+                        if (success == nil) {
                             dispatchGroup.leave()
+                            success = false
+                        }
                     }
                     self?.handleSubscriptionCallback(result, transaction, error)
                 })
                 
             } catch {
                 self.handleSubscriptionCallback(nil, nil, error)
-                success = false
-                dispatchGroup.leave()
+                if(success == nil) {
+                    success = false
+                    dispatchGroup.leave()
+                }
             }
             dispatchGroup.wait()
         } else {
             success = true
         }
-        return success
+        return success == true
     }
     
     func handleSubscriptionCallback(_ result: GraphQLResult<Subscription.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) {

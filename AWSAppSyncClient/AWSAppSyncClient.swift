@@ -909,6 +909,15 @@ public class AWSAppSyncClient {
         }
     }
     
+    /// Perofmrs a sync operation where a base query is periodically called to fetch primary data from the server based on the syncConfiguration.
+    ///
+    /// - Parameters:
+    ///   - baseQuery: The base query to fetch which contains the primary data.
+    ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
+    ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time.
+    ///   - deltaQueryResultHandler: Closure that is called when delta query executes.
+    ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
+    /// - Returns: An object that can be used to cancel the sync operation.
     public func sync<BaseQuery: GraphQLQuery>(
         baseQuery: BaseQuery,
         baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
@@ -932,6 +941,15 @@ public class AWSAppSyncClient {
                                                                                        syncConfiguration: syncConfiguration, handlerQueue: queue)
     }
     
+    /// Perofmrs a sync operation where a delta query is initiated for missed updates and a base query  is used to fetch primary data from the server.
+    ///
+    /// - Parameters:
+    ///   - baseQuery: The base query to fetch which contains the primary data.
+    ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
+    ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time.
+    ///   - deltaQueryResultHandler: Closure that is called when delta query executes.
+    ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
+    /// - Returns: An object that can be used to cancel the sync operation.
     public func sync<BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>(
         baseQuery: BaseQuery,
         baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
@@ -954,16 +972,17 @@ public class AWSAppSyncClient {
                                       syncConfiguration: syncConfiguration, handlerQueue: queue)
     }
     
-    /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
+    /// Perofmrs a sync operation where a subscription is initiated for real-time updates and a base query or a delta query is used to fetch data from the server.
     ///
     /// - Parameters:
-    ///   - query: The query to fetch.
-    ///   - cachePolicy: A cache policy that specifies when results should be fetched from the server and when data should be loaded from the local cache.
-    ///   - queue: A dispatch queue on which the result handler will be called. Defaults to the main queue.
-    ///   - resultHandler: An optional closure that is called when query results are available or when an error occurs.
-    ///   - result: The result of the fetched query, or `nil` if an error occurred.
-    ///   - error: An error that indicates why the fetch failed, or `nil` if the fetch was succesful.
-    /// - Returns: An object that can be used to cancel an in progress fetch.
+    ///   - baseQuery: The base query to fetch which contains the primary data.
+    ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
+    ///   - subscription: The subscription query which will provide real time updates.
+    ///   - subscriptionResultHandler: Closure that is called when a real time update is available or when an error occurs.
+    ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time.
+    ///   - deltaQueryResultHandler: Closure that is called when delta query executes.
+    ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
+    /// - Returns: An object that can be used to cancel the sync operation.
     public func sync<BaseQuery: GraphQLQuery, Subscription: GraphQLSubscription, DeltaQuery: GraphQLQuery>(
         baseQuery: BaseQuery,
         baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
