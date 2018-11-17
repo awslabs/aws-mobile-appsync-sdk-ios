@@ -59,7 +59,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
     internal init(appsyncClient: AWSAppSyncClient,
                   baseQuery: BaseQuery,
                   deltaQuery: DeltaQuery,
-                  subscription: Subscription?,
+                  subscription: Subscription,
                   baseQueryHandler: @escaping OperationResultHandler<BaseQuery>,
                   deltaQueryHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
                   subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
@@ -72,14 +72,17 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         self.handlerQueue = handlerQueue
         self.baseQuery = baseQuery
         
-        if Subscription.operationString != "No-op" {
+        // We check if subscription and delta query are not internal no-op operations before setting them
+        // This is done since Swift compiler can't infer generic types for these operations.
+        if Subscription.operationString != NoOpOperationString {
             self.subscription = subscription
             self.subscriptionHandler = subscriptionResultHandler
         }
-        if DeltaQuery.operationString != "No-op" {
+        if DeltaQuery.operationString != NoOpOperationString {
             self.deltaQuery = deltaQuery
             self.deltaQueryHandler = deltaQueryHandler
         }
+        
         self.baseQueryHandler = baseQueryHandler
         self.deltaSyncOperationQueue = OperationQueue()
         deltaSyncOperationQueue?.maxConcurrentOperationCount = 1
@@ -110,7 +113,10 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         AppSyncLog.debug("DS: Starting Sync")
         shouldQueueSubscriptionMessages = true
         isSyncOperationSuccessful = false
-        currentAttempt += 1
+        // If we have already attempted 15 times, we will back-off by 5 minutes always and this will also save Math computations for 2^x.
+        if(currentAttempt >= 15) {
+            currentAttempt += 1
+        }
         
         let baseQueryDispatchTime = DispatchTime.now()
         
@@ -126,7 +132,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                 AppSyncLog.debug("DS: Setting up baseQuery timer")
                 activeTimer = setupAsyncPoll(deadline: deadline)
             } else {
-                let waitMillis = Int(Double(truncating: pow(2.0, currentAttempt) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
+                let waitMillis = min(Int(Double(truncating: pow(2.0, currentAttempt) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER)), AWSAppSyncRetryHandler.MAX_RETRY_WAIT_MILLIS)
                 let deadline = DispatchTime.now() + .milliseconds(waitMillis)
                 AppSyncLog.debug("DS: Setting up retry timer")
                 activeTimer = setupAsyncPoll(deadline: deadline)
@@ -300,7 +306,6 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                         self.subscriptionWatcher?.cancel()
                         self.subscriptionWatcher = nil
                         self.subscriptionWatcher = updatedSubscriptionWatcher
-                        // self.deltaSyncStatusCallback?(.active)
                         dispatchGroup.leave()
                     }
                 }), resultHandler: {[weak self] (result, transaction, error) in

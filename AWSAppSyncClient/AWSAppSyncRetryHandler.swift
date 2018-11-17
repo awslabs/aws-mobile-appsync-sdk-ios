@@ -8,7 +8,7 @@ import Foundation
 internal class AWSAppSyncRetryHandler {
     
     var currentAttemptNumber = 0
-    static let MAX_RETRY_WAIT_MILLIS = 300 * 1000 // 5 minutes of max retry duration.
+    internal static let MAX_RETRY_WAIT_MILLIS = 300 * 1000 // 5 minutes of max retry duration.
     static let JITTER: Float = 100.0
     
     internal  init() { }
