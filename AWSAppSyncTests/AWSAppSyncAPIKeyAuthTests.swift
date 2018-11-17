@@ -11,7 +11,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     var AppSyncRegion: AWSRegionType = .USEast1
     var AppSyncEndpointURL: URL = URL(string: "https://localhost")! // Your AppSync endpoint here.
     var apiKey = "YOUR_API_KEY"
-    let database_name = "appsync-local-db--"
+    let database_name = "appsync-local-db"
     var appSyncClient: AWSAppSyncClient?
     
     static let ENDPOINT_KEY = "AppSyncEndpointAPIKey"
