@@ -109,6 +109,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
             // TODO: Capture timestamp here and use it start the asyncTimer
         AppSyncLog.debug("DS: Starting Sync")
         shouldQueueSubscriptionMessages = true
+        isSyncOperationSuccessful = false
         currentAttempt += 1
         
         let baseQueryDispatchTime = DispatchTime.now()
@@ -152,6 +153,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         }
         
         isSyncOperationSuccessful = true
+        currentAttempt = 0
     }
     
     func executeAfter(deadline: DispatchTime, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
