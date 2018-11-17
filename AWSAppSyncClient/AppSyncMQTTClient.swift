@@ -101,13 +101,6 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         
         // identify if we still need to establish new connection; if yes, we proceed, else return.
         if (shouldSubscribe(subscriptionInfo: subscriptionInfo, identifier: identifier)) {
-            for client in mqttClients {
-                client.clientDelegate = nil
-                client.disconnect()
-                
-            }
-            mqttClients.removeAll()
-            mqttClientsWithTopics.removeAll()
             
             for subscription in subscriptionInfo {
                 startNewSubscription(subscriptionInfo: subscription)

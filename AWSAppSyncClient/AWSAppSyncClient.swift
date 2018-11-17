@@ -28,6 +28,8 @@ enum AWSAppSyncGraphQLOperation {
     case subscription
 }
 
+internal let NoOpOperationString = "No-op"
+
 class SnapshotProcessController {
     let endpointURL: URL
     var reachability: Reachability?
@@ -894,7 +896,7 @@ public class AWSAppSyncClient {
     }
     
     internal final class EmptySubscription: GraphQLSubscription {
-        public static var operationString: String = "No-op"
+        public static var operationString: String = NoOpOperationString
         struct Data: GraphQLSelectionSet {
             static var selections: [GraphQLSelection] = []
             var snapshot: Snapshot = [:]
@@ -902,7 +904,7 @@ public class AWSAppSyncClient {
     }
     
     internal final class EmptyQuery: GraphQLQuery {
-        public static var operationString: String = "No-op"
+        public static var operationString: String = NoOpOperationString
         struct Data: GraphQLSelectionSet {
             static var selections: [GraphQLSelection] = []
             var snapshot: Snapshot = [:]
