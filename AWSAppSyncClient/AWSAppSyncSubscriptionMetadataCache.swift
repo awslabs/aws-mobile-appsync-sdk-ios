@@ -31,11 +31,11 @@ internal final class AWSSubscriptionMetaDataCache {
         let recordCount = try db.scalar(sqlRecord.count)
         
         guard recordCount == 0 else {
-            try db.run(sqlRecord.update(self.operationHash <- operationHash, self.lastSyncDate <- lastSyncDate))
+            try db.run(sqlRecord.update(self.operationHash <- operationHash, self.lastSyncDate <- lastSyncTime))
             return
         }
         
-        let insert = subscriptionMetadataRecords.insert(self.lastSyncDate <- lastSyncDate,
+        let insert = subscriptionMetadataRecords.insert(self.lastSyncDate <- lastSyncTime,
                                                         self.operationHash <- operationHash)
         try db.run(insert)
     }
