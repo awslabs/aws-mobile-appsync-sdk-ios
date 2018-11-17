@@ -257,4 +257,117 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let subscriptionStressTestHelper = SubscriptionStressTestHelper()
         subscriptionStressTestHelper.stressTestSubscriptions(withAppSyncClient: appSyncClient)
     }
+    
+    /// The test validates if the base query callback gets called 3 times and subscription callback gets called 1 time.
+    /// This happens since we have a refresh interval of 10 seconds and the base query is always called from cache in sync.
+    /// Then, we cancel the sync operation which has an updated `lasySync` time in the cache.
+    /// Once we restart this cancelled sync operation, we call the same sync operation again, and this time it calls the delta query 1 time and the base 2 times, instead of calling base query 3 times.
+    func testSyncOperation() {
+        deleteAll()
+        guard let appSyncClient = appSyncClient else {
+            XCTFail("appSyncClient must not be nil")
+            return
+        }
+        
+        let successfulMutationExpectation = expectation(description: "Mutation done successfully.")
+        
+        let addEvent = AddEventMutation(name: DefaultEventTestData.EventName,
+                                        when: DefaultEventTestData.EventTime,
+                                        where: DefaultEventTestData.EventLocation,
+                                        description: DefaultEventTestData.EventDescription)
+        var eventId: GraphQLID?
+        appSyncClient.perform(mutation: addEvent) { (result, error) in
+            XCTAssertNil(error, "Error expected to be nil, but is not.")
+            XCTAssertNotNil(result?.data?.createEvent?.id, "Expected service to return a UUID.")
+            XCTAssert(DefaultEventTestData.EventName == result!.data!.createEvent!.name!, "Event names should match.")
+            print("Received create event mutation response.")
+            eventId = result!.data!.createEvent!.id
+            successfulMutationExpectation.fulfill()
+        }
+        wait(for: [successfulMutationExpectation], timeout: 10.0)
+        
+        let subscriptionExpectation = self.expectation(description: "Subscription callback received successfully.")
+        let baseQueryCallback1Expectation = expectation(description: "Base Query 1.1 callback received successfully.")
+        let baseQueryCallback2Expectation = expectation(description: "Base Query 1.2 callback received successfully.")
+        let baseQueryCallback3Expectation = expectation(description: "Base Query 1.3 callback received successfully.")
+        
+        let query = ListEventsQuery()
+        var counter = 0
+        
+        var syncWatcher = appSyncClient.sync(baseQuery: query, baseQueryResultHandler: { (result, error) in
+            if (counter == 0) {
+                baseQueryCallback1Expectation.fulfill()
+            } else if counter == 1 {
+                baseQueryCallback2Expectation.fulfill()
+            } else if counter == 2 {
+                baseQueryCallback3Expectation.fulfill()
+            } else {
+                XCTFail("Expecting only 3 callbacks for sync operation. But got more.")
+            }
+            counter += 1
+        }, subscription: NewCommentOnEventSubscription(eventId: eventId!),
+           subscriptionResultHandler: { (result, transaction, error) in
+            subscriptionExpectation.fulfill()
+        }, deltaQuery: query, deltaQueryResultHandler: { (result, transaction, error) in
+            // set up sync configuration to be 10 seconds to test if base query gets called again.
+        }, syncConfiguration: SyncConfiguration(seconds: 10))
+        
+        XCTAssertNotNil(syncWatcher, "sync watcher expected to be non nil.")
+        
+        // Wait 3 seconds to ensure sync is active
+        DispatchQueue.global().async {
+            sleep(3)
+            self.appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventId!, content: "content", createdAt: "2 pm")) { (result, error) in
+                XCTAssertNil(error, "Error expected to be nil, but is not.")
+                XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
+                print("Received create comment mutation response.")
+            }
+        }
+        
+        XCTAssertNotNil(syncWatcher, "Subscription expected to be non nil.")
+        
+        wait(for: [baseQueryCallback1Expectation, baseQueryCallback2Expectation, baseQueryCallback3Expectation, subscriptionExpectation], timeout: 20.0)
+        
+        syncWatcher.cancel()
+        
+        let restartSubscriptionExpectation = self.expectation(description: "Subscription callback received successfully.")
+        let restartBaseQueryCallback1Expectation = expectation(description: "Delta callback received successfully.")
+        let restartBaseQueryCallback2Expectation = expectation(description: "Base Query 2.1 callback received successfully.")
+        let deltaQueryCallbackExpectation = expectation(description: "Base Query 2.2 callback received successfully.")
+        
+        counter = 0
+        
+        syncWatcher = appSyncClient.sync(baseQuery: query, baseQueryResultHandler: { (result, error) in
+            if (counter == 0) {
+                restartBaseQueryCallback1Expectation.fulfill()
+            } else if counter == 1 {
+                restartBaseQueryCallback2Expectation.fulfill()
+            } else {
+                XCTFail("Expecting only 2 callbacks for sync operation. But got more.")
+            }
+            counter += 1
+        }, subscription: NewCommentOnEventSubscription(eventId: eventId!),
+           subscriptionResultHandler: { (result, transaction, error) in
+            restartSubscriptionExpectation.fulfill()
+        }, deltaQuery: query, deltaQueryResultHandler: { (result, transaction, error) in
+            // set up sync configuration to be 10 seconds to test if base query gets called again.
+            deltaQueryCallbackExpectation.fulfill()
+        }, syncConfiguration: SyncConfiguration(seconds: 15))
+        
+        XCTAssertNotNil(syncWatcher, "sync watcher expected to be non nil.")
+        
+        // Wait 3 seconds to ensure sync is active
+        DispatchQueue.global().async {
+            sleep(3)
+            self.appSyncClient?.perform(mutation: CommentOnEventMutation(eventId: eventId!, content: "content", createdAt: "2 pm")) { (result, error) in
+                XCTAssertNil(error, "Error expected to be nil, but is not.")
+                XCTAssertNotNil(result?.data?.commentOnEvent?.commentId, "Expected service to return a UUID.")
+                print("Received create comment mutation response.")
+            }
+        }
+        
+        XCTAssertNotNil(syncWatcher, "Subscription expected to be non nil.")
+        
+        wait(for: [restartBaseQueryCallback1Expectation, restartBaseQueryCallback2Expectation, deltaQueryCallbackExpectation, restartSubscriptionExpectation], timeout: 20.0)
+    }
 }
