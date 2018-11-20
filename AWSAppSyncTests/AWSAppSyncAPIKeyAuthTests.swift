@@ -310,7 +310,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             subscriptionExpectation.fulfill()
         }, deltaQuery: query, deltaQueryResultHandler: { (result, transaction, error) in
             // set up sync configuration to be 10 seconds to test if base query gets called again.
-        }, syncConfiguration: SyncConfiguration(seconds: 10))
+        }, syncConfiguration: SyncConfiguration(baseRefreshIntervalInSeconds: 10))
         
         XCTAssertNotNil(syncWatcher, "sync watcher expected to be non nil.")
         
@@ -352,7 +352,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }, deltaQuery: query, deltaQueryResultHandler: { (result, transaction, error) in
             // set up sync configuration to be 10 seconds to test if base query gets called again.
             deltaQueryCallbackExpectation.fulfill()
-        }, syncConfiguration: SyncConfiguration(seconds: 15))
+        }, syncConfiguration: SyncConfiguration(baseRefreshIntervalInSeconds: 15))
         
         XCTAssertNotNil(syncWatcher, "sync watcher expected to be non nil.")
         

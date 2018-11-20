@@ -19,13 +19,13 @@ public class SyncConfiguration {
         return seconds
     }
     
-    public init(seconds: Int) {
-        self.seconds = seconds
+    public init(baseRefreshIntervalInSeconds: Int) {
+        self.seconds = baseRefreshIntervalInSeconds
     }
     
     // utility for setting default sync to 1 day
     public class func defaultSyncConfiguration() -> SyncConfiguration {
-        return SyncConfiguration(seconds: 86400)
+        return SyncConfiguration(baseRefreshIntervalInSeconds: 86400)
     }
 }
 
