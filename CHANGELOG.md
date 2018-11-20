@@ -4,10 +4,20 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ## 2.7.0
 
+### New Features
+
+* Added support for Delta Sync Feature
+    Delta Sync allows you to perform automatic synchronization with an AWS AppSync GraphQL server. The client will perform reconnection, exponential backoff, and retries when network errors take place for simplified data replication to devices. For more details, please refer [documentation.](https://aws-amplify.github.io/docs/ios/api)
+
+### Bug Fixes
+
+* Fix issue where if a time out error occurs, the callback would not be given back to developer. [See issue #91](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/91)
+
 ### Misc. Updates
 
 * Officially convert project to Swift 4.2. Previously, the project used some Swift 4.2 idioms even though the `SWIFT_VERSION` was officially set to 3. This change makes the support explicit in the project files and README.
-* Updated SwiftReachability dependency to 4.3.0
+* Updated SwiftReachability dependency to 4.3.0. (See PR #35)[https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/35] Thanks @larryonoff! 🎉
+* Replaced generic struct based AWSAppSyncClientError by a typed enum. (See PR #35)[https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/35] Thanks @MarioBajr! 🎉
 
 ## 2.6.24
 
