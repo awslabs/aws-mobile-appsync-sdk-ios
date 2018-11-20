@@ -16,7 +16,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 ### Misc. Updates
 
 * Officially convert project to Swift 4.2. Previously, the project used some Swift 4.2 idioms even though the `SWIFT_VERSION` was officially set to 3. This change makes the support explicit in the project files and README.
-* Updated SwiftReachability dependency to 4.3.0. (See PR #35)[https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/35] Thanks @larryonoff! 🎉
+* Updated SwiftReachability dependency to 4.3.0. (See PR #84)[https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/84] Thanks @larryonoff! 🎉
 * Replaced generic struct based AWSAppSyncClientError by a typed enum. (See PR #35)[https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/35] Thanks @MarioBajr! 🎉
 
 ## 2.6.24
