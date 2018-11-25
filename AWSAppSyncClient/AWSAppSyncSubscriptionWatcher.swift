@@ -75,7 +75,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
             }
         }
         subscriptionsQueue.async { [weak self] in
-            guard let self = self else {return}
+            guard let `self` = self else {return}
             if (!self.isCancelled) {
                 self.startSubscription()
             }
@@ -102,7 +102,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     private func performSubscriptionRequest(completionHandler: @escaping (Bool, Error?) -> Void) {
         do {
             let _ = try self.httpClient?.sendSubscriptionRequest(operation: subscription!, completionHandler: {[weak self] (response, error) in
-                guard let self = self else {return}
+                guard let `self` = self else {return}
                 guard self.isCancelled == false else {return}
                 if let response = response {
                     do {
