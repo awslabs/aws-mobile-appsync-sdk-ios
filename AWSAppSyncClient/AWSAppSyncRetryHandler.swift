@@ -60,6 +60,6 @@ internal class AWSAppSyncRetryHandler {
     }
     
     static func getRandomBetween0And1() -> Float {
-        return Float(arc4random()) / Float(UINT32_MAX)
+        return Float.random(in: 0...1)
     }
 }
