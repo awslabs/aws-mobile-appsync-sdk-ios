@@ -70,10 +70,17 @@ class SnapshotProcessController {
     func shouldExecuteOperation(operation: AWSAppSyncGraphQLOperation) -> Bool {
         switch operation {
         case .mutation:
-            if !(reachability?.connection.description == "No Connection") {
-                return true
-            } else {
+            guard let reachability = reachability else {
                 return false
+            }
+
+            switch reachability.connection {
+            case .none:
+                return false
+            case .wifi:
+                return true
+            case .cellular:
+                return allowsCellularAccess
             }
         case .query:
             return true
