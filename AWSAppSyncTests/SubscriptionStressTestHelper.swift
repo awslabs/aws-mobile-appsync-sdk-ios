@@ -28,6 +28,10 @@ class SubscriptionStressTestHelper: XCTestCase {
     // MARK: - Public test helper methods
 
     func stressTestSubscriptions(withAppSyncClient appSyncClient: AWSAppSyncClient) {
+        defer {
+            subscriptionWatchers.forEach { $0.cancel() }
+        }
+
         self.appSyncClient = appSyncClient
 
         let allEventsAreAddedExpectations = makeTestEvents()

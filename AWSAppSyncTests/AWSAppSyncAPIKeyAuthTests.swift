@@ -206,6 +206,11 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
     // TODO: Unstable test
     func testSubscription() {
+        var subscription: AWSAppSyncSubscriptionWatcher<NewCommentOnEventSubscription>?
+        defer {
+            subscription?.cancel()
+        }
+
         let successfulSubscriptionExpectation = expectation(description: "Mutation done successfully.")
         let receivedSubscriptionExpectation = self.expectation(description: "Subscription received successfully.")
         
@@ -227,7 +232,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
         wait(for: [successfulSubscriptionExpectation], timeout: 10.0)
         
-        let subscription = try! self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId!)) { (result, _, error) in
+        subscription = try! self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId!)) { (result, _, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             print("Received new comment subscription response.")
             receivedSubscriptionExpectation.fulfill()
@@ -263,6 +268,11 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     /// Then, we cancel the sync operation which has an updated `lasySync` time in the cache.
     /// Once we restart this cancelled sync operation, we call the same sync operation again, and this time it calls the delta query 1 time and the base 2 times, instead of calling base query 3 times.
     func testSyncOperation() {
+        var syncWatcher: Cancellable?
+        defer {
+            syncWatcher?.cancel()
+        }
+
         deleteAll()
         guard let appSyncClient = appSyncClient else {
             XCTFail("appSyncClient must not be nil")
@@ -294,17 +304,17 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let query = ListEventsQuery()
         var counter = 0
         
-        var syncWatcher = appSyncClient.sync(baseQuery: query, baseQueryResultHandler: { (result, error) in
-            if (counter == 0) {
+        syncWatcher = appSyncClient.sync(baseQuery: query, baseQueryResultHandler: { (result, error) in
+            counter += 1
+            if (counter == 1) {
                 baseQueryCallback1Expectation.fulfill()
-            } else if counter == 1 {
-                baseQueryCallback2Expectation.fulfill()
             } else if counter == 2 {
+                baseQueryCallback2Expectation.fulfill()
+            } else if counter == 3 {
                 baseQueryCallback3Expectation.fulfill()
             } else {
-                XCTFail("Expecting only 3 callbacks for sync operation. But got more.")
+                XCTFail("Expecting only 3 callbacks for sync operation, but got \(counter).")
             }
-            counter += 1
         }, subscription: NewCommentOnEventSubscription(eventId: eventId!),
            subscriptionResultHandler: { (result, transaction, error) in
             subscriptionExpectation.fulfill()
@@ -328,9 +338,9 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         
         wait(for: [baseQueryCallback1Expectation, baseQueryCallback2Expectation, baseQueryCallback3Expectation, subscriptionExpectation], timeout: 20.0)
         
-        syncWatcher.cancel()
+        syncWatcher?.cancel()
         
-        let restartSubscriptionExpectation = self.expectation(description: "Subscription callback received successfully.")
+        let restartSubscriptionExpectation = expectation(description: "Subscription callback received successfully.")
         let restartBaseQueryCallback1Expectation = expectation(description: "Delta callback received successfully.")
         let restartBaseQueryCallback2Expectation = expectation(description: "Base Query 2.1 callback received successfully.")
         let deltaQueryCallbackExpectation = expectation(description: "Base Query 2.2 callback received successfully.")
@@ -338,14 +348,14 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         counter = 0
         
         syncWatcher = appSyncClient.sync(baseQuery: query, baseQueryResultHandler: { (result, error) in
-            if (counter == 0) {
+            counter += 1
+            if (counter == 1) {
                 restartBaseQueryCallback1Expectation.fulfill()
-            } else if counter == 1 {
+            } else if counter == 2 {
                 restartBaseQueryCallback2Expectation.fulfill()
             } else {
-                XCTFail("Expecting only 2 callbacks for sync operation. But got more.")
+                XCTFail("Expecting only 2 callbacks for sync operation, but got \(counter).")
             }
-            counter += 1
         }, subscription: NewCommentOnEventSubscription(eventId: eventId!),
            subscriptionResultHandler: { (result, transaction, error) in
             restartSubscriptionExpectation.fulfill()
@@ -369,5 +379,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         XCTAssertNotNil(syncWatcher, "Subscription expected to be non nil.")
         
         wait(for: [restartBaseQueryCallback1Expectation, restartBaseQueryCallback2Expectation, deltaQueryCallbackExpectation, restartSubscriptionExpectation], timeout: 20.0)
+
     }
 }

@@ -263,6 +263,12 @@ class AWSAppSyncTests: XCTestCase {
     }
     
     func testSubscription() {
+        var subscription: AWSAppSyncSubscriptionWatcher<NewCommentOnEventSubscription>?
+
+        defer {
+            subscription?.cancel()
+        }
+
         let successfulSubscriptionExpectation = expectation(description: "Mutation done successfully.")
         let receivedSubscriptionExpectation = self.expectation(description: "Subscription received successfully.")
         
@@ -284,7 +290,7 @@ class AWSAppSyncTests: XCTestCase {
         }
         wait(for: [successfulSubscriptionExpectation], timeout: 10.0)
         
-        let subscription = try! self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId!)) { (result, _, error) in
+        subscription = try! self.appSyncClient?.subscribe(subscription: NewCommentOnEventSubscription(eventId: eventId!)) { (result, _, error) in
             XCTAssertNil(error, "Error expected to be nil, but is not.")
             print("Received new comment subscription response.")
             receivedSubscriptionExpectation.fulfill()
@@ -302,6 +308,7 @@ class AWSAppSyncTests: XCTestCase {
         }
         
         wait(for: [receivedSubscriptionExpectation], timeout: 10.0)
+
     }
     
     func testOptimisticWriteWithQueryParameter() {
