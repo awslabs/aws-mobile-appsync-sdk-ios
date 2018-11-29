@@ -25,7 +25,7 @@ class AWSAppSyncTests: XCTestCase {
     var AppSyncRegion: AWSRegionType = .USEast1
     var AppSyncEndpointURL: URL = URL(string: "https://localhost")! // Your AppSync endpoint here.
     let apiKey = "YOUR_API_KEY"
-    let database_name = "appsync-local-db"
+
     var appSyncClient: AWSAppSyncClient?
     
     let EventName = "Testing Event"
@@ -89,9 +89,7 @@ class AWSAppSyncTests: XCTestCase {
                                                                 identityPoolId: CognitoIdentityPoolId)
         credentialsProvider.clearCredentials()
         credentialsProvider.clearKeychain()
-        // You can choose your database location, accessible by the SDK
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
-        
+
         do {
             AWSDDLog.sharedInstance.logLevel = .error
             AWSDDLog.add(AWSDDTTYLogger.sharedInstance) 
@@ -100,7 +98,7 @@ class AWSAppSyncTests: XCTestCase {
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   credentialsProvider: credentialsProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL: nil)
             // Initialize the AWS AppSync client
             appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
             // Set id as the cache key for objects
@@ -128,21 +126,20 @@ class AWSAppSyncTests: XCTestCase {
 
         // Wait for the mutations(delete event actions) to complete.
         wait(for: [successfulExpectation], timeout: 5.0)
+
+        appSyncClient = nil
     }
 
     func testAppSynClientConfigurationAwsCredentialsProvider() {
         // Set up Amazon Cognito credentials
         let credentialsProvider = AWSCognitoCredentialsProvider(regionType: CognitoIdentityRegion,
                                                                 identityPoolId: CognitoIdentityPoolId)
-        // You can choose your database location, accessible by the SDK
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
-        
         do {
             // Initialize the AWS AppSync configuration
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   credentialsProvider: credentialsProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL: nil)
             // Initialize the AWS AppSync client
             let appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
 
@@ -154,9 +151,6 @@ class AWSAppSyncTests: XCTestCase {
     }
 
     func testAppSynClientConfigurationApiKeyAuthProvider() {
-        // You can choose your database location, accessible by the SDK
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
-
         do {
             // Create AWSApiKeyAuthProvider
             class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
@@ -174,7 +168,7 @@ class AWSAppSyncTests: XCTestCase {
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   apiKeyAuthProvider: apiKeyAuthProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL: nil)
             // Initialize the AWS AppSync client
             let appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
 
@@ -186,9 +180,6 @@ class AWSAppSyncTests: XCTestCase {
     }
 
     func testAppSynClientConfigurationOidcAuthProvider() {
-        // You can choose your database location, accessible by the SDK
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
-
         do {
             // Create AWSApiKeyAuthProvider
             class BasicOidcAuthProvider: AWSOIDCAuthProvider {
@@ -202,7 +193,7 @@ class AWSAppSyncTests: XCTestCase {
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   oidcAuthProvider: oidcAuthProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL: nil)
             // Initialize the AWS AppSync client
             let appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
 
@@ -386,7 +377,6 @@ class AWSAppSyncTests: XCTestCase {
     }
     
     func testInvalidAPIKeyAuth() {
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
         var invalidConfigAppSyncClient: AWSAppSyncClient?
         do {
             // Create AWSApiKeyAuthProvider
@@ -405,7 +395,7 @@ class AWSAppSyncTests: XCTestCase {
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   apiKeyAuthProvider: apiKeyAuthProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL: nil)
             // Initialize the AWS AppSync client
             invalidConfigAppSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
             
@@ -435,9 +425,7 @@ class AWSAppSyncTests: XCTestCase {
     
     func testInvalidOIDCProvider() {
         var invalidConfigAppSyncClient: AWSAppSyncClient?
-        // You can choose your database location, accessible by the SDK
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
-        
+
         do {
             // Create AWSApiKeyAuthProvider
             class BasicOidcAuthProvider: AWSOIDCAuthProvider {
@@ -451,7 +439,7 @@ class AWSAppSyncTests: XCTestCase {
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   oidcAuthProvider: oidcAuthProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL: nil)
             // Initialize the AWS AppSync client
             invalidConfigAppSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
             
@@ -483,15 +471,13 @@ class AWSAppSyncTests: XCTestCase {
         var invalidConfigAppSyncClient: AWSAppSyncClient?
         // Set up invalids static credentials
         let credentialsProvider = AWSStaticCredentialsProvider(accessKey: "AKIAIAMINVALID", secretKey: "ABCDINVALIDSECRETSECRET ")
-        // You can choose your database location, accessible by the SDK
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent(database_name)
-        
+
         do {
             // Initialize the AWS AppSync configuration
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   credentialsProvider: credentialsProvider,
-                                                                  databaseURL:databaseURL)
+                                                                  databaseURL: nil)
             // Initialize the AWS AppSync client
             invalidConfigAppSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
             
@@ -533,7 +519,7 @@ class AWSAppSyncTests: XCTestCase {
         let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("testDB")
         
         do {
-            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL, serviceRegion: AppSyncRegion, credentialsProvider: credentialsProvider, databaseURL:databaseURL)
+            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL, serviceRegion: AppSyncRegion, credentialsProvider: credentialsProvider, databaseURL: databaseURL)
             var client: TestableAppSyncClient? = try TestableAppSyncClient(appSyncConfig: appSyncConfig)
             client?.deinitCalled = { e.fulfill() }
             

@@ -13,11 +13,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     var apiKey = "YOUR_API_KEY"
     var appSyncClient: AWSAppSyncClient?
     
-    private static var databaseURL: URL {
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("AWSAppSyncAPIKeyAuthTests-appsync-local-db")
-        return databaseURL
-    }
-
     static let ENDPOINT_KEY = "AppSyncEndpointAPIKey"
     static let API_KEY = "AppSyncAPIKey"
     static let REGION_KEY = "AppSyncEndpointAPIKeyRegion"
@@ -43,12 +38,21 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        
+        setUpAppSyncClient()
+    }
+    
+    override func tearDown() {
+        super.tearDown()
+        deleteAll()
+        appSyncClient = nil
+    }
+
+    func setUpAppSyncClient(with databaseURL: URL? = nil) {
         // Read credentials from appsync_test_credentials.json
         if let credentialsPath: String = Bundle.init(for: self.classForCoder).path(forResource: "appsync_test_credentials", ofType: "json"), let credentialsData = try? Data.init(contentsOf: URL(fileURLWithPath: credentialsPath)) {
             print("json path: \(credentialsPath)")
             let json = try? JSONSerialization.jsonObject(with: credentialsData, options: JSONSerialization.ReadingOptions.allowFragments)
-            
+
             guard let jsonObject = json as? JSONObject else {
                 XCTFail(TestSetupErrorMessage)
                 return
@@ -66,7 +70,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTFail(TestSetupErrorMessage)
             return
         }
-        
+
         do {
             AWSDDLog.sharedInstance.logLevel = .error
             AWSDDLog.add(AWSDDTTYLogger.sharedInstance)
@@ -85,7 +89,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
                                                                   serviceRegion: AppSyncRegion,
                                                                   apiKeyAuthProvider: apiKeyAuthProvider,
-                                                                  databaseURL: AWSAppSyncAPIKeyAuthTests.databaseURL)
+                                                                  databaseURL: databaseURL)
             // Initialize the AWS AppSync client
             appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
             // Set id as the cache key for objects
@@ -93,20 +97,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         } catch {
             print("Error initializing appsync client. \(error)")
         }
-    }
-    
-    override func tearDown() {
-        super.tearDown()
-        deleteAll()
-    }
 
-    // Ensure we start the test suite with a clean AppSync DB
-    override static func setUp() {
-        deleteAppSyncDB()
-    }
-
-    private static func deleteAppSyncDB() {
-        try? FileManager.default.removeItem(at: databaseURL)
     }
 
     func deleteAll() {
@@ -238,6 +229,12 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         var currentSyncWatcherLifecyclePhase = {
             return _currentSyncWatcherLifecyclePhase
         }
+
+        // This tests needs a physical DB for the SubscriptionMetadataCache to properly return a "lastSynced" value.
+        appSyncClient = nil
+        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("testSyncOperationAtSetupAndReconnect-appsync-local-db")
+        try? FileManager.default.removeItem(at: databaseURL)
+        setUpAppSyncClient(with: databaseURL)
 
         var syncWatcher: Cancellable?
         defer {
