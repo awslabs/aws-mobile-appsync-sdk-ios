@@ -155,11 +155,12 @@ class MutationExecutor: NetworkConnectionNotification {
         self.appSyncClient = appSyncClient
         self.snapshotProcessController = snapshotProcessController
         if let fileURL = fileURL {
-        do {
-            self.persistentCache = try AWSMutationCache(fileURL: fileURL)
-            try self.loadPersistedData()
-        } catch {
-        }
+            do {
+                self.persistentCache = try AWSMutationCache(fileURL: fileURL)
+                try self.loadPersistedData()
+            } catch let error {
+                print("Error persisting cache: \(error.localizedDescription)")
+            }
         }
     }
     

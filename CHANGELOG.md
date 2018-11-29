@@ -2,6 +2,13 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.7.1
+
+### Misc. Updates
+
+* Use Swift 4.2's `Float.random(in:)` instead of `arc4random()` to generate request retry jitter. (See PR #108)[https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/108]. Thanks @larryonoff! 🎉
+* Increase stability of the API key sync operations integration test; removed subscription integration test since its functionality is now covered by sync operation test. 
+
 ## 2.7.0
 
 ### New Features
