@@ -6,7 +6,8 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Misc. Updates
 
-* Use Swift 4.2's `Float.random(in:)` instead of `arc4random()` to generate request retry jitter. (See PR #108)[https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/108]. Thanks @larryonoff! 🎉
+* Use Swift 4.2's `Float.random(in:)` instead of `arc4random()` to generate request retry jitter. [See PR #108](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/108). Thanks @larryonoff! 🎉
+* Added SwiftLint to project. [See PR #121](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/121) and [issue #107](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/107). Thanks @larryonoff! 🎉
 * Increase stability of the API key sync operations integration test; removed subscription integration test since its functionality is now covered by sync operation test. 
 
 ## 2.7.0

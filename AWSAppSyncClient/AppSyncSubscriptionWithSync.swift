@@ -145,9 +145,11 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         
         // If within time frame, fetch using delta query.
         // If lastSyncTime or deltaQuery not available, run base query.
-        if (lastSyncTime == nil ||
-            deltaQuery == nil ||
-            (Date() > Date(timeInterval: TimeInterval(exactly: syncConfiguration.syncIntervalInSeconds)!, since: self.lastSyncTime!))) {
+        let syncInterval = TimeInterval(exactly: syncConfiguration.syncIntervalInSeconds)!
+        let lastSyncTime = self.lastSyncTime ?? Date.init(timeIntervalSince1970: 0)
+        let nextSyncTime = Date(timeInterval: syncInterval, since: lastSyncTime)
+
+        if deltaQuery == nil || Date() > nextSyncTime {
             guard runBaseQuery() == true else {
                 return
             }
@@ -309,7 +311,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                     }
                 }), resultHandler: { [weak self] (result, transaction, error) in
                     // TODO: Improve error checking.
-                    if let _ = error as? AWSAppSyncSubscriptionError {
+                    if error as? AWSAppSyncSubscriptionError != nil {
                         if success == nil {
                             dispatchGroup.leave()
                             success = false
@@ -450,13 +452,15 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
     
     deinit {
         internalCancel()
+        NotificationCenter.default.removeObserver(self)
     }
     
     func internalCancel() {
         // handle cancel logic here.
         subscriptionWatcher?.cancel()
         subscriptionWatcher = nil
-        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .appSyncReachabilityChanged, object: nil)
         activeTimer?.cancel()
     }
     

@@ -31,7 +31,7 @@ internal class AWSAppSyncRetryHandler {
             httpResponse = response
         case .parseError(_, let response, _):
             httpResponse = response
-        case .authenticationError(_):
+        case .authenticationError:
             httpResponse = nil
         }
         

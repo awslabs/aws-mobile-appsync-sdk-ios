@@ -13,8 +13,6 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
 internal class AppSyncLog {
     class func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         AppSyncLogHelper.logVerbose(message, file: file, funcion: function, line: UInt(line))

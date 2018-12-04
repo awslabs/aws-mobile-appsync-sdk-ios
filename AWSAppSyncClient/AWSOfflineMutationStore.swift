@@ -191,8 +191,8 @@ class MutationExecutor: NetworkConnectionNotification {
         }
 
         // if the record is just queued and we are online, immediately submit the record
-        if (snapshotProcessController.shouldExecuteOperation(operation: .mutation)
-            && self.listAllMuationRecords().count == 1) {
+        if snapshotProcessController.shouldExecuteOperation(operation: .mutation)
+            && self.listAllMuationRecords().count == 1 {
             self.mutationQueue.removeFirst()
             mutation.inmemoryExecutor?.performMutation(dispatchGroup: dispatchGroup)
             do {
@@ -221,7 +221,7 @@ class MutationExecutor: NetworkConnectionNotification {
             inMemoryMutationExecutor.performMutation(dispatchGroup: dispatchGroup)
             self.mutationQueue.removeFirst()
             do {
-                let _ = try self.removeRecordFromQueue(record: mutation)
+                _ = try self.removeRecordFromQueue(record: mutation)
             } catch {
             }
         } else {
