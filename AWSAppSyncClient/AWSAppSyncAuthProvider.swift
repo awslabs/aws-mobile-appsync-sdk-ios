@@ -42,4 +42,3 @@ public protocol AWSCognitoUserPoolsAuthProvider: AWSOIDCAuthProvider {
 public protocol AWSAPIKeyAuthProvider {
     func getAPIKey() -> String
 }
-

@@ -109,25 +109,25 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
     }
     
     func performDeltaSync() {
-            // TODO: Capture timestamp here and use it start the asyncTimer
+        // TODO: Capture timestamp here and use it start the asyncTimer
         AppSyncLog.debug("DS: Starting Sync")
         shouldQueueSubscriptionMessages = true
         isSyncOperationSuccessful = false
         // If we have already attempted 15 times, we will back-off by 5 minutes always and this will also save Math computations for 2^x.
-        if(currentAttempt >= 15) {
+        if currentAttempt >= 15 {
             currentAttempt += 1
         }
         
         let baseQueryDispatchTime = DispatchTime.now()
         
-        defer{
+        defer {
             subscriptionMessageDispatchQueue?.sync {
                 drainSubscriptionMessagesQueue()
                 shouldQueueSubscriptionMessages = false
             }
             
             // setup the timer to force catch up using the base query or retry in case of failed state
-            if (isSyncOperationSuccessful) {
+            if isSyncOperationSuccessful {
                 let deadline = baseQueryDispatchTime + .seconds(syncConfiguration.syncIntervalInSeconds)
                 AppSyncLog.debug("DS: Setting up baseQuery timer")
                 activeTimer = setupAsyncPoll(deadline: deadline)
@@ -147,7 +147,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         // If lastSyncTime or deltaQuery not available, run base query.
         if (lastSyncTime == nil ||
             deltaQuery == nil ||
-            (Date() > Date(timeInterval: TimeInterval(exactly: syncConfiguration.syncIntervalInSeconds)!, since: self.lastSyncTime!))){
+            (Date() > Date(timeInterval: TimeInterval(exactly: syncConfiguration.syncIntervalInSeconds)!, since: self.lastSyncTime!))) {
             guard runBaseQuery() == true else {
                 return
             }
@@ -223,7 +223,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                     self?.baseQueryHandler?(result, error)
                     success = false
                 }
-                if (success) {
+                if success {
                     AppSyncLog.debug("DS: Updating last sync time.")
                     self?.updateLastSyncTimeInMemoryAndCache(date: networkFetchTime)
                 }
@@ -235,7 +235,6 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         return success
     }
     
-    
     /// Runs the delta query based on the given criterias.
     ///
     /// - Returns: true if the operation is executed successfully.
@@ -245,7 +244,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
             AppSyncLog.info("DS: Running Delta Query now")
             if let networkTransport = appsyncClient?.httpTransport as? AWSAppSyncHTTPNetworkTransport {
                 dispatchGroup.enter()
-                var overrideMap: [String:Int] = [:]
+                var overrideMap: [String: Int] = [:]
                 if let lastSyncTime = self.lastSyncTime {
                     AppSyncLog.debug("DS: Using last sync time from cache. \(lastSyncTime.description)")
                     overrideMap = ["lastSync": Int(Float(lastSyncTime.timeIntervalSince1970.description)!)]
@@ -255,16 +254,16 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                 
                 func notifyResultHandler(result: GraphQLResult<DeltaQuery.Data>?, transaction: ApolloStore.ReadWriteTransaction?, error: Error?) {
                     handlerQueue?.async {
-                        let _ = self.appsyncClient?.store?.withinReadWriteTransaction { transaction in
+                        _ = self.appsyncClient?.store?.withinReadWriteTransaction { transaction in
                             self.deltaQueryHandler?(result, transaction, error)
-                            if (error == nil) {
+                            if error == nil {
                                 self.updateLastSyncTimeInMemoryAndCache(date: Date())
                             }
                         }
                     }
                 }
                 
-                let _ = networkTransport.send(operation: deltaQuery, overrideMap: overrideMap) {[weak self] (response, error) in
+                _ = networkTransport.send(operation: deltaQuery, overrideMap: overrideMap) {[weak self] (response, error) in
                     guard let response = response else {
                         notifyResultHandler(result: nil, transaction: nil, error: error)
                         return
@@ -301,17 +300,17 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                 dispatchGroup.enter()
                 updatedSubscriptionWatcher = try appsyncClient?.subscribeWithConnectCallback(subscription: subscription, connectCallback: ({
                     success = true
-                    if (!isSubscriptionWatcherUpdated) {
+                    if !isSubscriptionWatcherUpdated {
                         isSubscriptionWatcherUpdated = true
                         self.subscriptionWatcher?.cancel()
                         self.subscriptionWatcher = nil
                         self.subscriptionWatcher = updatedSubscriptionWatcher
                         dispatchGroup.leave()
                     }
-                }), resultHandler: {[weak self] (result, transaction, error) in
+                }), resultHandler: { [weak self] (result, transaction, error) in
                     // TODO: Improve error checking.
                     if let _ = error as? AWSAppSyncSubscriptionError {
-                        if (success == nil) {
+                        if success == nil {
                             dispatchGroup.leave()
                             success = false
                         }
@@ -321,7 +320,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                 
             } catch {
                 self.handleSubscriptionCallback(nil, nil, error)
-                if(success == nil) {
+                if success == nil {
                     success = false
                     dispatchGroup.leave()
                 }
@@ -377,7 +376,6 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         AppSyncLog.debug("DS: Clearing subscription messages queue.")
         subscriptionMessagesQueue = []
     }
-    
     
     /// This function generates a unique identifier hash for the combination of specified parameters including the GraphQL variables.
     /// The hash is always same for the same set of operations.
@@ -442,7 +440,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         
         isNetworkAvailable = connectionInfo.isConnectionAvailable
         
-        if (connectionInfo.isConnectionAvailable) {
+        if connectionInfo.isConnectionAvailable {
             self.deltaSyncOperationQueue?.addOperation {
                 AppSyncLog.debug("DS: Perform Sync Network")
                 self.performDeltaSync()

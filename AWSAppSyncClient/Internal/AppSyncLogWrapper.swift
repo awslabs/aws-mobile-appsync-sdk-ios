@@ -16,23 +16,23 @@
 import Foundation
 
 internal class AppSyncLog {
-    class func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line)  {
+    class func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         AppSyncLogHelper.logVerbose(message, file: file, funcion: function, line: UInt(line))
     }
     
-    class func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line)  {
+    class func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         AppSyncLogHelper.logVerbose(message, file: file, funcion: function, line: UInt(line))
     }
     
-    class func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line)  {
+    class func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         AppSyncLogHelper.logVerbose(message, file: file, funcion: function, line: UInt(line))
     }
     
-    class func warn(_ message: String, file: String = #file, function: String = #function, line: Int = #line)  {
+    class func warn(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         AppSyncLogHelper.logVerbose(message, file: file, funcion: function, line: UInt(line))
     }
     
-    class func error(_ message: String, file: String = #file, function: String = #function, line: Int = #line)  {
+    class func error(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         AppSyncLogHelper.logVerbose(message, file: file, funcion: function, line: UInt(line))
     }
 }

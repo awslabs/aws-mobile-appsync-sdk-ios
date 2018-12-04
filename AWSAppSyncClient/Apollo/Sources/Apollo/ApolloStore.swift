@@ -102,7 +102,7 @@ public final class ApolloStore {
 
       return try transaction.execute(selections: Query.Data.selections, onObjectWithKey: Query.rootCacheKey, variables: query.variables, accumulator: zip(mapper, dependencyTracker))
     }.map { (data: Query.Data, dependentKeys: Set<CacheKey>) in
-      GraphQLResult(data: data, errors: nil, source:.cache, dependentKeys: dependentKeys)
+      GraphQLResult(data: data, errors: nil, source: .cache, dependentKeys: dependentKeys)
     }
   }
 
@@ -209,7 +209,7 @@ public final class ApolloStore {
 
     private func write(object: JSONObject, forSelections selections: [GraphQLSelection], withKey key: CacheKey, variables: GraphQLMap?) throws {
       let normalizer = GraphQLResultNormalizer()
-      try self.makeExecutor().execute(selections: selections, on: object, withKey: key, variables: variables, accumulator: normalizer)
+      _ = try self.makeExecutor().execute(selections: selections, on: object, withKey: key, variables: variables, accumulator: normalizer)
       .flatMap {
         self.cache.merge(records: $0)
       }.andThen { changedKeys in

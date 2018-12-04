@@ -57,7 +57,6 @@ class SnapshotProcessController {
         switch reachability.connection {
         case .none:
             isReachable = false
-            break
         default:
             break
         }
@@ -166,7 +165,7 @@ public class AWSAppSyncClientConfiguration {
         var defaultApiKeyAuthProvider: AWSAPIKeyAuthProvider? = apiKeyAuthProvider
         var defaultCredentialsProvider: AWSCredentialsProvider? = credentialsProvider
         
-        switch (authTypeFromConfig) {
+        switch authTypeFromConfig {
         case AuthType.apiKey:
             if credentialsProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
                 throw AWSAppSyncClientInfoError(errorMessage: AuthType.apiKey.rawValue + " is selected in configuration but a "
@@ -187,7 +186,6 @@ public class AWSAppSyncClientConfiguration {
                 }
                 defaultApiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(key: appSyncClientInfo.apiKey)
             }
-            break
         case AuthType.amazonCognitoUserPools:
             if credentialsProvider != nil || apiKeyAuthProvider != nil || oidcAuthProvider != nil {
                 throw AWSAppSyncClientInfoError(errorMessage: AuthType.amazonCognitoUserPools.rawValue + " is selected in configuration but a "
@@ -197,7 +195,6 @@ public class AWSAppSyncClientConfiguration {
             if userPoolsAuthProvider == nil {
                 throw AWSAppSyncClientInfoError(errorMessage: "userPoolsAuthProvider cannot be nil.")
             }
-            break
         case AuthType.awsIAM:
             if apiKeyAuthProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
                 throw AWSAppSyncClientInfoError(errorMessage: AuthType.awsIAM.rawValue + " is selected in configuration but a "
@@ -213,7 +210,6 @@ public class AWSAppSyncClientConfiguration {
                     throw AWSAppSyncClientInfoError(errorMessage: "CredentialsProvider is missing in the configuration.")
                 }
             }
-            break
         case AuthType.oidcToken:
             if credentialsProvider != nil || userPoolsAuthProvider != nil || apiKeyAuthProvider != nil {
                 throw AWSAppSyncClientInfoError(errorMessage: AuthType.oidcToken.rawValue + " is selected in configuration but a "
@@ -223,7 +219,6 @@ public class AWSAppSyncClientConfiguration {
             if oidcAuthProvider == nil {
                 throw AWSAppSyncClientInfoError(errorMessage: "oidcAuthProvider cannot be nil.")
             }
-            break
         }
         
         try self.init(url: URL(string: appSyncClientInfo.apiUrl)!,
@@ -452,7 +447,7 @@ public class AWSAppSyncClientConfiguration {
         self.authType = authType
         
         // Construct the Network Transport based on the authType selected
-        switch (authType) {
+        switch authType {
         case AuthType.apiKey:
             self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                                    apiKeyAuthProvider: apiKeyAuthProvider!,
@@ -514,8 +509,8 @@ public class AWSAppSyncClientInfo {
                 throw AWSAppSyncClientInfoError(errorMessage: "Cannot read configuration from the awsconfiguration.json")
             }
             
-            let appSyncConfig : [String : Any] = (AWSInfo.default().rootInfoDictionary["AppSync"] as? [String : Any])!
-            let defaultAppSyncConfig : [String : Any] = (appSyncConfig[forKey] as? [String : Any])!
+            let appSyncConfig: [String: Any] = (AWSInfo.default().rootInfoDictionary["AppSync"] as? [String: Any])!
+            let defaultAppSyncConfig: [String: Any] = (appSyncConfig[forKey] as? [String: Any])!
             self.apiUrl = defaultAppSyncConfig["ApiUrl"] as! String
             self.region = defaultAppSyncConfig["Region"] as! String
             self.authType = defaultAppSyncConfig["AuthMode"] as! String
@@ -523,7 +518,7 @@ public class AWSAppSyncClientInfo {
             if let apiKeyFromDictionary = defaultAppSyncConfig["ApiKey"] {
                 self.apiKey = apiKeyFromDictionary as! String
             } else {
-                if (self.authType == AuthType.apiKey.rawValue) {
+                if self.authType == AuthType.apiKey.rawValue {
                     throw AWSAppSyncClientInfoError(errorMessage: "API_KEY AuthMode found in configuration but a valid ApiKey is not found")
                 }
             }
@@ -626,7 +621,7 @@ public enum AWSAppSyncClientError: Error, LocalizedError {
 
 public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
     let additionalInfo: String?
-    let errorDetails: [String:String]?
+    let errorDetails: [String: String]?
     
     public var errorDescription: String? {
         return additionalInfo ?? "Unable to start subscription."
@@ -646,7 +641,7 @@ protocol NetworkConnectionNotification {
 }
 
 public protocol AWSAppSyncOfflineMutationDelegate {
-    func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?) -> Void
+    func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?)
 }
 
 public struct AppSyncConnectionInfo {
@@ -673,7 +668,7 @@ class AWSAppSyncNetworkStatusChangeNotifier {
         reachability = Reachability(hostname: host)
         allowsCellularAccess = allowsCellular
         NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
-        do{
+        do {
             try reachability?.startNotifier()
         } catch {
             
@@ -688,7 +683,7 @@ class AWSAppSyncNetworkStatusChangeNotifier {
         case .wifi:
             isReachable = true
         case .cellular:
-            if (self.allowsCellularAccess) {
+            if self.allowsCellularAccess {
                 isReachable = true
             }
         case .none:
@@ -720,7 +715,7 @@ public class AWSAppSyncClient {
     private var networkStatusWatchers: [NetworkConnectionNotification] = []
     private var appSyncConfiguration: AWSAppSyncClientConfiguration
     internal var httpTransport: AWSNetworkTransport?
-    private var offlineMuationCacheClient : AWSAppSyncOfflineMutationCache?
+    private var offlineMuationCacheClient: AWSAppSyncOfflineMutationCache?
     private var offlineMutationExecutor: MutationExecutor?
     private var autoSubmitOfflineMutations: Bool = false
     private var appSyncMQTTClient = AppSyncMQTTClient()
@@ -759,14 +754,19 @@ public class AWSAppSyncClient {
             }
         }
         
-        self.offlineMutationExecutor = MutationExecutor(networkClient: self.httpTransport!, appSyncClient: self, snapshotProcessController: SnapshotProcessController(endpointURL:self.appSyncConfiguration.url), fileURL: self.appSyncConfiguration.databaseURL)
+        self.offlineMutationExecutor = MutationExecutor(
+            networkClient: self.httpTransport!,
+            appSyncClient: self,
+            snapshotProcessController: SnapshotProcessController(endpointURL: self.appSyncConfiguration.url),
+            fileURL: self.appSyncConfiguration.databaseURL)
         networkStatusWatchers.append(self.offlineMutationExecutor!)
         
         if AWSAppSyncNetworkStatusChangeNotifier.sharedInstance == nil {
             AWSAppSyncNetworkStatusChangeNotifier.setupSharedInstance(host: self.appSyncConfiguration.url.host!, allowsCellular: self.appSyncConfiguration.allowsCellularAccess)
         }
         
-        NotificationCenter.default.addObserver(self, selector: #selector(appsyncReachabilityChanged(note:)), name: .appSyncReachabilityChanged, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(appsyncReachabilityChanged(note:)), name: .appSyncReachabilityChanged, object: nil)
     }
     
     deinit {
@@ -782,7 +782,7 @@ public class AWSAppSyncClient {
         }
 
         var accessState: ClientNetworkAccessState = .Offline
-        if (isReachable) {
+        if isReachable {
             accessState = .Online
             self.accessState = .Online
         } else {
@@ -861,9 +861,9 @@ public class AWSAppSyncClient {
                                                                       resultHandler: OperationResultHandler<Mutation>? = nil) -> PerformMutationOperation<Mutation>? {
         if let optimisticUpdate = optimisticUpdate {
             do {
-                let _ = try self.store?.withinReadWriteTransaction { transaction in
+                _ = try self.store?.withinReadWriteTransaction { transaction in
                     optimisticUpdate(transaction)
-                    }.await()
+                }.await()
             } catch {
             }
         }
@@ -924,10 +924,10 @@ public class AWSAppSyncClient {
         callbackQueue: DispatchQueue = DispatchQueue.main,
         syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
         let subs = EmptySubscription.init()
-        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (_, _, _) in
+        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
         }
         let deltaQuery = EmptyQuery.init()
-        let deltaCallback: (GraphQLResult<EmptyQuery.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (_, _, _) in
+        let deltaCallback: (GraphQLResult<EmptyQuery.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
         }
         
         return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, EmptyQuery>.init(appsyncClient: self,
@@ -958,7 +958,7 @@ public class AWSAppSyncClient {
         callbackQueue: DispatchQueue = DispatchQueue.main,
         syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
         let subs = EmptySubscription.init()
-        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void =  { (_, _, _) in
+        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
         }
         
         return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, DeltaQuery>.init(appsyncClient: self,
@@ -1007,10 +1007,10 @@ public class AWSAppSyncClient {
             handlerQueue: callbackQueue) as Cancellable
     }
     
-    private func checkAndFetchS3Object(variables:GraphQLMap?) -> (bucket: String, key: String, region: String, contentType: String, localUri: String)? {
+    private func checkAndFetchS3Object(variables: GraphQLMap?) -> (bucket: String, key: String, region: String, contentType: String, localUri: String)? {
         if let variables = variables {
             for key in variables.keys {
-                if let object = variables[key].jsonValue as? Dictionary<String, String> {
+                if let object = variables[key].jsonValue as? [String: String] {
                     guard let bucket = object["bucket"] else { return nil }
                     guard let key = object["key"] else { return nil }
                     guard let region = object["region"] else { return nil }
@@ -1060,10 +1060,10 @@ public final class PerformMutationOperation<Mutation: GraphQLMutation>: InMemory
         dispatchGroup.enter()
         if self.mutationRecord.type == .graphQLMutationWithS3Object {
             // call s3mutation object here
-            let _ = appSyncClient.performMutationWithS3Object(operation: self.mutation, s3Object: self.mutationRecord.s3ObjectInput!, conflictResolutionBlock: mutationConflictHandler, dispatchGroup: dispatchGroup, handlerQueue: handlerQueue, resultHandler: resultHandler)
+            _ = appSyncClient.performMutationWithS3Object(operation: self.mutation, s3Object: self.mutationRecord.s3ObjectInput!, conflictResolutionBlock: mutationConflictHandler, dispatchGroup: dispatchGroup, handlerQueue: handlerQueue, resultHandler: resultHandler)
         } else {
-            let _ = appSyncClient.send(operation: self.mutation, context: nil, conflictResolutionBlock: self.mutationConflictHandler, dispatchGroup: dispatchGroup, handlerQueue: self.handlerQueue, resultHandler: self.resultHandler)
-            let _  = dispatchGroup.wait(timeout: DispatchTime(uptimeNanoseconds: 3000000))
+            _ = appSyncClient.send(operation: self.mutation, context: nil, conflictResolutionBlock: self.mutationConflictHandler, dispatchGroup: dispatchGroup, handlerQueue: self.handlerQueue, resultHandler: self.resultHandler)
+            _ = dispatchGroup.wait(timeout: DispatchTime(uptimeNanoseconds: 3000000))
         }
     }
 }

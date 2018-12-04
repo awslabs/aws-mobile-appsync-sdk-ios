@@ -33,7 +33,7 @@ class SubscriptionsOrderHelper {
     static let sharedInstance = SubscriptionsOrderHelper()
     
     func getLatestCount() -> Int {
-        count = count + 1
+        count += 1
         waitDictionary[count] = false
         return count
     }
@@ -43,10 +43,8 @@ class SubscriptionsOrderHelper {
     }
     
     func shouldWait(id: Int) -> Bool {
-        for i in 0..<id {
-            if (waitDictionary[i] == false) {
-                return true
-            }
+        for i in 0..<id where waitDictionary[i] == false {
+            return true
         }
         return false
     }
@@ -81,7 +79,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         }
         subscriptionsQueue.async { [weak self] in
             guard let self = self else {return}
-            if (!self.isCancelled) {
+            if !self.isCancelled {
                 self.startSubscription()
             }
         }
@@ -91,7 +89,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         return uniqueIdentifier
     }
     
-    private func startSubscription()  {
+    private func startSubscription() {
         let semaphore = DispatchSemaphore(value: 0)
         
         self.performSubscriptionRequest(completionHandler: { [weak self] (success, error) in
@@ -106,7 +104,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     
     private func performSubscriptionRequest(completionHandler: @escaping (Bool, Error?) -> Void) {
         do {
-            let _ = try self.httpClient?.sendSubscriptionRequest(operation: subscription!, completionHandler: {[weak self] (response, error) in
+            _ = try self.httpClient?.sendSubscriptionRequest(operation: subscription!, completionHandler: {[weak self] (response, error) in
                 guard let self = self else {return}
                 guard self.isCancelled == false else {return}
                 if let response = response {
@@ -147,7 +145,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         do {
             AppSyncLog.verbose("Received message in messageCallbackDelegate")
             
-            guard let _ = NSString(data: data, encoding: String.Encoding.utf8.rawValue) else {
+            guard String(data: data, encoding: .utf8) != nil else {
                 AppSyncLog.error("Unable to convert message data to String using UTF8 encoding")
                 AppSyncLog.debug("Message data is [\(data)]")
                 return
@@ -164,7 +162,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
             firstly {
                 try response.parseResult(cacheKeyForObject: self.store.cacheKeyForObject)
                 }.andThen { (result, records) in
-                    let _ = self.store.withinReadWriteTransaction { transaction in
+                    _ = self.store.withinReadWriteTransaction { transaction in
                         self.resultHandler?(result, transaction, nil)
                     }
                     
@@ -197,4 +195,3 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         self.subscription = nil
     }
 }
-

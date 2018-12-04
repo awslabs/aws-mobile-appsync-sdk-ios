@@ -701,6 +701,7 @@
 			buildConfigurationList = 17DECF721F59F5FF004B0512 /* Build configuration list for PBXNativeTarget "AWSAppSync" */;
 			buildPhases = (
 				4E996121F39BA74DB553A2CB /* [CP] Check Pods Manifest.lock */,
+				CC254EED21B656000078FDD1 /* SwiftLint */,
 				17DECF591F59F5FF004B0512 /* Sources */,
 				17DECF5A1F59F5FF004B0512 /* Frameworks */,
 				17DECF5B1F59F5FF004B0512 /* Headers */,
@@ -898,6 +899,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		CC254EED21B656000078FDD1 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 		};
 		D232FBB08D7EE92A9C9A2D55 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

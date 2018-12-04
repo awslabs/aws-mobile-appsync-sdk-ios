@@ -19,7 +19,7 @@ internal let sqlBusyTimeoutConstant = 100.0 // Fix a sqllite busy time out of 10
 public protocol MutationCache {
     func saveMutation(body: Data) -> Int64
     func getMutation(id: Int64) -> Data
-    func loadAllMutation() -> Dictionary<Int64, Data>
+    func loadAllMutation() -> [Int64: Data]
 }
 
 public enum AWSSQLLiteNormalizedCacheError: Error {
@@ -262,4 +262,3 @@ private final class SQLiteSerialization {
         }
     }
 }
-
