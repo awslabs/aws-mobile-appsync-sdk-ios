@@ -53,7 +53,7 @@ extension AWSAppSyncClient {
                                 conflictResolutionBlock(serverState, taskCompletionSource, nil)
                                 taskCompletionSource.task.continueWith(block: { (task) -> Any? in
                                     if let mutation = task.result {
-                                        let _ = self.send(operation: mutation, context: nil, conflictResolutionBlock: nil, dispatchGroup: dispatchGroup, handlerQueue: handlerQueue, resultHandler: resultHandler)
+                                        _ = self.send(operation: mutation, context: nil, conflictResolutionBlock: nil, dispatchGroup: dispatchGroup, handlerQueue: handlerQueue, resultHandler: resultHandler)
                                     }
                                     return nil
                                 }).waitUntilFinished()

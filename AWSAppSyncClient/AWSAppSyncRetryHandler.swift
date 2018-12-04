@@ -48,7 +48,7 @@ internal class AWSAppSyncRetryHandler {
         
         switch unwrappedResponse.statusCode {
         case 500 ... 599, 429:
-            if (waitMillis > AWSAppSyncRetryHandler.MAX_RETRY_WAIT_MILLIS) {
+            if waitMillis > AWSAppSyncRetryHandler.MAX_RETRY_WAIT_MILLIS {
                 break
             } else {
                 return(true, waitMillis)

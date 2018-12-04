@@ -13,7 +13,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     var allowCellularAccess = true
     var scheduledSubscription: DispatchSourceTimer?
     var subscriptionsQueue = DispatchQueue.global(qos: .userInitiated)
-    var cancelledSubscriptions = [String:Bool]()
+    var cancelledSubscriptions = [String: Bool]()
     
     func receivedMessageData(_ data: Data!, onTopic topic: String!) {
         self.subscriptionsQueue.async { [weak self] in
@@ -38,13 +38,15 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
                     mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
                 }
                 topics.map({ self.topicSubscribers[$0] })
-                    .flatMap({$0})
+                    .compactMap({$0})
                     .flatMap({$0})
                     .forEach({$0.connectedCallbackDelegate()})
-            } else if status.rawValue >= 3  {
-                let error = AWSAppSyncSubscriptionError(additionalInfo: "Subscription Terminated.", errorDetails:  [
-                    "recoverySuggestion" : "Restart subscription request.",
-                    "failureReason" : "Disconnected from service."])
+            } else if status.rawValue >= 3 {
+                let error = AWSAppSyncSubscriptionError(
+                    additionalInfo: "Subscription Terminated.",
+                    errorDetails: [
+                        "recoverySuggestion": "Restart subscription request.",
+                        "failureReason": "Disconnected from service."])
                 
                 topics.map({ self.topicSubscribers[$0] })
                       .compactMap({$0})
@@ -77,14 +79,15 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     }
     
     func shouldSubscribe(subscriptionInfo: [AWSSubscriptionInfo], identifier: String) -> Bool {
-        if (cancelledSubscriptions[identifier] != nil) {
+        if cancelledSubscriptions[identifier] != nil {
             cancelledSubscriptions[identifier] = true
             return false
         }
         return true
     }
     
-    private func resetAndStartSubscriptions(subscriptionInfo: [AWSSubscriptionInfo], identifier: String){
+    private func resetAndStartSubscriptions(
+        subscriptionInfo: [AWSSubscriptionInfo], identifier: String) {
 
         var oldMQTTClients: [AWSIoTMQTTClient<AnyObject, AnyObject>] = []
         
@@ -98,9 +101,8 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         mqttClients.removeAll()
         mqttClientsWithTopics.removeAll()
 
-        
         // identify if we still need to establish new connection; if yes, we proceed, else return.
-        if (shouldSubscribe(subscriptionInfo: subscriptionInfo, identifier: identifier)) {
+        if shouldSubscribe(subscriptionInfo: subscriptionInfo, identifier: identifier) {
             
             for subscription in subscriptionInfo {
                 startNewSubscription(subscriptionInfo: subscription)
@@ -170,20 +172,18 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     
     class TopicSubscribers {
         
-        private var dictionary = [String : NSHashTable<MQTTSubscriptionWatcher>]()
+        private var dictionary = [String: NSHashTable<MQTTSubscriptionWatcher>]()
         
         private var lock = NSLock()
         
         subscript(key: String) -> [MQTTSubscriptionWatcher]? {
-            get {
-                return synchronized() {
-                    return self.dictionary[key]?.allObjects
-                }
+            return synchronized {
+                return self.dictionary[key]?.allObjects
             }
         }
         
         func add(watcher: MQTTSubscriptionWatcher, topics: [String]) {
-            synchronized() {
+            synchronized {
                 for topic in topics {
                     if let watchers = self.dictionary[topic] {
                         watchers.add(watcher)
@@ -197,7 +197,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         }
         
         func remove(subscription: MQTTSubscriptionWatcher) {
-            synchronized() {
+            synchronized {
                 dictionary.forEach({ (element) in
                     element.value.allObjects.filter({ $0.getIdentifier() == subscription.getIdentifier() }).forEach({ (watcher) in
                         element.value.remove(watcher)
@@ -206,10 +206,11 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             }
         }
         
-        func cleanUp(topicRemovedHandler:(String) -> Void) {
-            let unusedTopics: [String] = synchronized() {
-                let unusedTopics = dictionary.filter({ $0.value.allObjects.isEmpty })
-                                             .map({ $0.key })
+        func cleanUp(topicRemovedHandler: (String) -> Void) {
+            let unusedTopics: [String] = synchronized {
+                let unusedTopics = dictionary
+                    .filter({ $0.value.allObjects.isEmpty })
+                    .map({ $0.key })
                 unusedTopics.forEach({
                     dictionary.removeValue(forKey: $0)
                 })
