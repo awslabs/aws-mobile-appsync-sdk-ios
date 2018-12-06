@@ -60,45 +60,56 @@ You can find a step by step walk through of setting up codegen backend and acces
 
 Contributing guidelines are noted [here](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/blob/master/CONTRIBUTING.md).
 
-### Testing Contributions
+## Testing Contributions
 
 If you are contributing to the SDK, it is recommended to add some unit/ functional tests and evaluate against existing tests.
 
-- Unit Tests
+### Unit Tests
 
-  Unit Tests do not require any specific setup and can be run directly from your Xcode IDE.
+Unit Tests do not require any specific setup and can be run directly from your Xcode IDE.
 
-- Functional Tests
+### Functional Tests
 
-  For running functional tests, we will need the following:
-  - An AppSync API with an `Events App` schema
-  - A Cognito Identity Pool with unauthenticated identities supported
-  - The Cognito Identity Pool's unauth role should have the `AppSync Invoke Full Access` permission
+For running functional tests, we will need the following:
+- An AppSync API with an `Events App` schema
+- A Cognito Identity Pool with unauthenticated identities supported
+- The Cognito Identity Pool's unauth role should have the `AppSync Invoke Full Access` permission
 
-   You can get the backend setup by following the steps below:
+You can get the backend setup by following the steps below:
 
-  - Go to [AWS AppSync console](https://console.aws.amazon.com/appsync/home).
-  - Click on `Create New API` and then select `Event App` and hit `Create`, take a note of the `API URL` of the created API.
-  - Once the creation completes, select `Settings` from left side of the console and then select `AWS Identity and Access Management (IAM)` as the authorization type.
-  - Next, create a new Cognito Identity Pool and attach `AppSync Invoke Full Access` permission to the unauth role of the Identity Pool. Keep a note of the Identity Pool ID of newly created pool.
-  - Create another AppSync API using the same steps above, but use API Key Auth mode instead which is available by default.
+- Go to [AWS AppSync console](https://console.aws.amazon.com/appsync/home).
+- Click on `Create New API` and then select `Event App` and hit `Create`, take a note of the `API URL` of the created API.
+- Once the creation completes, select `Settings` from left side of the console and then select `AWS Identity and Access Management (IAM)` as the authorization type.
+- Next, create a new Cognito Identity Pool and attach `AppSync Invoke Full Access` permission to the unauth role of the Identity Pool. Keep a note of the Identity Pool ID of newly created pool.
+- Create another AppSync API using the same steps above, but use API Key Auth mode instead which is available by default.
 
-  Finally, you will need to setup a config file locally to access the server. Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSyncTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId`, `AppSyncEndpointAPIKey`, `AppSyncAPIKey` and regions if required:
-    ```json
-    {
-      "AppSyncEndpoint": "https://asd32hl34523454532.appsync-api.us-east-1.amazonaws.com/graphql",
-      "AppSyncRegion": "us-east-1",
-      "CognitoIdentityPoolId": "us-east-1:abcas234-1234-12324-b4b7-aaa0c0831234",
-      "CognitoIdentityPoolRegion": "us-east-1",
-      "AppSyncEndpointAPIKey": "https://apikeybasedendpoint.appsync-api.us-east-1.amazonaws.com/graphql",
-      "AppSyncEndpointAPIKeyRegion": "us-east-1",
-      "AppSyncAPIKey": "da2-sad3lkh23422"
-    }
-    ```
+Finally, you will need to setup a config file locally to access the server, either by using a local configuration file, or by editing defaults in the source code.
 
-    > Note: The `AppSyncEndpointAPIKey` endpoint uses `API_KEY` based auth, while `AppSyncEndpoint` uses the `AWS_IAM` based auth.
+> Note: You must either provide all values in the `AppSyncTests/appsync_test_credentials.json` or in code. There is no mechanism to handle partial overrides of one source with the other. All values must be specified before running the functional tests.
 
-  Now you should be able to run the functional tests!
+__Option 1: Use a test configuration file__
+
+Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSyncTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId`, `AppSyncEndpointAPIKey`, `AppSyncAPIKey` and regions if required:
+
+```json
+{
+  "AppSyncEndpoint": "https://asd32hl34523454532.appsync-api.us-east-1.amazonaws.com/graphql",
+  "AppSyncRegion": "us-east-1",
+  "CognitoIdentityPoolId": "us-east-1:abcas234-1234-12324-b4b7-aaa0c0831234",
+  "CognitoIdentityPoolRegion": "us-east-1",
+  "AppSyncEndpointAPIKey": "https://apikeybasedendpoint.appsync-api.us-east-1.amazonaws.com/graphql",
+  "AppSyncEndpointAPIKeyRegion": "us-east-1",
+  "AppSyncAPIKey": "da2-sad3lkh23422"
+}
+```
+
+> Note: The `AppSyncEndpointAPIKey` endpoint uses `API_KEY` based auth, while `AppSyncEndpoint` uses the `AWS_IAM` based auth.
+
+__Option 2: Edit defaults in source code__
+
+Edit the file `AWSAppSyncTests/AppSyncClientTestConfigurationDefaults` with appropriate values.
+
+Now you should be able to run the functional tests by invoking "Product > Test" (⌘-U) in Xcode.
 
 ## License
 

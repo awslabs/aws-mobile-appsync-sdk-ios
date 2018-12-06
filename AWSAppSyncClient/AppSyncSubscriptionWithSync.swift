@@ -71,7 +71,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
         self.syncConfiguration = syncConfiguration
         self.handlerQueue = handlerQueue
         self.baseQuery = baseQuery
-        
+
         // We check if subscription and delta query are not internal no-op operations before setting them
         // This is done since Swift compiler can't infer generic types for these operations.
         if Subscription.operationString != NoOpOperationString {

@@ -7,104 +7,34 @@ import XCTest
 @testable import AWSCore
 
 class AWSAppSyncAPIKeyAuthTests: XCTestCase {
-    
-    var AppSyncRegion: AWSRegionType = .USEast1
-    var AppSyncEndpointURL: URL = URL(string: "https://localhost")! // Your AppSync endpoint here.
-    var apiKey = "YOUR_API_KEY"
-    var appSyncClient: AWSAppSyncClient?
-    
-    static let ENDPOINT_KEY = "AppSyncEndpointAPIKey"
-    static let API_KEY = "AppSyncAPIKey"
-    static let REGION_KEY = "AppSyncEndpointAPIKeyRegion"
-    
-    let TestSetupErrorMessage = """
-    Could not load appsync_test_credentials.json which is required to run the tests in this class.\n
-    To run this test class, please add a file named appsync_test_credentials.json in AWSAppSyncTests folder of this project. You can alternatively update `AppSyncEndpointURL` and `CognitoIdentityPoolId` values to use inline values. \n\n
-    Format of the config file:
-    {
-       "AppSyncEndpoint": "https://abc2131absc.appsync-api.us-east-1.amazonaws.com/graphql",
-       "AppSyncRegion": "us-east-1",
-       "CognitoIdentityPoolId": "us-east-1:abc123-1234-123a-a123-12345fe123",
-       "CognitoIdentityPoolRegion": "us-east-1",
-       "AppSyncEndpointAPIKey": "https://apikeybasedendpoint.appsync-api.us-east-1.amazonaws.com/graphql",
-       "AppSyncEndpointAPIKeyRegion": "us-east-1",
-       "AppSyncAPIKey": "da2-sad3lkh23422"
-    }
+    var appSyncClient: AWSAppSyncClient!
 
-    The test uses 2 different backend setups for tests.
-        - the events starter schema with AWS_IAM(Cognito Identity) auth which can be created from AWSAppSync Console.
-        - the events starter schema with API_KEY auth which can be created from AWSAppSyncConsole.
-    """
-    
+    let EventName = "Testing Event"
+    let EventTime = "July 26 2018, 12:30"
+    let EventLocation = "Seattle, WA"
+    let EventDescription = "Event Description"
+
     override func setUp() {
         super.setUp()
-        setUpAppSyncClient()
+        do {
+            appSyncClient = try makeAppSyncClient()
+        } catch let error {
+            XCTFail(error.localizedDescription)
+        }
+        XCTAssertNotNil(appSyncClient, "AppSyncClient should not be nil")
     }
-    
+
+    func makeAppSyncClient(using databaseURL: URL? = nil) throws -> AWSAppSyncClient {
+        let helper = try AppSyncClientTestHelper(with: .apiKey, databaseURL: databaseURL)
+        return helper.appSyncClient
+    }
+
     override func tearDown() {
         super.tearDown()
         deleteAll()
-        appSyncClient = nil
-    }
-
-    func setUpAppSyncClient(with databaseURL: URL? = nil) {
-        // Read credentials from appsync_test_credentials.json
-        if let credentialsPath: String = Bundle.init(for: self.classForCoder).path(forResource: "appsync_test_credentials", ofType: "json"), let credentialsData = try? Data.init(contentsOf: URL(fileURLWithPath: credentialsPath)) {
-            print("json path: \(credentialsPath)")
-            let json = try? JSONSerialization.jsonObject(with: credentialsData, options: JSONSerialization.ReadingOptions.allowFragments)
-
-            guard let jsonObject = json as? JSONObject else {
-                XCTFail(TestSetupErrorMessage)
-                return
-            }
-
-            let endpoint = jsonObject[AWSAppSyncAPIKeyAuthTests.ENDPOINT_KEY]! as! String
-            let apiKeyValue = jsonObject[AWSAppSyncAPIKeyAuthTests.API_KEY]! as! String
-            AppSyncEndpointURL = URL(string: endpoint)!
-            apiKey = apiKeyValue
-            AppSyncRegion = (jsonObject[AWSAppSyncAPIKeyAuthTests.REGION_KEY]! as! String).aws_regionTypeValue()
-        } else if (apiKey != "YOUR_API_KEY" && AppSyncEndpointURL.absoluteString != "https://localhost" ) {
-            XCTFail(TestSetupErrorMessage)
-            return
-        } else {
-            XCTFail(TestSetupErrorMessage)
-            return
-        }
-
-        do {
-            AWSDDLog.sharedInstance.logLevel = .error
-            AWSDDLog.add(AWSDDTTYLogger.sharedInstance)
-            // Create AWSApiKeyAuthProvider
-            class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
-                var apiKey: String
-                public init(key: String) {
-                    apiKey = key
-                }
-                func getAPIKey() -> String {
-                    return self.apiKey
-                }
-            }
-            let apiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(key: apiKey)
-            // Initialize the AWS AppSync configuration
-            let appSyncConfig = try AWSAppSyncClientConfiguration(url: AppSyncEndpointURL,
-                                                                  serviceRegion: AppSyncRegion,
-                                                                  apiKeyAuthProvider: apiKeyAuthProvider,
-                                                                  databaseURL: databaseURL)
-            // Initialize the AWS AppSync client
-            appSyncClient = try AWSAppSyncClient(appSyncConfig: appSyncConfig)
-            // Set id as the cache key for objects
-            appSyncClient?.apolloClient?.cacheKeyForObject = { $0["id"] }
-        } catch {
-            print("Error initializing appsync client. \(error)")
-        }
-
     }
 
     func deleteAll() {
-        guard let appSyncClient = appSyncClient else {
-            return
-        }
-
         let query = ListEventsQuery(limit: 99)
         let listEventsExpectation = expectation(description: "Fetch done successfully.")
 
@@ -217,7 +147,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     }
 
     // Validates that queries are invoked and returned as expected during initial setup and reconnection flows
-    func testSyncOperationAtSetupAndReconnect() {
+    func testSyncOperationAtSetupAndReconnect() throws {
         enum SyncWatcherLifecyclePhase {
             case setUp
             case monitoring
@@ -226,15 +156,15 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         // Let result handlers inspect the current phase of the sync watcher's "lifecycle" so they can properly fulfill
         // expectations
         var _currentSyncWatcherLifecyclePhase = SyncWatcherLifecyclePhase.setUp
-        var currentSyncWatcherLifecyclePhase = {
+        func currentSyncWatcherLifecyclePhase() -> SyncWatcherLifecyclePhase {
             return _currentSyncWatcherLifecyclePhase
         }
 
         // This tests needs a physical DB for the SubscriptionMetadataCache to properly return a "lastSynced" value.
-        appSyncClient = nil
         let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("testSyncOperationAtSetupAndReconnect-appsync-local-db")
         try? FileManager.default.removeItem(at: databaseURL)
-        setUpAppSyncClient(with: databaseURL)
+
+        let appSyncClient = try makeAppSyncClient(using: databaseURL)
 
         var syncWatcher: Cancellable?
         defer {
@@ -245,11 +175,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         deleteAll()
 
-        guard let appSyncClient = appSyncClient else {
-            XCTFail("appSyncClient must not be nil")
-            return
-        }
-        
         let addEventExpectation = expectation(description: "Mutation done successfully.")
         let addEvent = AddEventMutation(
             name: DefaultEventTestData.EventName,
@@ -259,7 +184,8 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         )
 
         var eventId: GraphQLID?
-        appSyncClient.perform(mutation: addEvent) { (result, error) in
+        appSyncClient.perform(mutation: addEvent) {
+            (result, error) in
             print("AddEventMutation result handler invoked")
             XCTAssertNil(error, "AddEventMutation error expected to be nil, but is not.")
             XCTAssertNotNil(result?.data?.createEvent?.id, "AddEventMutation expected service to return a UUID")
@@ -300,7 +226,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let initialBaseQueryResultHandler: (GraphQLResult<ListEventsQuery.Data>?, Error?) -> Void = {
             result, error in
             print("Initial base query result handler invoked")
-            XCTAssertNotNil(result, "Initial base query result should not be nil")
             XCTAssertNil(error, "Initial base query error should be nil")
             initialBaseQueryResultHandlerInvocationCount += 1
 
@@ -308,7 +233,9 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             case .setUp:
                 if (initialBaseQueryResultHandlerInvocationCount == 1) {
                     initialBaseQueryHandlerShouldBeInvokedToHydrateFromCache.fulfill()
+                    XCTAssertNil(result, "Initial base query result from cache should be nil")
                 } else if initialBaseQueryResultHandlerInvocationCount == 2 {
+                    XCTAssertNotNil(result, "Initial base query result from network should not be nil")
                     initialBaseQueryShouldBeInvokedToPopulateFromService.fulfill()
                 } else {
                     XCTFail("Expecting only 2 invocations of base query result operation, but got \(initialBaseQueryResultHandlerInvocationCount).")
