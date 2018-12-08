@@ -1,6 +1,16 @@
 //
-//  AWSAppSyncClient.swift
-//  AWSAppSyncClient
+// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License").
+// You may not use this file except in compliance with the License.
+// A copy of the License is located at
+//
+// http://aws.amazon.com/apache2.0
+//
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied. See the License for the specific language governing
+// permissions and limitations under the License.
 //
 
 import Foundation
@@ -82,560 +92,6 @@ class SnapshotProcessController {
     }
 }
 
-public class AWSAppSyncClientConfiguration {
-    
-    fileprivate var url: URL
-    fileprivate var region: AWSRegionType
-    fileprivate var store: ApolloStore
-    fileprivate var networkTransport: AWSNetworkTransport
-    fileprivate var databaseURL: URL?
-    fileprivate var oidcAuthProvider: AWSOIDCAuthProvider? = nil
-    fileprivate var snapshotController: SnapshotProcessController? = nil
-    fileprivate var s3ObjectManager: AWSS3ObjectManager? = nil
-    fileprivate var presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil
-    fileprivate var connectionStateChangeHandler: ConnectionStateChangeHandler? = nil
-    fileprivate var subscriptionMetadataCache: AWSSubscriptionMetaDataCache?
-    
-    fileprivate var allowsCellularAccess: Bool = true
-    fileprivate var autoSubmitOfflineMutations: Bool = true
-    
-    fileprivate var authType: AuthType? = nil
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - url: The endpoint url for Appsync endpoint.
-    ///   - serviceRegion: The service region for Appsync.
-    ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization.
-    ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    ///   - loggingClient: The logging client for application logging.
-    public convenience init(url: URL,
-                            serviceRegion: AWSRegionType,
-                            credentialsProvider: AWSCredentialsProvider,
-                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
-                            databaseURL: URL? = nil,
-                            connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                            s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        try self.init(url: url,
-                      serviceRegion: serviceRegion,
-                      authType: AuthType.awsIAM,
-                      apiKeyAuthProvider: nil,
-                      credentialsProvider: credentialsProvider,
-                      userPoolsAuthProvider: nil,
-                      oidcAuthProvider: nil,
-                      urlSessionConfiguration: urlSessionConfiguration,
-                      databaseURL: databaseURL,
-                      connectionStateChangeHandler: connectionStateChangeHandler,
-                      s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
-    }
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - appSyncClientInfo: The configuration information represented in awsconfiguration.json file.
-    ///   - apiKeyAuthProvider: A `AWSAPIKeyAuthProvider` protocol object for API Key based authorization.
-    ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization.
-    ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for User Pool based authorization.
-    ///   - oidcAuthProvider: A `AWSOIDCAuthProvider` protocol object for OIDC based authorization.
-    ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    ///   - loggingClient: The logging client for application logging.
-    public convenience init(appSyncClientInfo: AWSAppSyncClientInfo,
-                            apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil,
-                            credentialsProvider: AWSCredentialsProvider? = nil,
-                            userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil,
-                            oidcAuthProvider: AWSOIDCAuthProvider? = nil,
-                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
-                            databaseURL: URL? = nil,
-                            connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                            s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        
-        let authTypeFromConfig: AuthType = try AuthType.getAuthType(rawValue: appSyncClientInfo.authType)
-        
-        var defaultApiKeyAuthProvider: AWSAPIKeyAuthProvider? = apiKeyAuthProvider
-        var defaultCredentialsProvider: AWSCredentialsProvider? = credentialsProvider
-        
-        switch authTypeFromConfig {
-        case AuthType.apiKey:
-            if credentialsProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(errorMessage: AuthType.apiKey.rawValue + " is selected in configuration but a "
-                    + "AWSAPIKeyAuthProvider object is not passed in or cannot be constructed.")
-            }
-            
-            // If AuthType is API_KEY, use the ApiKey Auth Provider passed in
-            // or create a provider based on the ApiKey passed from the config
-            if defaultApiKeyAuthProvider == nil {
-                class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
-                    var apiKey: String
-                    public init(key: String) {
-                        apiKey = key
-                    }
-                    func getAPIKey() -> String {
-                        return apiKey
-                    }
-                }
-                defaultApiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(key: appSyncClientInfo.apiKey)
-            }
-        case AuthType.amazonCognitoUserPools:
-            if credentialsProvider != nil || apiKeyAuthProvider != nil || oidcAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(errorMessage: AuthType.amazonCognitoUserPools.rawValue + " is selected in configuration but a "
-                    + "AWSCognitoUserPoolsAuthProvider object is not passed in.")
-            }
-            
-            if userPoolsAuthProvider == nil {
-                throw AWSAppSyncClientInfoError(errorMessage: "userPoolsAuthProvider cannot be nil.")
-            }
-        case AuthType.awsIAM:
-            if apiKeyAuthProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(errorMessage: AuthType.awsIAM.rawValue + " is selected in configuration but a "
-                    + "AWSCredentialsProvider object is not passed in or cannot be constructed.")
-            }
-            
-            // If AuthType is AWS_IAM, use the AWSCredentialsProvider passed in
-            // or create a provider based on the CognitoIdentity CredentialsProvider
-            // passed from the config
-            if defaultCredentialsProvider == nil {
-                defaultCredentialsProvider = AWSServiceInfo.init().cognitoCredentialsProvider
-                if defaultCredentialsProvider == nil {
-                    throw AWSAppSyncClientInfoError(errorMessage: "CredentialsProvider is missing in the configuration.")
-                }
-            }
-        case AuthType.oidcToken:
-            if credentialsProvider != nil || userPoolsAuthProvider != nil || apiKeyAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(errorMessage: AuthType.oidcToken.rawValue + " is selected in configuration but a "
-                    + "AWSOIDCAuthProvider object is not passed in.")
-            }
-            
-            if oidcAuthProvider == nil {
-                throw AWSAppSyncClientInfoError(errorMessage: "oidcAuthProvider cannot be nil.")
-            }
-        }
-        
-        try self.init(url: URL(string: appSyncClientInfo.apiUrl)!,
-                      serviceRegion: appSyncClientInfo.region.aws_regionTypeValue(),
-                      authType: authTypeFromConfig,
-                      apiKeyAuthProvider: defaultApiKeyAuthProvider,
-                      credentialsProvider: defaultCredentialsProvider,
-                      userPoolsAuthProvider: userPoolsAuthProvider,
-                      oidcAuthProvider: oidcAuthProvider,
-                      urlSessionConfiguration: urlSessionConfiguration,
-                      databaseURL: databaseURL,
-                      connectionStateChangeHandler: connectionStateChangeHandler,
-                      s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
-    }
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - url: The endpoint url for Appsync endpoint.
-    ///   - serviceRegion: The service region for Appsync.
-    ///   - apiKeyAuthProvider: A `AWSAPIKeyAuthProvider` protocol object for API Key based authorization.
-    ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    ///   - loggingClient: The logging client for application logging.
-    public convenience init(url: URL,
-                            serviceRegion: AWSRegionType,
-                            apiKeyAuthProvider: AWSAPIKeyAuthProvider,
-                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
-                            databaseURL: URL? = nil,
-                            connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                            s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        try self.init(url: url,
-                      serviceRegion: serviceRegion,
-                      authType: AuthType.apiKey,
-                      apiKeyAuthProvider: apiKeyAuthProvider,
-                      credentialsProvider: nil,
-                      userPoolsAuthProvider: nil,
-                      oidcAuthProvider: nil,
-                      urlSessionConfiguration: urlSessionConfiguration,
-                      databaseURL: databaseURL,
-                      connectionStateChangeHandler: connectionStateChangeHandler,
-                      s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
-    }
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - url: The endpoint url for Appsync endpoint.
-    ///   - serviceRegion: The service region for Appsync.
-    ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for User Pool based authorization.
-    ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    ///   - loggingClient: The logging client for application logging.
-    public convenience init(url: URL,
-                            serviceRegion: AWSRegionType,
-                            userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider,
-                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
-                            databaseURL: URL? = nil,
-                            connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                            s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        try self.init(url: url,
-                      serviceRegion: serviceRegion,
-                      authType: AuthType.amazonCognitoUserPools,
-                      apiKeyAuthProvider: nil,
-                      credentialsProvider: nil,
-                      userPoolsAuthProvider: userPoolsAuthProvider,
-                      oidcAuthProvider: nil,
-                      urlSessionConfiguration: urlSessionConfiguration,
-                      databaseURL: databaseURL,
-                      connectionStateChangeHandler: connectionStateChangeHandler,
-                      s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
-    }
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - url: The endpoint url for Appsync endpoint.
-    ///   - serviceRegion: The service region for Appsync.
-    ///   - oidcAuthProvider: A `AWSOIDCAuthProvider` protocol object for OIDC based authorization.
-    ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    ///   - loggingClient: The logging client for application logging.
-    public convenience init(url: URL,
-                            serviceRegion: AWSRegionType,
-                            oidcAuthProvider: AWSOIDCAuthProvider,
-                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
-                            databaseURL: URL? = nil,
-                            connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                            s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        try self.init(url: url,
-                      serviceRegion: serviceRegion,
-                      authType: AuthType.oidcToken,
-                      apiKeyAuthProvider: nil,
-                      credentialsProvider: nil,
-                      userPoolsAuthProvider: nil,
-                      oidcAuthProvider: oidcAuthProvider,
-                      urlSessionConfiguration: urlSessionConfiguration,
-                      databaseURL: databaseURL,
-                      connectionStateChangeHandler: connectionStateChangeHandler,
-                      s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
-    }
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - url: The endpoint url for Appsync endpoint.
-    ///   - serviceRegion: The service region for Appsync.
-    ///   - networkTransport: The Network Transport used to communicate with the server.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    ///   - loggingClient: The logging client for application logging.
-    public init(url: URL,
-                serviceRegion: AWSRegionType,
-                networkTransport: AWSNetworkTransport,
-                databaseURL: URL? = nil,
-                connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = url
-        self.region = serviceRegion
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.networkTransport = networkTransport
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-            do {
-                self.subscriptionMetadataCache = try AWSSubscriptionMetaDataCache(fileURL: databaseURL)
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
-        self.connectionStateChangeHandler = connectionStateChangeHandler
-    }
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - appSyncClientInfo: The configuration information represented in awsconfiguration.json file.
-    ///   - networkTransport: The Network Transport used to communicate with the server.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    ///   - loggingClient: The logging client for application logging.
-    public init(appSyncClientInfo: AWSAppSyncClientInfo,
-                networkTransport: AWSNetworkTransport,
-                databaseURL: URL? = nil,
-                connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = URL(string: appSyncClientInfo.apiUrl)!
-        self.region = appSyncClientInfo.region.aws_regionTypeValue()
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.networkTransport = networkTransport
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-            do {
-                self.subscriptionMetadataCache = try AWSSubscriptionMetaDataCache(fileURL: databaseURL)
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
-        self.connectionStateChangeHandler = connectionStateChangeHandler
-    }
-    
-    /// Creates a configuration object for the `AWSAppSyncClient`.
-    ///
-    /// - Parameters:
-    ///   - url: The endpoint url for AppSync endpoint.
-    ///   - serviceRegion: The service region for AppSync.
-    ///   - authType: The Mode of Authentication used with AppSync
-    ///   - apiKeyAuthProvider: A `AWSAPIKeyAuthProvider` protocol object for API Key based authorization.
-    ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization.
-    ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for Cognito User Pools based authorization.
-    ///   - oidcAuthProvider: A `AWSOIDCAuthProvider` protocol object for any OpenId Connect based authorization.
-    ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
-    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
-    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
-    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
-    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
-    private init(url: URL,
-                 serviceRegion: AWSRegionType,
-                 authType: AuthType,
-                 apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil,
-                 credentialsProvider: AWSCredentialsProvider? = nil,
-                 userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil,
-                 oidcAuthProvider: AWSOIDCAuthProvider? = nil,
-                 urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
-                 databaseURL: URL? = nil,
-                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
-                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                 presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        self.url = url
-        self.region = serviceRegion
-        self.authType = authType
-        
-        // Construct the Network Transport based on the authType selected
-        switch authType {
-        case AuthType.apiKey:
-            self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
-                                                                   apiKeyAuthProvider: apiKeyAuthProvider!,
-                                                                   configuration: urlSessionConfiguration)
-        case AuthType.awsIAM:
-            self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
-                                                                   configuration: urlSessionConfiguration,
-                                                                   region: region,
-                                                                   credentialsProvider: credentialsProvider!)
-        case AuthType.amazonCognitoUserPools:
-            self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
-                                                                   userPoolsAuthProvider: userPoolsAuthProvider!,
-                                                                   configuration: urlSessionConfiguration)
-        case AuthType.oidcToken:
-            self.networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
-                                                                   oidcAuthProvider: oidcAuthProvider!,
-                                                                   configuration: urlSessionConfiguration)
-        }
-        
-        self.databaseURL = databaseURL
-        self.store = ApolloStore(cache: InMemoryNormalizedCache())
-        self.connectionStateChangeHandler = connectionStateChangeHandler
-        if let databaseURL = databaseURL {
-            do {
-                self.store = try ApolloStore(cache: AWSSQLLiteNormalizedCache(fileURL: databaseURL))
-            } catch {
-                // Use in memory cache (InMemoryNormalizedCache) incase database init fails
-            }
-            do {
-                self.subscriptionMetadataCache = try AWSSubscriptionMetaDataCache(fileURL: databaseURL)
-            } catch {
-                // Use in memory cache incase database init fails
-            }
-        }
-        
-        self.snapshotController = SnapshotProcessController(endpointURL: url)
-        self.s3ObjectManager = s3ObjectManager
-        self.presignedURLClient = presignedURLClient
-    }
-}
-
-/**
- * Configuration for AWSAppSyncClient
- */
-public class AWSAppSyncClientInfo {
-    
-    fileprivate var apiUrl: String = ""
-    fileprivate var region: String = ""
-    fileprivate var authType: String = ""
-    fileprivate var apiKey: String = ""
-    
-    public convenience init() throws {
-        try self.init(forKey: "Default")
-    }
-    
-    public init(forKey: String) throws {
-        do {
-            if AWSInfo.default().rootInfoDictionary["AppSync"] == nil {
-                throw AWSAppSyncClientInfoError(errorMessage: "Cannot read configuration from the awsconfiguration.json")
-            }
-            
-            let appSyncConfig: [String: Any] = (AWSInfo.default().rootInfoDictionary["AppSync"] as? [String: Any])!
-            let defaultAppSyncConfig: [String: Any] = (appSyncConfig[forKey] as? [String: Any])!
-            self.apiUrl = defaultAppSyncConfig["ApiUrl"] as! String
-            self.region = defaultAppSyncConfig["Region"] as! String
-            self.authType = defaultAppSyncConfig["AuthMode"] as! String
-            
-            if let apiKeyFromDictionary = defaultAppSyncConfig["ApiKey"] {
-                self.apiKey = apiKeyFromDictionary as! String
-            } else {
-                if self.authType == AuthType.apiKey.rawValue {
-                    throw AWSAppSyncClientInfoError(errorMessage: "API_KEY AuthMode found in configuration but a valid ApiKey is not found")
-                }
-            }
-        } catch {
-            throw AWSAppSyncClientInfoError(errorMessage: "Error in reading AppSync configuration from the awsconfiguration.json")
-        }
-    }
-}
-
-public struct AWSAppSyncClientInfoError: Error, LocalizedError {
-    
-    public let errorMessage: String?
-    
-    public var errorDescription: String? {
-        return errorMessage
-    }
-}
-
-public enum AWSAppSyncClientError: Error, LocalizedError {
-    case requestFailed(Data?, HTTPURLResponse?, Error?)
-    case noData(HTTPURLResponse)
-    case parseError(Data, HTTPURLResponse, Error?)
-    case authenticationError(Error)
-    
-    public var errorDescription: String? {
-        let underlyingError: Error?
-        var message: String
-        let errorResponse: HTTPURLResponse?
-        switch self {
-        case .requestFailed(_, let response, let error):
-            errorResponse = response
-            underlyingError = error
-            message = "Did not receive a successful HTTP code."
-        case .noData(let response):
-            errorResponse = response
-            underlyingError = nil
-            message = "No Data received in response."
-        case .parseError(_, let response, let error):
-            underlyingError = error
-            errorResponse = response
-            message = "Could not parse response data."
-        case .authenticationError(let error):
-            underlyingError = error
-            errorResponse = nil
-            message = "Failed to authenticate request."
-        }
-        
-        if let error = underlyingError {
-            message += " Error: \(error)"
-        }
-        
-        if let unwrappedResponse = errorResponse {
-            return "(\(unwrappedResponse.statusCode) \(unwrappedResponse.statusCodeDescription)) \(message)"
-        } else {
-            return "\(message)"
-        }
-    }
-    
-    @available(*, deprecated, message: "use the enum pattern matching instead")
-    public var body: Data? {
-        switch self {
-        case .parseError(let data, _, _):
-            return data
-        case .requestFailed(let data, _, _):
-            return data
-        case .noData, .authenticationError:
-            return nil
-        }
-    }
-    
-    @available(*, deprecated, message: "use the enum pattern matching instead")
-    public var response: HTTPURLResponse? {
-        switch self {
-        case .parseError(_, let response, _):
-            return response
-        case .requestFailed(_, let response, _):
-            return response
-        case .noData, .authenticationError:
-            return nil
-        }
-    }
-    
-    @available(*, deprecated)
-    var isInternalError: Bool {
-        return false
-    }
-    
-    @available(*, deprecated, message: "use errorDescription instead")
-    var additionalInfo: String? {
-        switch self {
-        case .parseError:
-            return "Could not parse response data."
-        case .requestFailed:
-            return "Did not receive a successful HTTP code."
-        case .noData, .authenticationError:
-            return "No Data received in response."
-        }
-    }
-}
-
-public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
-    let additionalInfo: String?
-    let errorDetails: [String: String]?
-    
-    public var errorDescription: String? {
-        return additionalInfo ?? "Unable to start subscription."
-    }
-    
-    public var recoverySuggestion: String? {
-        return errorDetails?["recoverySuggestion"]
-    }
-    
-    public var failureReason: String? {
-        return errorDetails?["failureReason"]
-    }
-}
-
 protocol NetworkConnectionNotification {
     func onNetworkAvailabilityStatusChanged(isEndpointReachable: Bool)
 }
@@ -704,9 +160,10 @@ class AWSAppSyncNetworkStatusChangeNotifier {
 // The client for making `Mutation`, `Query` and `Subscription` requests.
 public class AWSAppSyncClient {
     
-    public let apolloClient: ApolloClient?
+    public let apolloClient: ApolloClient
+    public let store: ApolloStore
+
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
-    public let store: ApolloStore?
     public let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
     public let s3ObjectManager: AWSS3ObjectManager?
     
@@ -743,7 +200,9 @@ public class AWSAppSyncClient {
         self.httpTransport = appSyncConfig.networkTransport
         self.connectionStateChangeHandler = appSyncConfiguration.connectionStateChangeHandler
         
-        self.apolloClient = ApolloClient(networkTransport: self.httpTransport!, store: self.appSyncConfiguration.store)
+        self.apolloClient = ApolloClient(
+            networkTransport: self.httpTransport!,
+            store: self.appSyncConfiguration.store)
         
         try self.offlineMuationCacheClient = AWSAppSyncOfflineMutationCache()
         if let fileURL = self.appSyncConfiguration.databaseURL {
@@ -790,7 +249,7 @@ public class AWSAppSyncClient {
         }
         self.connectionStateChangeHandler?.stateChanged(networkState: accessState)
     }
-    
+
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
     ///
     /// - Parameters:
@@ -801,10 +260,14 @@ public class AWSAppSyncClient {
     ///   - result: The result of the fetched query, or `nil` if an error occurred.
     ///   - error: An error that indicates why the fetch failed, or `nil` if the fetch was succesful.
     /// - Returns: An object that can be used to cancel an in progress fetch.
-    @discardableResult public func fetch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: OperationResultHandler<Query>? = nil) -> Cancellable {
-        return apolloClient!.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+    @discardableResult public func fetch<Query: GraphQLQuery>(
+        query: Query,
+        cachePolicy: CachePolicy = .returnCacheDataElseFetch,
+        queue: DispatchQueue = .main,
+        resultHandler: OperationResultHandler<Query>? = nil) -> Cancellable {
+        return apolloClient.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
-    
+
     /// Watches a query by first fetching an initial result from the server or from the local cache, depending on the current contents of the cache and the specified cache policy. After the initial fetch, the returned query watcher object will get notified whenever any of the data the query result depends on changes in the local cache, and calls the result handler again with the new result.
     ///
     /// - Parameters:
@@ -815,34 +278,47 @@ public class AWSAppSyncClient {
     ///   - result: The result of the fetched query, or `nil` if an error occurred.
     ///   - error: An error that indicates why the fetch failed, or `nil` if the fetch was succesful.
     /// - Returns: A query watcher object that can be used to control the watching behavior.
-    public func watch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping OperationResultHandler<Query>) -> GraphQLQueryWatcher<Query> {
-        
-        return apolloClient!.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+    public func watch<Query: GraphQLQuery>(
+        query: Query,
+        cachePolicy: CachePolicy = .returnCacheDataElseFetch,
+        queue: DispatchQueue = .main,
+        resultHandler: @escaping OperationResultHandler<Query>) -> GraphQLQueryWatcher<Query> {
+
+        return apolloClient.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+    }
+
+    public func subscribe<Subscription: GraphQLSubscription>(
+        subscription: Subscription,
+        queue: DispatchQueue = .main,
+        resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
+
+        return AWSAppSyncSubscriptionWatcher(
+            client: self.appSyncMQTTClient,
+            httpClient: self.httpTransport!,
+            store: self.store,
+            subscriptionsQueue: self.subscriptionsQueue,
+            subscription: subscription,
+            handlerQueue: queue,
+            resultHandler: resultHandler)
     }
     
-    public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
-        
-        return AWSAppSyncSubscriptionWatcher(client: self.appSyncMQTTClient,
-                                              httpClient: self.httpTransport!,
-                                              store: self.store!,
-                                              subscriptionsQueue: self.subscriptionsQueue,
-                                              subscription: subscription,
-                                              handlerQueue: queue,
-                                              resultHandler: resultHandler)
+    internal func subscribeWithConnectCallback<Subscription: GraphQLSubscription>(
+        subscription: Subscription,
+        queue: DispatchQueue = .main,
+        connectCallback: @escaping (() -> Void),
+        resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
+
+        return AWSAppSyncSubscriptionWatcher(
+            client: self.appSyncMQTTClient,
+            httpClient: self.httpTransport!,
+            store: self.store,
+            subscriptionsQueue: self.subscriptionsQueue,
+            subscription: subscription,
+            handlerQueue: queue,
+            connectedCallback: connectCallback,
+            resultHandler: resultHandler)
     }
-    
-    internal func subscribeWithConnectCallback<Subscription: GraphQLSubscription>(subscription: Subscription, queue: DispatchQueue = DispatchQueue.main, connectCallback: @escaping (() -> Void), resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
-        
-        return AWSAppSyncSubscriptionWatcher(client: self.appSyncMQTTClient,
-                                             httpClient: self.httpTransport!,
-                                             store: self.store!,
-                                             subscriptionsQueue: self.subscriptionsQueue,
-                                             subscription: subscription,
-                                             handlerQueue: queue,
-                                             connectedCallback: connectCallback,
-                                             resultHandler: resultHandler)
-    }
-    
+
     /// Performs a mutation by sending it to the server.
     ///
     /// - Parameters:
@@ -854,14 +330,15 @@ public class AWSAppSyncClient {
     ///   - result: The result of the performed mutation, or `nil` if an error occurred.
     ///   - error: An error that indicates why the mutation failed, or `nil` if the mutation was succesful.
     /// - Returns: An object that can be used to cancel an in progress mutation.
-    @discardableResult public func perform<Mutation: GraphQLMutation>(mutation: Mutation,
-                                                                      queue: DispatchQueue = DispatchQueue.main,
-                                                                      optimisticUpdate: OptimisticResponseBlock? = nil,
-                                                                      conflictResolutionBlock: MutationConflictHandler<Mutation>? = nil,
-                                                                      resultHandler: OperationResultHandler<Mutation>? = nil) -> PerformMutationOperation<Mutation>? {
+    @discardableResult public func perform<Mutation: GraphQLMutation>(
+        mutation: Mutation,
+        queue: DispatchQueue = .main,
+        optimisticUpdate: OptimisticResponseBlock? = nil,
+        conflictResolutionBlock: MutationConflictHandler<Mutation>? = nil,
+        resultHandler: OperationResultHandler<Mutation>? = nil) -> PerformMutationOperation<Mutation>? {
         if let optimisticUpdate = optimisticUpdate {
             do {
-                _ = try self.store?.withinReadWriteTransaction { transaction in
+                _ = try self.store.withinReadWriteTransaction { transaction in
                     optimisticUpdate(transaction)
                 }.await()
             } catch {
@@ -892,7 +369,7 @@ public class AWSAppSyncClient {
         record.recordState = .inQueue
         record.operationString = Mutation.operationString
         
-        return PerformMutationOperation(offlineMutationRecord: record, client: self.apolloClient!, appSyncClient: self, offlineExecutor: self.offlineMutationExecutor!, mutation: mutation, handlerQueue: queue, mutationConflictHandler: conflictResolutionBlock, resultHandler: resultHandler)
+        return PerformMutationOperation(offlineMutationRecord: record, client: self.apolloClient, appSyncClient: self, offlineExecutor: self.offlineMutationExecutor!, mutation: mutation, handlerQueue: queue, mutationConflictHandler: conflictResolutionBlock, resultHandler: resultHandler)
     }
     
     internal final class EmptySubscription: GraphQLSubscription {
@@ -910,7 +387,7 @@ public class AWSAppSyncClient {
             var snapshot: Snapshot = [:]
         }
     }
-    
+
     /// Performs a sync operation where a base query is periodically called to fetch primary data from the server based on the syncConfiguration.
     ///
     /// - Parameters:
@@ -921,24 +398,26 @@ public class AWSAppSyncClient {
     public func sync<BaseQuery: GraphQLQuery>(
         baseQuery: BaseQuery,
         baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
-        callbackQueue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
-        let subs = EmptySubscription.init()
+        callbackQueue: DispatchQueue = .main,
+        syncConfiguration: SyncConfiguration = .defaultSyncConfiguration()) -> Cancellable {
+        let subs = EmptySubscription()
         let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
         }
-        let deltaQuery = EmptyQuery.init()
+        let deltaQuery = EmptyQuery()
         let deltaCallback: (GraphQLResult<EmptyQuery.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
         }
         
-        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, EmptyQuery>.init(appsyncClient: self,
-                                                                                       baseQuery: baseQuery,
-                                                                                       deltaQuery: deltaQuery,
-                                                                                       subscription: subs,
-                                                                                       baseQueryHandler: baseQueryResultHandler,
-                                                                                       deltaQueryHandler: deltaCallback,
-                                                                                       subscriptionResultHandler: subsCallback,
-                                                                                       subscriptionMetadataCache: self.subscriptionMetadataCache,
-                                                                                       syncConfiguration: syncConfiguration, handlerQueue: callbackQueue)
+        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, EmptyQuery>(
+            appsyncClient: self,
+            baseQuery: baseQuery,
+            deltaQuery: deltaQuery,
+            subscription: subs,
+            baseQueryHandler: baseQueryResultHandler,
+            deltaQueryHandler: deltaCallback,
+            subscriptionResultHandler: subsCallback,
+            subscriptionMetadataCache: self.subscriptionMetadataCache,
+            syncConfiguration: syncConfiguration,
+            handlerQueue: callbackQueue)
     }
     
     /// Performs a sync operation where a delta query is initiated for missed updates and a base query  is used to fetch primary data from the server.
@@ -956,22 +435,23 @@ public class AWSAppSyncClient {
         deltaQuery: DeltaQuery,
         deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
         callbackQueue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
-        let subs = EmptySubscription.init()
+        syncConfiguration: SyncConfiguration = .defaultSyncConfiguration()) -> Cancellable {
+        let subs = EmptySubscription()
         let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
         }
-        
-        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, DeltaQuery>.init(appsyncClient: self,
-                                      baseQuery: baseQuery,
-                                      deltaQuery: deltaQuery,
-                                      subscription: subs,
-                                      baseQueryHandler: baseQueryResultHandler,
-                                      deltaQueryHandler: deltaQueryResultHandler,
-                                      subscriptionResultHandler: subsCallback,
-                                      subscriptionMetadataCache: self.subscriptionMetadataCache,
-                                      syncConfiguration: syncConfiguration, handlerQueue: callbackQueue)
+
+        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, DeltaQuery>(
+            appsyncClient: self,
+            baseQuery: baseQuery,
+            deltaQuery: deltaQuery,
+            subscription: subs,
+            baseQueryHandler: baseQueryResultHandler,
+            deltaQueryHandler: deltaQueryResultHandler,
+            subscriptionResultHandler: subsCallback,
+            subscriptionMetadataCache: self.subscriptionMetadataCache,
+            syncConfiguration: syncConfiguration, handlerQueue: callbackQueue)
     }
-    
+
     /// Performs a sync operation where a subscription is initiated for real-time updates and a base query or a delta query is used to fetch data from the server.
     ///
     /// - Parameters:
@@ -990,10 +470,10 @@ public class AWSAppSyncClient {
         subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
         deltaQuery: DeltaQuery,
         deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
-        callbackQueue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration())
+        callbackQueue: DispatchQueue = .main,
+        syncConfiguration: SyncConfiguration = .defaultSyncConfiguration())
     -> Cancellable {
-        
+
         return AppSyncSubscriptionWithSync<Subscription, BaseQuery, DeltaQuery>(
             appsyncClient: self,
             baseQuery: baseQuery,
