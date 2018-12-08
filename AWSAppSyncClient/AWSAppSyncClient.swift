@@ -414,6 +414,7 @@ public class AWSAppSyncClient {
     @discardableResult
     public func perform<Mutation: GraphQLMutation>(
         mutation: Mutation,
+        mutationPriority: AWSPerformMutationPriority = .normal,
         queue: DispatchQueue = .main,
         optimisticUpdate: OptimisticResponseBlock? = nil,
         conflictResolutionBlock: MutationConflictHandler<Mutation>? = nil,
@@ -431,6 +432,7 @@ public class AWSAppSyncClient {
 
         return offlineMutationQueue.add(
             mutation,
+            mutationPriority: mutationPriority,
             mutationConflictHandler: conflictResolutionBlock,
             mutationResultHandler: resultHandler)
     }
