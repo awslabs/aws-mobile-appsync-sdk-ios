@@ -108,4 +108,15 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         super.cancel()
         networkTask?.cancel()
     }
+
+    // MARK: - CustomStringConvertible
+
+    override var description: String {
+        var desc: String = "<\(self):\(mutation.self)"
+        desc.append("\toffline identifier: \(identifier ?? "NA")")
+        desc.append("\tstate: \(state)")
+        desc.append(">")
+
+        return desc
+    }
 }

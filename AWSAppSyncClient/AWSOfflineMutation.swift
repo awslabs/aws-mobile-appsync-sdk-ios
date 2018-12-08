@@ -87,3 +87,18 @@ final class AWSAppSyncOfflineMutation {
         self.type = type
     }
 }
+
+// MARK: - CustomStringConvertible
+
+extension AWSAppSyncOfflineMutation: CustomStringConvertible {
+
+    var description: String {
+        var desc: String = "<\(self):\(recordIdentitifer)"
+        desc.append("\tID: \(recordIdentitifer)")
+        desc.append("\ttimestamp: \(timestamp)")
+        desc.append("\thasS3Object: \(s3ObjectInput != nil ? true : false)")
+        desc.append(">")
+
+        return desc
+    }
+}

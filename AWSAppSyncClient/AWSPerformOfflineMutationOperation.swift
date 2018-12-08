@@ -120,4 +120,15 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         super.cancel()
         networkTask?.cancel()
     }
+
+    // MARK: - CustomStringConvertible
+
+    override var description: String {
+        var desc: String = "<\(self):\(mutation.self)"
+        desc.append("\tmutation: \(mutation)")
+        desc.append("\tstate: \(state)")
+        desc.append(">")
+
+        return desc
+    }
 }
