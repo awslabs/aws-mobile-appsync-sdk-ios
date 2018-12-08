@@ -206,24 +206,26 @@ class MutationExecutor: NetworkConnectionNotification {
 
     }
 
-    internal func removeRecordFromQueue(record: AWSAppSyncMutationRecord) throws -> Bool {
+    func removeRecordFromQueue(
+        record: AWSAppSyncMutationRecord) throws -> Bool {
         return try _removeRecordFromQueue(record: record)
     }
 
-    fileprivate func _removeRecordFromQueue(record: AWSAppSyncMutationRecord) throws -> Bool {
+    private func _removeRecordFromQueue(
+        record: AWSAppSyncMutationRecord) throws -> Bool {
         try persistentCache?.deleteMutationRecord(record: record)
         return true
     }
 
-    internal func listAllMuationRecords() -> [AWSAppSyncMutationRecord] {
+    func listAllMuationRecords() -> [AWSAppSyncMutationRecord] {
         return mutationQueue
     }
 
-    fileprivate func executeMutation(mutation: AWSAppSyncMutationRecord) {
+    private func executeMutation(mutation: AWSAppSyncMutationRecord) {
         if let inMemoryMutationExecutor = mutation.inmemoryExecutor {
             dispatchGroup.enter()
             inMemoryMutationExecutor.performMutation(dispatchGroup: dispatchGroup)
-            self.mutationQueue.removeFirst()
+            mutationQueue.removeFirst()
             do {
                 _ = try self.removeRecordFromQueue(record: mutation)
             } catch {
@@ -233,7 +235,8 @@ class MutationExecutor: NetworkConnectionNotification {
         }
     }
 
-    fileprivate func performPersistentOfflineMutation(mutation: AWSAppSyncMutationRecord) {
+    private func performPersistentOfflineMutation(
+        mutation: AWSAppSyncMutationRecord) {
         func notifyResultHandler(record: AWSAppSyncMutationRecord, result: JSONObject?, success: Bool, error: Error?) {
             handlerQueue.async {
                 // call master delegate
