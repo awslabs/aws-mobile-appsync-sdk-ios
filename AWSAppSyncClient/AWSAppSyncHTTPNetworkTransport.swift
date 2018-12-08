@@ -6,34 +6,6 @@
 import Foundation
 import AWSCore
 
-enum AuthType {
-    case awsIAM
-    case apiKey
-    case oidcToken
-    case amazonCognitoUserPools
-}
-
-extension AuthType {
-    var rawValue: String {
-        switch self {
-        case .awsIAM: return "AWS_IAM"
-        case .apiKey: return "API_KEY"
-        case .oidcToken: return "OPENID_CONNECT"
-        case .amazonCognitoUserPools: return "AMAZON_COGNITO_USER_POOLS"
-        }
-    }
-    
-    public static func getAuthType(rawValue: String) throws -> AuthType {
-        switch rawValue {
-        case "AWS_IAM": return .awsIAM
-        case "API_KEY": return .apiKey
-        case "OPENID_CONNECT": return .oidcToken
-        case "AMAZON_COGNITO_USER_POOLS": return .amazonCognitoUserPools
-        default: throw AWSAppSyncClientInfoError(errorMessage: "AuthType not recognized. Pass in a valid AuthType.")
-        }
-    }
-}
-
 public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     let url: URL
     let session: URLSession
@@ -44,7 +16,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     var userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil
     var oidcAuthProvider: AWSOIDCAuthProvider? = nil
     var endpoint: AWSEndpoint? = nil
-    let authType: AuthType
+    let authType: AppSyncAuthType
     var activeTimers: [String: DispatchSourceTimer] = [:]
     
     /// Creates a network transport with the specified server URL and session configuration.

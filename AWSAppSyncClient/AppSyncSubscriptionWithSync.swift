@@ -256,7 +256,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                 
                 func notifyResultHandler(result: GraphQLResult<DeltaQuery.Data>?, transaction: ApolloStore.ReadWriteTransaction?, error: Error?) {
                     handlerQueue?.async {
-                        _ = self.appsyncClient?.store?.withinReadWriteTransaction { transaction in
+                        _ = self.appsyncClient?.store.withinReadWriteTransaction { transaction in
                             self.deltaQueryHandler?(result, transaction, error)
                             if error == nil {
                                 self.updateLastSyncTimeInMemoryAndCache(date: Date())
@@ -272,11 +272,11 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
                     }
                     // we have the parsing logic here to perform custom actions in cache, e.g. if we receive a delete type event, we can remove from store.
                     firstly {
-                        try response.parseResult(cacheKeyForObject: self?.appsyncClient?.store!.cacheKeyForObject)
+                        try response.parseResult(cacheKeyForObject: self?.appsyncClient?.store.cacheKeyForObject)
                         }.andThen { (result, records) in
                             notifyResultHandler(result: result, transaction: nil, error: nil)
                             if let records = records {
-                                self?.appsyncClient?.store?.publish(records: records, context: nil).catch { error in
+                                self?.appsyncClient?.store.publish(records: records, context: nil).catch { error in
                                     preconditionFailure(String(describing: error))
                                 }
                             }
@@ -365,7 +365,7 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
             AppSyncLog.debug("DS: Found \(subscriptionMessagesQueue.count) messages in queue.")
             for message in subscriptionMessagesQueue {
                 do {
-                    try self.appsyncClient?.store?.withinReadWriteTransaction({ (transaction) in
+                    try self.appsyncClient?.store.withinReadWriteTransaction({ (transaction) in
                         subscriptionHandler(message.0, transaction, nil)
                     }).await()
                     updateLastSyncTimeInMemoryAndCache(date: message.1)
