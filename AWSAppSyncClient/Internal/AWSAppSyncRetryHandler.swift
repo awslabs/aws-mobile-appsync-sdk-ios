@@ -8,10 +8,10 @@ import Foundation
 internal class AWSAppSyncRetryHandler {
     
     var currentAttemptNumber = 0
-    internal static let MAX_RETRY_WAIT_MILLIS = 300 * 1000 // 5 minutes of max retry duration.
+    static let MAX_RETRY_WAIT_MILLIS = 300 * 1000 // 5 minutes of max retry duration.
     static let JITTER: Float = 100.0
     
-    internal  init() { }
+    init() { }
     
     /// Returns if a request should be retried
     ///
@@ -20,7 +20,7 @@ internal class AWSAppSyncRetryHandler {
 
     func shouldRetryRequest(for error: AWSAppSyncClientError) -> (Bool, Int?) {
         currentAttemptNumber += 1
-        var waitMillis = Int(Double(truncating: pow(2.0, currentAttemptNumber) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
+        var waitMillis = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: currentAttemptNumber)
         
         var httpResponse: HTTPURLResponse?
 
@@ -61,5 +61,12 @@ internal class AWSAppSyncRetryHandler {
     
     static func getRandomBetween0And1() -> Float {
         return Float.random(in: 0...1)
+    }
+
+    /// Returns a delay in milliseconds for the current attempt number. The delay includes random jitter as
+    /// described in https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+    static func retryDelayInMillseconds(for attemptNumber: Int) -> Int {
+        let delay = Int(Double(truncating: pow(2.0, attemptNumber) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.JITTER))
+        return delay
     }
 }

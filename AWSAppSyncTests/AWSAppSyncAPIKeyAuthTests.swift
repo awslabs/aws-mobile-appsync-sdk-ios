@@ -18,7 +18,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         super.setUp()
         do {
             appSyncClient = try makeAppSyncClient()
-        } catch let error {
+        } catch {
             XCTFail(error.localizedDescription)
         }
         XCTAssertNotNil(appSyncClient, "AppSyncClient should not be nil")

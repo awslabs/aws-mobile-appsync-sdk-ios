@@ -961,7 +961,7 @@ public class AWSAppSyncClient {
         baseQuery: BaseQuery,
         baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
         deltaQuery: DeltaQuery,
-        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
+        deltaQueryResultHandler: @escaping OperationResultTransactionHandler<DeltaQuery>,
         callbackQueue: DispatchQueue = DispatchQueue.main,
         syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
         let subs = EmptySubscription.init()
@@ -996,7 +996,7 @@ public class AWSAppSyncClient {
         subscription: Subscription,
         subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
         deltaQuery: DeltaQuery,
-        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
+        deltaQueryResultHandler: @escaping OperationResultTransactionHandler<DeltaQuery>,
         callbackQueue: DispatchQueue = DispatchQueue.main,
         syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration())
     -> Cancellable {

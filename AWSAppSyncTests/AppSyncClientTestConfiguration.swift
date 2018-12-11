@@ -3,7 +3,7 @@
 //  AWSAppSyncTests
 //
 //  Created by Schmelter, Tim on 12/5/18.
-//  Copyright © 2018 Dubal, Rohan. All rights reserved.
+//  Copyright © 2018 Amazon Web Services. All rights reserved.
 //
 
 import Foundation

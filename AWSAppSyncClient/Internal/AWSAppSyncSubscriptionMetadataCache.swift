@@ -26,7 +26,7 @@ internal final class AWSSubscriptionMetaDataCache {
         })
     }
     
-    internal func updateLasySyncTime(for operationHash: String, with lastSyncTime: Date) throws {
+    internal func updateLastSyncTime(for operationHash: String, with lastSyncTime: Date) throws {
         let sqlRecord = subscriptionMetadataRecords.filter(self.operationHash == operationHash)
         let recordCount = try db.scalar(sqlRecord.count)
         

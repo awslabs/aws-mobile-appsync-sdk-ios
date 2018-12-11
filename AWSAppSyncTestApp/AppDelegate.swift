@@ -3,7 +3,7 @@
 //  AWSAppSyncTestApp
 //
 //  Created by Dubal, Rohan on 9/11/18.
-//  Copyright © 2018 Dubal, Rohan. All rights reserved.
+//  Copyright © 2018 Amazon Web Services. All rights reserved.
 //
 
 import UIKit
