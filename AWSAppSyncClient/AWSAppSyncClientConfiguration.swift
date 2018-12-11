@@ -17,6 +17,13 @@ import Foundation
 
 public class AWSAppSyncClientConfiguration {
 
+    public enum Key: String {
+        case apiKey = "ApiKey"
+        case apiURL = "ApiUrl"
+        case authorizationType = "AuthMode"
+        case region = "Region"
+    }
+
     public let url: URL
     public let region: AWSRegionType
     public let store: ApolloStore
@@ -104,16 +111,25 @@ public class AWSAppSyncClientConfiguration {
         switch appSyncClientInfo.authType {
         case .apiKey:
             if credentialsProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(
-                    errorMessage: """
-                    \(AppSyncAuthType.apiKey) is selected in configuration but
-                    a AWSAPIKeyAuthProvider object is not passed in or cannot be constructed.
-                    """)
+                throw AWSAppSyncConfigurationError.insufficientParams(
+                    .apiKey,
+                    AWSAppSyncConfigurationError.Context(
+                        errorDescription: """
+                        \(AppSyncAuthType.apiKey) authorization is selected in configuration but
+                        AWSAPIKeyAuthProvider object is not passed in or cannot be constructed
+                        """)
+                )
             }
 
             guard let apiKey = appSyncClientInfo.apiKey else {
-                throw AWSAppSyncClientInfoError(
-                    errorMessage: "API_KEY AuthMode found in configuration but a valid ApiKey is not found")
+                throw AWSAppSyncConfigurationError.insufficientParams(
+                    .apiKey,
+                    AWSAppSyncConfigurationError.Context(
+                        errorDescription: """
+                        \(AppSyncAuthType.apiKey) authorization is selected in configuration but
+                        a valid \(AWSAppSyncClientConfiguration.Key.apiKey) not set
+                        """)
+                )
             }
 
             // If AuthType is API_KEY, use the ApiKey Auth Provider passed in
@@ -132,23 +148,36 @@ public class AWSAppSyncClientConfiguration {
             }
         case .amazonCognitoUserPools:
             if credentialsProvider != nil || apiKeyAuthProvider != nil || oidcAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(
-                    errorMessage: """
-                    \(AppSyncAuthType.amazonCognitoUserPools) is selected in configuration but
-                    AWSCognitoUserPoolsAuthProvider object is not passed in.
-                    """)
+                throw AWSAppSyncConfigurationError.insufficientParams(
+                    .apiKey,
+                    AWSAppSyncConfigurationError.Context(
+                        errorDescription: """
+                        \(AppSyncAuthType.amazonCognitoUserPools) authorization is selected in configuration but
+                        AWSCognitoUserPoolsAuthProvider object is not passed in or cannot be constructed
+                        """)
+                )
             }
 
             if userPoolsAuthProvider == nil {
-                throw AWSAppSyncClientInfoError(errorMessage: "userPoolsAuthProvider cannot be nil.")
+                throw AWSAppSyncConfigurationError.insufficientParams(
+                    .apiKey,
+                    AWSAppSyncConfigurationError.Context(
+                        errorDescription: """
+                        \(AppSyncAuthType.amazonCognitoUserPools) authorization is selected in configuration but
+                        userPoolsAuthProvider cannot be nil
+                        """)
+                )
             }
         case .awsIAM:
             if apiKeyAuthProvider != nil || userPoolsAuthProvider != nil || oidcAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(
-                    errorMessage: """
-                    \(AppSyncAuthType.awsIAM) is selected in configuration but
-                    AWSCredentialsProvider object is not passed in or cannot be constructed.
-                    """)
+                throw AWSAppSyncConfigurationError.insufficientParams(
+                    .apiKey,
+                    AWSAppSyncConfigurationError.Context(
+                        errorDescription: """
+                        \(AppSyncAuthType.awsIAM) authorization is selected in configuration but
+                        AWSCredentialsProvider object is not passed in or cannot be constructed
+                        """)
+                )
             }
 
             // If AuthType is AWS_IAM, use the AWSCredentialsProvider passed in
@@ -157,20 +186,37 @@ public class AWSAppSyncClientConfiguration {
             if defaultCredentialsProvider == nil {
                 defaultCredentialsProvider = AWSServiceInfo().cognitoCredentialsProvider
                 if defaultCredentialsProvider == nil {
-                    throw AWSAppSyncClientInfoError(errorMessage: "CredentialsProvider is missing in the configuration.")
+                    throw AWSAppSyncConfigurationError.insufficientParams(
+                        .apiKey,
+                        AWSAppSyncConfigurationError.Context(
+                            errorDescription: """
+                            \(AppSyncAuthType.awsIAM) authorization is selected in configuration but
+                            CredentialsProvider cannot be nil
+                            """)
+                    )
                 }
             }
         case .oidcToken:
             if credentialsProvider != nil || userPoolsAuthProvider != nil || apiKeyAuthProvider != nil {
-                throw AWSAppSyncClientInfoError(
-                    errorMessage: """
-                    \(AppSyncAuthType.oidcToken) is selected in configuration but
-                    AWSOIDCAuthProvider object is not passed in.
-                    """)
+                throw AWSAppSyncConfigurationError.insufficientParams(
+                    .apiKey,
+                    AWSAppSyncConfigurationError.Context(
+                        errorDescription: """
+                        \(AppSyncAuthType.oidcToken) authorization is selected in configuration but
+                        AWSOIDCAuthProvider object is not passed in or cannot be constructed
+                        """)
+                )
             }
 
             if oidcAuthProvider == nil {
-                throw AWSAppSyncClientInfoError(errorMessage: "oidcAuthProvider cannot be nil.")
+                throw AWSAppSyncConfigurationError.insufficientParams(
+                    .apiKey,
+                    AWSAppSyncConfigurationError.Context(
+                        errorDescription: """
+                        \(AppSyncAuthType.oidcToken) authorization is selected in configuration but
+                        oidcAuthProvider cannot be nil
+                        """)
+                )
             }
         }
 

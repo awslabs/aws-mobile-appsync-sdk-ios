@@ -16,19 +16,6 @@
 import AWSCore
 import Foundation
 
-public struct AWSAppSyncClientInfoError: Error, LocalizedError {
-
-    public let errorMessage: String?
-
-    // MARK: LocalizedError
-
-    public var errorDescription: String? {
-        return errorMessage
-    }
-}
-
-private let configFileName = "awsconfiguration.json"
-
 /**
  * Configuration for AWSAppSyncClient
  */
@@ -50,26 +37,51 @@ public struct AWSAppSyncClientInfo {
             let config = info.rootInfoDictionary["AppSync"] as? [String: Any],
             let configForKey = config[forKey] as? [String: Any]
         else {
-            throw AWSAppSyncClientInfoError(errorMessage: "Cannot read configuration from the \(configFileName)")
+            throw AWSAppSyncConfigurationError.configurationNotFound
         }
 
+        // apiKey
+
+        guard configForKey[AWSAppSyncClientConfiguration.Key.apiKey.rawValue] == nil else {
+            throw AWSAppSyncConfigurationError.keyNotFound(.apiKey)
+        }
         guard
-            let apiURLString = configForKey["ApiUrl"] as? String,
+            let apiURLString = configForKey[AWSAppSyncClientConfiguration.Key.apiKey.rawValue] as? String,
             let apiURL = URL(string: apiURLString)
         else {
-            throw AWSAppSyncClientInfoError(errorMessage: "Cannot read ApiUrl from the \(configFileName)")
+            throw AWSAppSyncConfigurationError.invalidKeyValue(
+                .apiKey,
+                AWSAppSyncConfigurationError.Context(
+                    errorDescription: "\(AWSAppSyncClientConfiguration.Key.apiKey) must be \(URL.self)"))
+        }
+
+        // authorizationType
+
+        guard configForKey[AWSAppSyncClientConfiguration.Key.authorizationType.rawValue] == nil else {
+            throw AWSAppSyncConfigurationError.keyNotFound(.authorizationType)
         }
 
         guard
-            let authTypeRawValue = configForKey["AuthMode"] as? String,
+            let authTypeRawValue = configForKey[AWSAppSyncClientConfiguration.Key.authorizationType.rawValue] as? String,
             let authType = AppSyncAuthType(rawValue: authTypeRawValue)
         else {
-            throw AWSAppSyncClientInfoError(errorMessage: "Cannot read AuthMode from the \(configFileName)")
+            throw AWSAppSyncConfigurationError.invalidKeyValue(
+                .authorizationType,
+                AWSAppSyncConfigurationError.Context(
+                    errorDescription: "\(AWSAppSyncClientConfiguration.Key.authorizationType) must be \(AppSyncAuthType.self)"))
         }
 
-        guard
-            let regionString = configForKey["Region"] as? String else {
-            throw AWSAppSyncClientInfoError(errorMessage: "Cannot read Region from the \(configFileName)")
+        // region
+
+        guard configForKey[AWSAppSyncClientConfiguration.Key.region.rawValue] == nil else {
+            throw AWSAppSyncConfigurationError.keyNotFound(.region)
+        }
+
+        guard let regionString = configForKey[AWSAppSyncClientConfiguration.Key.region.rawValue] as? String else {
+            throw AWSAppSyncConfigurationError.invalidKeyValue(
+                .authorizationType,
+                AWSAppSyncConfigurationError.Context(
+                    errorDescription: "\(AWSAppSyncClientConfiguration.Key.region) must be \(String.self)"))
         }
 
         self.apiURL = apiURL

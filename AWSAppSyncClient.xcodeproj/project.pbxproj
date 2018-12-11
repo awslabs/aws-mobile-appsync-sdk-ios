@@ -115,6 +115,7 @@
 		AC48F9842142949C001C7D35 /* AppSyncMQTTClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */; };
 		AC48F9852142949C001C7D35 /* Object+Swizzling.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC48F9832142949C001C7D35 /* Object+Swizzling.swift */; };
 		B8F9295CA5BD72C9EEE11027 /* Pods_AWSAppSync_AWSAppSyncTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */; };
+		CC367CC121BF962400C4AB40 /* AWSAppSyncClientConfigurationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC367CC021BF962400C4AB40 /* AWSAppSyncClientConfigurationError.swift */; };
 		CC96F8AF21BC443F00446EBD /* AWSAppSyncClientConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8AE21BC443F00446EBD /* AWSAppSyncClientConfiguration.swift */; };
 		CC96F8B121BC453A00446EBD /* AWSAppSyncClientInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8B021BC453A00446EBD /* AWSAppSyncClientInfo.swift */; };
 		CC96F8B321BC490300446EBD /* AppSyncAuthType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8B221BC490300446EBD /* AppSyncAuthType.swift */; };
@@ -297,6 +298,7 @@
 		AC48F9832142949C001C7D35 /* Object+Swizzling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Object+Swizzling.swift"; sourceTree = "<group>"; };
 		AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.debug.xcconfig"; sourceTree = "<group>"; };
 		C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.release.xcconfig"; sourceTree = "<group>"; };
+		CC367CC021BF962400C4AB40 /* AWSAppSyncClientConfigurationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientConfigurationError.swift; sourceTree = "<group>"; };
 		CC96F8AE21BC443F00446EBD /* AWSAppSyncClientConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientConfiguration.swift; sourceTree = "<group>"; };
 		CC96F8B021BC453A00446EBD /* AWSAppSyncClientInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientInfo.swift; sourceTree = "<group>"; };
 		CC96F8B221BC490300446EBD /* AppSyncAuthType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncAuthType.swift; sourceTree = "<group>"; };
@@ -523,6 +525,7 @@
 				17DECF621F59F5FF004B0512 /* Info.plist */,
 				CC96F8B221BC490300446EBD /* AppSyncAuthType.swift */,
 				17A66BA31F59FF69008DDA11 /* AWSAppSyncClient.swift */,
+				CC367CC021BF962400C4AB40 /* AWSAppSyncClientConfigurationError.swift */,
 				CC96F8AE21BC443F00446EBD /* AWSAppSyncClientConfiguration.swift */,
 				CC96F8B421BC52F300446EBD /* AWSAppSyncClientError.swift */,
 				CC96F8B021BC453A00446EBD /* AWSAppSyncClientInfo.swift */,
@@ -1046,6 +1049,7 @@
 				17E009C41FCAB234005031DB /* AsynchronousOperation.swift in Sources */,
 				CC96F8B721BC536600446EBD /* AWSAppSyncSubscriptionError.swift in Sources */,
 				174F809C2107E75C00775D0D /* AWSIoTMQTTClient.m in Sources */,
+				CC367CC121BF962400C4AB40 /* AWSAppSyncClientConfigurationError.swift in Sources */,
 				CC96F8B321BC490300446EBD /* AppSyncAuthType.swift in Sources */,
 				175698072134A62D00319ABC /* AppSyncLogWrapper.swift in Sources */,
 				17185D2D219DEA7900092934 /* AppSyncSubscriptionWithSync.swift in Sources */,
