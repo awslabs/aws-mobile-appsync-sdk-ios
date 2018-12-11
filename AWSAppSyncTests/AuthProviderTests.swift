@@ -39,7 +39,7 @@ class AuthProviderTests: XCTestCase {
                 callback(nil, AuthProviderTestError())
             }
             else {
-                callback("CognitoUserPoolsAuthProviderAsync", nil)
+                callback("OIDCAuthProviderAsync", nil)
             }
             self.expectation?.fulfill()
         }

@@ -119,6 +119,9 @@
 		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
 		FA30F364219B353800B92938 /* SubscriptionStressTestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA30F363219B353800B92938 /* SubscriptionStressTestHelper.swift */; };
 		FA30F366219B36B400B92938 /* DefaultEventTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA30F365219B36B400B92938 /* DefaultEventTestData.swift */; };
+		FA51833121B849F900F9752A /* AppSyncClientTestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */; };
+		FA51833321B867C900F9752A /* AppSyncClientTestConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */; };
+		FAE3558621C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -297,6 +300,9 @@
 		DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSNetworkTransport.swift; sourceTree = "<group>"; };
 		FA30F363219B353800B92938 /* SubscriptionStressTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStressTestHelper.swift; sourceTree = "<group>"; };
 		FA30F365219B36B400B92938 /* DefaultEventTestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEventTestData.swift; sourceTree = "<group>"; };
+		FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestHelper.swift; sourceTree = "<group>"; };
+		FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestConfiguration.swift; sourceTree = "<group>"; };
+		FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestConfigurationDefaults.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -429,15 +435,18 @@
 			isa = PBXGroup;
 			children = (
 				1795777E2148531800C834E1 /* appsync_test_credentials.json */,
+				FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */,
+				FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */,
+				FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */,
 				AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */,
 				741880AF213878B400523CA8 /* AuthProviderTests.swift */,
 				17664128214F6732003AE269 /* AWSAppSyncAPIKeyAuthTests.swift */,
 				174F80AE2109229C00775D0D /* AWSAppSyncTests.swift */,
+				FA30F365219B36B400B92938 /* DefaultEventTestData.swift */,
 				174F80B8210924B200775D0D /* EventsAPI.swift */,
 				174F80B02109229C00775D0D /* Info.plist */,
 				AC48F9832142949C001C7D35 /* Object+Swizzling.swift */,
 				FA30F363219B353800B92938 /* SubscriptionStressTestHelper.swift */,
-				FA30F365219B36B400B92938 /* DefaultEventTestData.swift */,
 			);
 			path = AWSAppSyncTests;
 			sourceTree = "<group>";
@@ -977,9 +986,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA51833321B867C900F9752A /* AppSyncClientTestConfiguration.swift in Sources */,
 				FA30F364219B353800B92938 /* SubscriptionStressTestHelper.swift in Sources */,
+				FA51833121B849F900F9752A /* AppSyncClientTestHelper.swift in Sources */,
 				AC48F9852142949C001C7D35 /* Object+Swizzling.swift in Sources */,
 				174F80AF2109229C00775D0D /* AWSAppSyncTests.swift in Sources */,
+				FAE3558621C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift in Sources */,
 				174F80B9210924B200775D0D /* EventsAPI.swift in Sources */,
 				AC48F9842142949C001C7D35 /* AppSyncMQTTClientTests.swift in Sources */,
 				741880B0213878B400523CA8 /* AuthProviderTests.swift in Sources */,
