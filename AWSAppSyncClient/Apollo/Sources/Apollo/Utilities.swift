@@ -1,11 +1,11 @@
 import Foundation
 
 extension HTTPURLResponse {
-  @objc var isSuccessful: Bool {
+  var isSuccessful: Bool {
     return (200..<300).contains(statusCode)
   }
 
-  @objc var statusCodeDescription: String {
+  var statusCodeDescription: String {
     return HTTPURLResponse.localizedString(forStatusCode: statusCode)
   }
 
