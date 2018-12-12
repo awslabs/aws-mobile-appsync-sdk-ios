@@ -5,22 +5,25 @@
 
 import Foundation
 
-class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
-    
-    var mqttClients = Set<AWSIoTMQTTClient<AnyObject, AnyObject>>()
-    var mqttClientsWithTopics = [AWSIoTMQTTClient<AnyObject, AnyObject>: Set<String>]()
-    var topicSubscribers = TopicSubscribers()
-    var allowCellularAccess = true
-    var scheduledSubscription: DispatchSourceTimer?
-    var subscriptionsQueue = DispatchQueue.global(qos: .userInitiated)
-    var cancelledSubscriptions = [String: Bool]()
-    
+final class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
+
+    var allowCellularAccess: Bool = true
+
+    private var mqttClients = Set<AWSIoTMQTTClient<AnyObject, AnyObject>>()
+    private var mqttClientsWithTopics = [AWSIoTMQTTClient<AnyObject, AnyObject>: Set<String>]()
+    private let topicSubscribers: TopicSubscribers = TopicSubscribers()
+    private var scheduledSubscription: DispatchSourceTimer?
+    private let subscriptionsQueue: DispatchQueue = .global(qos: .userInitiated)
+    private var cancelledSubscriptions: [String: Bool] = [:]
+
+    // MARK: AWSIoTMQTTClientDelegate
+
     func receivedMessageData(_ data: Data!, onTopic topic: String!) {
         self.subscriptionsQueue.async { [weak self] in
             guard let self = self, let topics = self.topicSubscribers[topic] else {
                 return
             }
-            
+
             for subscribedTopic in topics {
                 subscribedTopic.messageCallbackDelegate(data: data)
             }
@@ -32,36 +35,52 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             guard let self = self, let topics = self.mqttClientsWithTopics[mqttClient] else {
                 return
             }
-            
-            if status.rawValue == 2 {
+
+            switch status {
+            case .unknown,
+                 .connecting:
+                break
+            case .connected:
                 for topic in topics {
                     mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
+
+                    guard let subscribers = self.topicSubscribers[topic] else { continue }
+
+                    for subscriber in subscribers {
+                        subscriber.connectedCallbackDelegate()
+                    }
                 }
-                topics.map({ self.topicSubscribers[$0] })
-                    .compactMap({$0})
-                    .flatMap({$0})
-                    .forEach({$0.connectedCallbackDelegate()})
-            } else if status.rawValue >= 3 {
+            case .disconnected,
+                 .connectionRefused,
+                 .connectionError,
+                 .protocolError:
                 let error = AWSAppSyncSubscriptionError(
                     additionalInfo: "Subscription Terminated.",
                     errorDetails: [
                         "recoverySuggestion": "Restart subscription request.",
                         "failureReason": "Disconnected from service."])
-                
-                topics.map({ self.topicSubscribers[$0] })
-                      .compactMap({$0})
-                      .flatMap({$0})
-                      .forEach({$0.disconnectCallbackDelegate(error: error)})
+
+                for topic in topics {
+                    mqttClient.subscribe(toTopic: topic, qos: 1, extendedCallback: nil)
+
+                    guard let subscribers = self.topicSubscribers[topic] else { continue }
+
+                    for subscriber in subscribers {
+                        subscriber.disconnectCallbackDelegate(error: error)
+                    }
+                }
             }
         }
     }
+
+    //
     
     func addWatcher(watcher: MQTTSubscriptionWatcher, topics: [String], identifier: Int) {
         topicSubscribers.add(watcher: watcher, topics: topics)
     }
     
     func startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo], identifier: String) {
-        func createTimer(_ interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
+        func createTimer(_ interval: Int, queue: DispatchQueue, block: @escaping () -> Void) -> DispatchSourceTimer {
             let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
             #if swift(>=4)
             timer.schedule(deadline: .now() + .seconds(interval))

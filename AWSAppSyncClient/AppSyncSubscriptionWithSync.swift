@@ -292,45 +292,65 @@ internal class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, Ba
     }
     
     func startSubscription() -> Bool {
+        guard let subscription = subscription else {
+            return false
+        }
+
         var success: Bool? = nil
-        if let subscription = subscription {
-            AppSyncLog.info("DS: Starting Sub Now")
-            let dispatchGroup = DispatchGroup()
-            var updatedSubscriptionWatcher: AWSAppSyncSubscriptionWatcher<Subscription>?
-            var isSubscriptionWatcherUpdated: Bool = false
-            do {
-                dispatchGroup.enter()
-                updatedSubscriptionWatcher = try appsyncClient?.subscribeWithConnectCallback(subscription: subscription, connectCallback: ({
+
+        AppSyncLog.info("DS: Starting Sub Now")
+
+        let dispatchGroup = DispatchGroup()
+        var updatedSubscriptionWatcher: AWSAppSyncSubscriptionWatcher<Subscription>?
+        var isSubscriptionWatcherUpdated: Bool = false
+
+        do {
+            dispatchGroup.enter()
+
+            updatedSubscriptionWatcher = try appsyncClient?.subscribeWithConnectCallback(
+                subscription: subscription,
+                connectCallback: ({ [weak self] in
+                    guard success == nil else { return }
+
                     success = true
+
                     if !isSubscriptionWatcherUpdated {
                         isSubscriptionWatcherUpdated = true
-                        self.subscriptionWatcher?.cancel()
-                        self.subscriptionWatcher = nil
-                        self.subscriptionWatcher = updatedSubscriptionWatcher
+
+                        self?.subscriptionWatcher?.cancel()
+                        self?.subscriptionWatcher = nil
+                        self?.subscriptionWatcher = updatedSubscriptionWatcher
+
                         dispatchGroup.leave()
                     }
-                }), resultHandler: { [weak self] (result, transaction, error) in
+                }),
+                resultHandler: { [weak self] (result, transaction, error) in
                     // TODO: Improve error checking.
                     if error as? AWSAppSyncSubscriptionError != nil {
                         if success == nil {
-                            dispatchGroup.leave()
                             success = false
+
+                            self?.subscriptionWatcher?.cancel()
+                            self?.subscriptionWatcher = nil
+                            self?.subscriptionWatcher = updatedSubscriptionWatcher
+
+                            dispatchGroup.leave()
                         }
                     }
+
                     self?.handleSubscriptionCallback(result, transaction, error)
                 })
-                
-            } catch {
-                self.handleSubscriptionCallback(nil, nil, error)
-                if success == nil {
-                    success = false
-                    dispatchGroup.leave()
-                }
+        } catch {
+            self.handleSubscriptionCallback(nil, nil, error)
+
+            if success == nil {
+                success = false
+                dispatchGroup.leave()
             }
-            dispatchGroup.wait()
-        } else {
-            success = true
         }
+
+        dispatchGroup.wait()
+
         return success == true
     }
     
