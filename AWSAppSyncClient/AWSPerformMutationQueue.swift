@@ -58,7 +58,9 @@ final class AWSPerformMutationQueue {
 
     private func loadMutations() {
         do {
-            let mutations = try persistentCache?.getStoredMutationRecordsInQueue() ?? []
+            guard let mutations = try persistentCache?.getStoredMutationRecordsInQueue() else {
+                return
+            }
 
             for mutation in mutations {
                 let operation = AWSPerformOfflineMutationOperation(
@@ -87,6 +89,8 @@ final class AWSPerformMutationQueue {
     private func save<Mutation: GraphQLMutation>(
         _ mutation: Mutation,
         mutationPriority: AWSPerformMutationPriority) throws -> AWSAppSyncOfflineMutation? {
+        guard let persistentCache = persistentCache else { return nil }
+
         let requestBody = AWSRequestBuilder.requestBody(from: mutation)
         let data = try JSONSerializationFormat.serialize(value: requestBody)
 
@@ -104,7 +108,7 @@ final class AWSPerformMutationQueue {
         offlineMutation.operationString = Mutation.operationString
         offlineMutation.priority = mutationPriority
 
-        try persistentCache?.saveMutationRecord(record: offlineMutation)
+        try persistentCache.saveMutationRecord(record: offlineMutation)
 
         return offlineMutation
     }
