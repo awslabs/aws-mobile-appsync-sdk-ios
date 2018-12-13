@@ -473,6 +473,7 @@
 				179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */,
 				179E0A66215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift */,
 				FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */,
+				FAE3558D21C081A400513FAE /* SyncConfiguration.swift */,
 				FAD17C6621C16DD9008D116C /* SyncStrategy.swift */,
 			);
 			path = Internal;
@@ -548,7 +549,6 @@
 				17A7F8C91FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift */,
 				17A2673C1F66465B009E50B7 /* AWSSQLLiteNormalizedCache.swift */,
 				17DECF621F59F5FF004B0512 /* Info.plist */,
-				FAE3558D21C081A400513FAE /* SyncConfiguration.swift */,
 			);
 			path = AWSAppSyncClient;
 			sourceTree = "<group>";
