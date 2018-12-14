@@ -5,7 +5,7 @@
 
 import Foundation
 
-public typealias OperationResultTransactionHandler<Operation: GraphQLQuery> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
+public typealias DeltaQueryResultHandler<Operation: GraphQLQuery> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
 
 class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>: Cancellable {
 
@@ -22,7 +22,7 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
     private var subscriptionHandler: SubscriptionResultHandler<Subscription>?
 
     private var deltaQuery: DeltaQuery?
-    private var deltaQueryHandler: OperationResultTransactionHandler<DeltaQuery>?
+    private var deltaQueryHandler: DeltaQueryResultHandler<DeltaQuery>?
 
     // Internal state
     private var syncStrategy: SyncStrategy
@@ -52,7 +52,7 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
                   deltaQuery: DeltaQuery,
                   subscription: Subscription,
                   baseQueryHandler: @escaping OperationResultHandler<BaseQuery>,
-                  deltaQueryHandler: @escaping OperationResultTransactionHandler<DeltaQuery>,
+                  deltaQueryHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
                   subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
                   subscriptionMetadataCache: AWSSubscriptionMetaDataCache?,
                   syncConfiguration: SyncConfiguration,
@@ -226,8 +226,12 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
         let connectCallback = {
             oldSubscriptionWatcher?.cancel()
             oldSubscriptionWatcher = nil
-            success = true
-            semaphore.signal()
+
+            // Guard against multiple invocations of the connect callback
+            if success == nil {
+                success = true
+                semaphore.signal()
+            }
         }
 
         let resultHandler: SubscriptionResultHandler<Subscription> = { [weak self] (result, transaction, error) in
