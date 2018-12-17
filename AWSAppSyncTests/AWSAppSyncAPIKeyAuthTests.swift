@@ -271,7 +271,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
 
         // Refresh interval defaults to one day, but we'll make it explicit here in case that changes in the future
-        let syncConfiguration = SyncConfiguration(baseRefreshIntervalInSeconds: syncConfigurationRefreshInSeconds)
+        let subscriptionWithSyncConfiguration = SubscriptionWithSyncConfiguration(syncIntervalInSeconds: syncConfigurationRefreshInSeconds)
 
         let listEventsQuery = ListEventsQuery()
         let eventSubscription = NewCommentOnEventSubscription(eventId: eventId!)
@@ -283,7 +283,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             subscriptionResultHandler: initialSubscriptionResultHandler,
             deltaQuery: listEventsQuery,
             deltaQueryResultHandler: initialDeltaQueryResultHandler,
-            syncConfiguration: syncConfiguration
+            subscriptionWithSyncConfiguration: subscriptionWithSyncConfiguration
         )
         
         XCTAssertNotNil(syncWatcher, "Initial subscription sync watcher expected to be non nil.")
@@ -416,7 +416,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             subscriptionResultHandler: restartedSubscriptionResultHandler,
             deltaQuery: listEventsQuery,
             deltaQueryResultHandler: restartedDeltaQueryResultHandler,
-            syncConfiguration: syncConfiguration
+            subscriptionWithSyncConfiguration: subscriptionWithSyncConfiguration
         )
         
         XCTAssertNotNil(syncWatcher, "Restart sync watcher expected to be non nil")

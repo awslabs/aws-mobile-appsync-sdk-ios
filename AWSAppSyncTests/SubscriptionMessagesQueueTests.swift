@@ -44,7 +44,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         messagesQueue.stopDelivery()
 
         let item = makeResultItem(eventId: "Item 1", commentId: "Comment 1")
-        messagesQueue.append(result: item, transaction: nil)
+        messagesQueue.append(item, transaction: nil)
 
         wait(for: [messageNotDelivered], timeout: 1)
     }
@@ -59,7 +59,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         messagesQueue.startDelivery()
 
         let item = makeResultItem(eventId: "Item 1", commentId: "Comment 1")
-        messagesQueue.append(result: item, transaction: nil)
+        messagesQueue.append(item, transaction: nil)
 
         wait(for: [messageDelivered], timeout: 1)
     }
@@ -78,7 +78,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         messagesQueue.stopDelivery()
 
         let item = makeResultItem(eventId: "Item 1", commentId: "Comment 1")
-        messagesQueue.append(result: item, transaction: nil)
+        messagesQueue.append(item, transaction: nil)
 
         wait(for: [messageNotDeliveredWhileQueueIsStopped], timeout: 1)
 
@@ -109,7 +109,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         for i in 0 ..< 5_000 {
             let item = makeResultItem(eventId: "\(i)", commentId: "Comment \(i)")
             messageDeliveredExpectations.append(expectation(description: "Delivered message \(i)"))
-            messagesQueue.append(result: item, transaction: nil)
+            messagesQueue.append(item, transaction: nil)
         }
 
         messagesQueue.startDelivery()
@@ -146,7 +146,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         for i in 0 ..< 50 {
             let item = makeResultItem(eventId: "\(i)", commentId: "Comment \(i)")
             messageDeliveredInOrderExpectations.append(expectation(description: "Result handler invoked in order for \(i)"))
-            messagesQueue.append(result: item, transaction: nil)
+            messagesQueue.append(item, transaction: nil)
         }
 
         messagesQueue.startDelivery()
@@ -177,7 +177,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         for i in 0 ..< 5_000 {
             let item = makeResultItem(eventId: "\(i)", commentId: "Comment \(i)")
             messageDeliveredExpectations.append(expectation(description: "Delivered message \(i)"))
-            messagesQueue.append(result: item, transaction: nil)
+            messagesQueue.append(item, transaction: nil)
         }
 
         // Add the last expectation to be the item added while the queue is draining
@@ -189,7 +189,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
 
         messagesQueue.startDelivery()
 
-        messagesQueue.append(result: itemAddedWhileQueueIsDraining, transaction: nil)
+        messagesQueue.append(itemAddedWhileQueueIsDraining, transaction: nil)
 
         // This shouldn't take 2 full minutes, but depending on the speed of the system this test is running on,
         // it might take > 10 wallclock seconds.

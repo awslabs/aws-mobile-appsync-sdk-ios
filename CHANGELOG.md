@@ -10,6 +10,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 * Added SwiftLint to project. [See PR #121](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/121) and [issue #107](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/107). Thanks @larryonoff! 🎉
 * Increase stability of the integration tests; removed subscription integration test since its functionality is now covered by sync operation test.
 * Upgraded SQLite.swift to 0.11.5, which fixes compiler warnings when compiling AWSAppSync in Xcode. Thanks @larryonoff! 🎉
+* Deprecated class `SyncConfiguration` in favor of value type `SubscriptionWithSyncConfiguration`.
 
 ## 2.7.0
 

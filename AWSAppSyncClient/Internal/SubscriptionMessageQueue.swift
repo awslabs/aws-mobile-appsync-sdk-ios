@@ -1,15 +1,22 @@
 //
-//  SubscriptionMessageQueue.swift
-//  AWSAppSync
+// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
-//  Created by Schmelter, Tim on 12/12/18.
-//  Copyright © 2018 Amazon Web Services. All rights reserved.
+// Licensed under the Apache License, Version 2.0 (the "License").
+// You may not use this file except in compliance with the License.
+// A copy of the License is located at
+//
+// http://aws.amazon.com/apache2.0
+//
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied. See the License for the specific language governing
+// permissions and limitations under the License.
 //
 
 import Foundation
 
 /// A queue to hold incoming subscription messages and deliver them to the caller
-class SubscriptionMessagesQueue<Subscription: GraphQLSubscription> {
+final class SubscriptionMessagesQueue<Subscription: GraphQLSubscription> {
     typealias QueueItem = SubscriptionMessagesQueueItem<Subscription>
     typealias ResultType = GraphQLResult<Subscription.Data>
     typealias ResultHandler = (ResultType, Date, ApolloStore.ReadWriteTransaction?) -> Void
@@ -51,12 +58,12 @@ class SubscriptionMessagesQueue<Subscription: GraphQLSubscription> {
     ///   - transaction: An optional ReadWriteTransaction that generated the result. If `subscriptionResult` is
     ///     eligible for immediate delivery, this transaction will be passed along. Otherwise, it is the
     ///     responsibility of `resultHandler` to provide an appropriate transaction context to its caller.
-    func append(result: GraphQLResult<Subscription.Data>, transaction: ApolloStore.ReadWriteTransaction?) {
+    func append(_ result: GraphQLResult<Subscription.Data>, transaction: ApolloStore.ReadWriteTransaction?) {
         let item = QueueItem(result: result, date: Date())
         syncQueue.sync {
             if isDelivering && messagesQueue.isEmpty {
                 AppSyncLog.debug("Immediately delivering subscription message")
-                deliver(item: item, transaction: transaction)
+                deliver(item, transaction: transaction)
             } else {
                 AppSyncLog.debug("Appending subscription message to queue")
                 messagesQueue.append(item)
@@ -91,13 +98,13 @@ class SubscriptionMessagesQueue<Subscription: GraphQLSubscription> {
     /// Note: this method must only be invoked from a `syncQueue.sync` block, as it mutates the messages queue.
     private func drainQueue() {
         for queueItem in messagesQueue {
-            deliver(item: queueItem)
+            deliver(queueItem)
         }
         messagesQueue = []
     }
 
     /// Asynchronously invokes the resultHandler for `item` on the global queue
-    private func deliver(item: QueueItem, transaction: ApolloStore.ReadWriteTransaction? = nil) {
+    private func deliver(_ item: QueueItem, transaction: ApolloStore.ReadWriteTransaction? = nil) {
         deliveryQueue.addOperation {
             self.resultHandler(item.result, item.date, transaction)
         }

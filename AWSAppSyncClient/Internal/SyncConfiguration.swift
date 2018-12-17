@@ -1,14 +1,23 @@
 //
-//  SyncConfiguration.swift
-//  AWSAppSync
+// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
-//  Created by Schmelter, Tim on 12/11/18.
-//  Copyright © 2018 Amazon Web Services. All rights reserved.
+// Licensed under the Apache License, Version 2.0 (the "License").
+// You may not use this file except in compliance with the License.
+// A copy of the License is located at
+//
+// http://aws.amazon.com/apache2.0
+//
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied. See the License for the specific language governing
+// permissions and limitations under the License.
 //
 
 import Foundation
 
-public class SyncConfiguration {
+/// Configuration values for an AppSyncSubscriptionWithSync instance.
+@available(*, deprecated, renamed: "SubscriptionWithSyncConfiguration", message: "Use SubscriptionWithSyncConfiguration")
+public final class SyncConfiguration {
 
     internal let seconds: Int
 
@@ -20,8 +29,11 @@ public class SyncConfiguration {
         self.seconds = baseRefreshIntervalInSeconds
     }
 
-    // utility for setting default sync to 1 day
+    /// Returns a default configuration with `syncIntervalInSeconds` set to one day.
+    ///
+    /// - Deprecated: Use `SyncConfiguration.default` instead
+    /// - Returns: A default `SyncConfiguration` instance
     public class func defaultSyncConfiguration() -> SyncConfiguration {
-        return SyncConfiguration(baseRefreshIntervalInSeconds: 86400)
+        return SyncConfiguration(baseRefreshIntervalInSeconds: 86_400)
     }
 }

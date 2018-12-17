@@ -121,6 +121,7 @@
 		FA30F366219B36B400B92938 /* DefaultEventTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA30F365219B36B400B92938 /* DefaultEventTestData.swift */; };
 		FA51833121B849F900F9752A /* AppSyncClientTestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */; };
 		FA51833321B867C900F9752A /* AppSyncClientTestConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */; };
+		FA68F16821C7FA79001C64DD /* SubscriptionWithSyncConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA68F16721C7FA79001C64DD /* SubscriptionWithSyncConfiguration.swift */; };
 		FAD17C6721C16DD9008D116C /* SyncStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6621C16DD9008D116C /* SyncStrategy.swift */; };
 		FAD17C6921C16E58008D116C /* SyncStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */; };
 		FAD17C6F21C1CDE6008D116C /* SubscriptionMessageQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */; };
@@ -307,6 +308,7 @@
 		FA30F365219B36B400B92938 /* DefaultEventTestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEventTestData.swift; sourceTree = "<group>"; };
 		FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestHelper.swift; sourceTree = "<group>"; };
 		FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestConfiguration.swift; sourceTree = "<group>"; };
+		FA68F16721C7FA79001C64DD /* SubscriptionWithSyncConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionWithSyncConfiguration.swift; sourceTree = "<group>"; };
 		FAD17C6621C16DD9008D116C /* SyncStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStrategy.swift; sourceTree = "<group>"; };
 		FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStrategyTests.swift; sourceTree = "<group>"; };
 		FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionMessageQueue.swift; sourceTree = "<group>"; };
@@ -474,6 +476,7 @@
 				179E0A66215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift */,
 				FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */,
 				FAE3558D21C081A400513FAE /* SyncConfiguration.swift */,
+				FA68F16721C7FA79001C64DD /* SubscriptionWithSyncConfiguration.swift */,
 				FAD17C6621C16DD9008D116C /* SyncStrategy.swift */,
 			);
 			path = Internal;
@@ -1082,6 +1085,7 @@
 				17E009D91FCAB234005031DB /* JSONStandardTypeConversions.swift in Sources */,
 				17E009D31FCAB234005031DB /* GraphQLResponseGenerator.swift in Sources */,
 				17E009D81FCAB234005031DB /* NetworkTransport.swift in Sources */,
+				FA68F16821C7FA79001C64DD /* SubscriptionWithSyncConfiguration.swift in Sources */,
 				17A7F8CA1FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift in Sources */,
 				17E009C21FCAB234005031DB /* GraphQLQueryWatcher.swift in Sources */,
 				17E009CB1FCAB234005031DB /* HTTPNetworkTransport.swift in Sources */,

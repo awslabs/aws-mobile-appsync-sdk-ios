@@ -1,13 +1,21 @@
 //
-//  AppSyncSubscriptionWithSync.swift
-//  AWSAppSync
+// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License").
+// You may not use this file except in compliance with the License.
+// A copy of the License is located at
+//
+// http://aws.amazon.com/apache2.0
+//
+// or in the "license" file accompanying this file. This file is distributed
+// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied. See the License for the specific language governing
+// permissions and limitations under the License.
 //
 
 import Foundation
 
-public typealias DeltaQueryResultHandler<Operation: GraphQLQuery> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
-
-class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>: Cancellable {
+final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>: Cancellable {
 
     // Incoming configuration options
     private weak var appSyncClient: AWSAppSyncClient?
@@ -47,7 +55,34 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
 
     private var nextSyncTimer: DispatchSourceTimer?
 
-    internal init(appsyncClient: AWSAppSyncClient,
+    @available(*, deprecated, message: "Use the initializer with SubscriptionWithSyncConfiguration instead")
+    internal convenience init(appsyncClient: AWSAppSyncClient,
+                              baseQuery: BaseQuery,
+                              deltaQuery: DeltaQuery,
+                              subscription: Subscription,
+                              baseQueryHandler: @escaping OperationResultHandler<BaseQuery>,
+                              deltaQueryHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
+                              subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
+                              subscriptionMetadataCache: AWSSubscriptionMetaDataCache?,
+                              syncConfiguration: SyncConfiguration,
+                              handlerQueue: DispatchQueue) {
+
+        let subscriptionWithSyncConfiguration = SubscriptionWithSyncConfiguration(syncIntervalInSeconds: syncConfiguration.syncIntervalInSeconds)
+        self.init(
+            appSyncClient: appsyncClient,
+            baseQuery: baseQuery,
+            deltaQuery: deltaQuery,
+            subscription: subscription,
+            baseQueryHandler: baseQueryHandler,
+            deltaQueryHandler: deltaQueryHandler,
+            subscriptionResultHandler: subscriptionResultHandler,
+            subscriptionMetadataCache: subscriptionMetadataCache,
+            subscriptionWithSyncConfiguration: subscriptionWithSyncConfiguration,
+            handlerQueue: handlerQueue
+        )
+    }
+
+    internal init(appSyncClient: AWSAppSyncClient,
                   baseQuery: BaseQuery,
                   deltaQuery: DeltaQuery,
                   subscription: Subscription,
@@ -55,10 +90,10 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
                   deltaQueryHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
                   subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
                   subscriptionMetadataCache: AWSSubscriptionMetaDataCache?,
-                  syncConfiguration: SyncConfiguration,
+                  subscriptionWithSyncConfiguration: SubscriptionWithSyncConfiguration,
                   handlerQueue: DispatchQueue) {
 
-        self.appSyncClient = appsyncClient
+        self.appSyncClient = appSyncClient
         self.subscriptionMetadataCache = subscriptionMetadataCache
         self.handlerQueue = handlerQueue
 
@@ -79,7 +114,7 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
 
         syncStrategy = SyncStrategy(
             hasDeltaQuery: self.deltaQuery != nil,
-            syncRefreshIntervalInSeconds: syncConfiguration.syncIntervalInSeconds
+            syncRefreshIntervalInSeconds: subscriptionWithSyncConfiguration.syncIntervalInSeconds
         )
 
         internalStateSyncQueue = OperationQueue()
@@ -149,14 +184,15 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
             return
         }
 
-        let dispatchGroup = DispatchGroup()
-        dispatchGroup.enter()
+        let semaphore = DispatchSemaphore(value: 0)
+
         AppSyncLog.info("Initializing base query results from cache")
         appSyncClient.fetch(query: baseQuery, cachePolicy: CachePolicy.returnCacheDataDontFetch) { [weak self] (result, error) in
             self?.baseQueryHandler(result, error)
-            dispatchGroup.leave()
+            semaphore.signal()
         }
-        dispatchGroup.wait()
+
+        semaphore.wait()
     }
 
     /// Load base query results from service, forcing a bypass of the local cache
@@ -165,7 +201,7 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
             return false
         }
 
-        var success: Bool = true
+        var success = false
 
         AppSyncLog.info("Refreshing base query results from service")
 
@@ -183,16 +219,7 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
                 return
             }
 
-            // call customer if successful or error
-            // return false to parent if failed
-            if error == nil {
-                success = true
-            } else if result != nil {
-                success = true
-            } else {
-                success = false
-            }
-
+            success = error == nil && result != nil
             self.baseQueryHandler(result, error)
         }
 
@@ -238,7 +265,7 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
             // `subscribeWithConnectCallback` invokes `resultHandler` with an error if it encounters an error
             // during the connect phase. Handle that here by updating the success flag and signalling the
             // semaphore to end the method.
-            if error as? AWSAppSyncSubscriptionError != nil {
+            if error != nil {
                 if success == nil {
                     semaphore.signal()
                     success = false
@@ -284,7 +311,7 @@ class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: 
             return
         }
 
-        subscriptionMessagesQueue.append(result: result, transaction: transaction)
+        subscriptionMessagesQueue.append(result, transaction: transaction)
     }
 
     /// Delivers a subscription result message to the caller
