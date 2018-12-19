@@ -86,7 +86,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
 
         syncStrategy = SyncStrategy(
             hasDeltaQuery: self.deltaQuery != nil,
-            syncRefreshIntervalInSeconds: syncConfiguration.syncIntervalInSeconds
+            baseRefreshIntervalInSeconds: syncConfiguration.baseRefreshIntervalInSeconds
         )
 
         internalStateSyncQueue = OperationQueue()
@@ -456,7 +456,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
         let interval: DispatchTimeInterval
         if lastSyncWasSuccessful {
             AppSyncLog.debug("Setting up baseQuery timer")
-            interval = syncStrategy.syncRefreshInterval.asDispatchTimeInterval
+            interval = syncStrategy.baseRefreshIntervalInSeconds.asDispatchTimeInterval
         } else {
             AppSyncLog.debug("Setting up retry timer")
             let delayForCurrentAttempt = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: currentSyncAttempts)

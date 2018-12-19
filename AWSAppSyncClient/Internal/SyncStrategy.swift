@@ -28,7 +28,7 @@ enum SyncMethod {
 /// sync time to compare it against the specified refresh interval.
 struct SyncStrategy {
     var lastSyncTime: Date?
-    let syncRefreshInterval: TimeInterval
+    let baseRefreshIntervalInSeconds: TimeInterval
     private let hasDeltaQuery: Bool
 
     var methodToUseForSync: SyncMethod {
@@ -38,16 +38,16 @@ struct SyncStrategy {
 
         let timeIntervalSinceLastSync = Date().timeIntervalSince(lastSyncTime)
 
-        if timeIntervalSinceLastSync <= syncRefreshInterval {
+        if timeIntervalSinceLastSync <= baseRefreshIntervalInSeconds {
             return .partial
         } else {
             return .full
         }
     }
 
-    init(hasDeltaQuery: Bool, syncRefreshIntervalInSeconds: Int) {
+    init(hasDeltaQuery: Bool, baseRefreshIntervalInSeconds: Int) {
         self.hasDeltaQuery = hasDeltaQuery
-        self.syncRefreshInterval = TimeInterval(exactly: syncRefreshIntervalInSeconds)!
+        self.baseRefreshIntervalInSeconds = TimeInterval(exactly: baseRefreshIntervalInSeconds)!
     }
 
 }

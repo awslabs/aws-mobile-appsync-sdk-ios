@@ -17,13 +17,13 @@
 public struct SyncConfiguration {
     /// The interval, in whole seconds, at which the subscription will be refreshed using the `deltaQuery`. If more time has
     /// elapsed since the last sync, then local data will be refreshed using `baseQuery` instead.
-    let syncIntervalInSeconds: Int
+    let baseRefreshIntervalInSeconds: Int
 
     /// Creates a new SyncConfiguration with the specified sync interval.
     ///
     /// - Parameters:
-    ///   - syncIntervalInSeconds: The sync interval. Defaults to one day (86,400 seconds)
-    public init(syncIntervalInSeconds: Int = 86_400) {
-        self.syncIntervalInSeconds = syncIntervalInSeconds
+    ///   - baseRefreshIntervalInSeconds: The sync interval. Defaults to one day (86,400 seconds)
+    public init(baseRefreshIntervalInSeconds: Int = 86_400) {
+        self.baseRefreshIntervalInSeconds = baseRefreshIntervalInSeconds
     }
 }
