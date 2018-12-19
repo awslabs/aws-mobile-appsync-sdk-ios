@@ -2,7 +2,7 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
-## 2.7.1
+## 2.8.0
 
 ### Misc. Updates
 
@@ -10,6 +10,10 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 * Added SwiftLint to project. [See PR #121](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/121) and [issue #107](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/107). Thanks @larryonoff! 🎉
 * Increase stability of the integration tests; removed subscription integration test since its functionality is now covered by sync operation test.
 * Upgraded SQLite.swift to 0.11.5, which fixes compiler warnings when compiling AWSAppSync in Xcode. Thanks @larryonoff! 🎉
+* **Breaking API Changes**
+  * `SyncConfiguration`:
+    - The type changed from a `class` to a `struct`
+    - The initializer parameter is now optional, and the previous `defaultSyncConfiguration` method has been removed. Create a default configuration by invoking the initializer with no arguments, `SyncConfiguration()`
 
 ## 2.7.0
 

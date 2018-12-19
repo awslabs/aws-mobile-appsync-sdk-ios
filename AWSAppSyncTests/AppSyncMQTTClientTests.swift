@@ -3,7 +3,7 @@
 //  AWSAppSync
 //
 //  Created by Mario Araujo on 10/07/2018.
-//  Copyright © 2018 Dubal, Rohan. All rights reserved.
+//  Copyright © 2018 Amazon Web Services. All rights reserved.
 //
 
 import Foundation

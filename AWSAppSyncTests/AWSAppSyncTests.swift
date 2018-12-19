@@ -35,7 +35,7 @@ class AWSAppSyncTests: XCTestCase {
         super.setUp()
         do {
             appSyncClient = try AppSyncClientTestHelper(with: .cognitoIdentityPools).appSyncClient
-        } catch let error {
+        } catch {
             XCTFail(error.localizedDescription)
         }
         XCTAssertNotNil(appSyncClient, "AppSyncClient should not be nil")

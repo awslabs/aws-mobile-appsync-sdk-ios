@@ -18,7 +18,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         super.setUp()
         do {
             appSyncClient = try makeAppSyncClient()
-        } catch let error {
+        } catch {
             XCTFail(error.localizedDescription)
         }
         XCTAssertNotNil(appSyncClient, "AppSyncClient should not be nil")
@@ -171,7 +171,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             syncWatcher?.cancel()
         }
 
-        let syncConfigurationRefreshInSeconds = 86400
+        let baseRefreshIntervalInSeconds = 86_400
 
         deleteAll()
 
@@ -271,7 +271,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
 
         // Refresh interval defaults to one day, but we'll make it explicit here in case that changes in the future
-        let syncConfiguration = SyncConfiguration(baseRefreshIntervalInSeconds: syncConfigurationRefreshInSeconds)
+        let syncConfiguration = SyncConfiguration(baseRefreshIntervalInSeconds: baseRefreshIntervalInSeconds)
 
         let listEventsQuery = ListEventsQuery()
         let eventSubscription = NewCommentOnEventSubscription(eventId: eventId!)
