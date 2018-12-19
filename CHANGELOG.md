@@ -13,7 +13,6 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 * **Breaking API Changes**
   * `SyncConfiguration`:
     - The type changed from a `class` to a `struct`
-    - The initializer parameter changed from `baseRefreshIntervalInSeconds` to `syncIntervalInSeconds`
     - The initializer parameter is now optional, and the previous `defaultSyncConfiguration` method has been removed. Create a default configuration by invoking the initializer with no arguments, `SyncConfiguration()`
 
 ## 2.7.0
