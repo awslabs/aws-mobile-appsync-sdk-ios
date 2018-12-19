@@ -55,33 +55,6 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
 
     private var nextSyncTimer: DispatchSourceTimer?
 
-    @available(*, deprecated, message: "Use the initializer with SubscriptionWithSyncConfiguration instead")
-    internal convenience init(appsyncClient: AWSAppSyncClient,
-                              baseQuery: BaseQuery,
-                              deltaQuery: DeltaQuery,
-                              subscription: Subscription,
-                              baseQueryHandler: @escaping OperationResultHandler<BaseQuery>,
-                              deltaQueryHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
-                              subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
-                              subscriptionMetadataCache: AWSSubscriptionMetaDataCache?,
-                              syncConfiguration: SyncConfiguration,
-                              handlerQueue: DispatchQueue) {
-
-        let subscriptionWithSyncConfiguration = SubscriptionWithSyncConfiguration(syncIntervalInSeconds: syncConfiguration.syncIntervalInSeconds)
-        self.init(
-            appSyncClient: appsyncClient,
-            baseQuery: baseQuery,
-            deltaQuery: deltaQuery,
-            subscription: subscription,
-            baseQueryHandler: baseQueryHandler,
-            deltaQueryHandler: deltaQueryHandler,
-            subscriptionResultHandler: subscriptionResultHandler,
-            subscriptionMetadataCache: subscriptionMetadataCache,
-            subscriptionWithSyncConfiguration: subscriptionWithSyncConfiguration,
-            handlerQueue: handlerQueue
-        )
-    }
-
     internal init(appSyncClient: AWSAppSyncClient,
                   baseQuery: BaseQuery,
                   deltaQuery: DeltaQuery,
@@ -90,9 +63,8 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
                   deltaQueryHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
                   subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
                   subscriptionMetadataCache: AWSSubscriptionMetaDataCache?,
-                  subscriptionWithSyncConfiguration: SubscriptionWithSyncConfiguration,
+                  syncConfiguration: SyncConfiguration,
                   handlerQueue: DispatchQueue) {
-
         self.appSyncClient = appSyncClient
         self.subscriptionMetadataCache = subscriptionMetadataCache
         self.handlerQueue = handlerQueue
@@ -114,7 +86,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
 
         syncStrategy = SyncStrategy(
             hasDeltaQuery: self.deltaQuery != nil,
-            syncRefreshIntervalInSeconds: subscriptionWithSyncConfiguration.syncIntervalInSeconds
+            syncRefreshIntervalInSeconds: syncConfiguration.syncIntervalInSeconds
         )
 
         internalStateSyncQueue = OperationQueue()

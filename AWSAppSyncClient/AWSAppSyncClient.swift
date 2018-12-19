@@ -935,52 +935,12 @@ public class AWSAppSyncClient {
     /// - Parameters:
     ///   - baseQuery: The base query to fetch which contains the primary data.
     ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
-    ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time. Defaults to a no-op query.
-    ///   - deltaQueryResultHandler: Closure that is called when delta query executes. Defaults to a no-op handler.
-    ///   - callbackQueue: An optional queue on which sync callbacks will be invoked. Defaults to the main queue.
-    ///   - subscriptionWithSyncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
-    /// - Returns: An object that can be used to cancel the sync operation.
-    public func sync<BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>(baseQuery: BaseQuery,
-                                                                        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
-                                                                        deltaQuery: DeltaQuery? = nil,
-                                                                        deltaQueryResultHandler: DeltaQueryResultHandler<DeltaQuery>? = nil,
-                                                                        callbackQueue: DispatchQueue = DispatchQueue.main,
-                                                                        subscriptionWithSyncConfiguration: SubscriptionWithSyncConfiguration? = nil) -> Cancellable {
-
-        // The compiler chokes on delegating to `AWSAppSyncClient.sync(baseQuery:baseQueryResultHandler:..)`, so we'll invoke
-        // the final return within this method, at the expense of some code duplication.
-        let resolvedSubscriptionWithSyncConfiguration = subscriptionWithSyncConfiguration ?? SubscriptionWithSyncConfiguration()
-
-        let subscription = EmptySubscription.init()
-        let subscriptionResultHandler: SubscriptionResultHandler<EmptySubscription> = { (_, _, _) in }
-
-        // Safe to force-unwrap here; we only care about the EmptyQuery's `operationString`
-        let resolvedDeltaQuery: DeltaQuery = deltaQuery ?? EmptyQuery() as! DeltaQuery
-        let resolvedDeltaCallback: DeltaQueryResultHandler<DeltaQuery> = deltaQueryResultHandler ?? { (_, _, _) in }
-
-        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, DeltaQuery>(appSyncClient: self,
-                                                                                     baseQuery: baseQuery,
-                                                                                     deltaQuery: resolvedDeltaQuery,
-                                                                                     subscription: subscription,
-                                                                                     baseQueryHandler: baseQueryResultHandler,
-                                                                                     deltaQueryHandler: resolvedDeltaCallback,
-                                                                                     subscriptionResultHandler: subscriptionResultHandler,
-                                                                                     subscriptionMetadataCache: self.subscriptionMetadataCache,
-                                                                                     subscriptionWithSyncConfiguration: resolvedSubscriptionWithSyncConfiguration,
-                                                                                     handlerQueue: callbackQueue)
-    }
-
-    /// Performs a sync operation where a base query is periodically called to fetch primary data from the server based on the syncConfiguration.
-    ///
-    /// - Parameters:
-    ///   - baseQuery: The base query to fetch which contains the primary data.
-    ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
     ///   - subscription: The subscription which will provide real time updates.
     ///   - subscriptionResultHandler: Closure that is called when a real time update is available or when an error occurs.
     ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time.
     ///   - deltaQueryResultHandler: Closure that is called when delta query executes.
     ///   - callbackQueue: An optional queue on which sync callbacks will be invoked. Defaults to the main queue.
-    ///   - subscriptionWithSyncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
+    ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
     /// - Returns: An object that can be used to cancel the sync operation.
     public func sync<BaseQuery: GraphQLQuery, Subscription: GraphQLSubscription, DeltaQuery: GraphQLQuery>(baseQuery: BaseQuery,
                                                                                                            baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
@@ -989,9 +949,7 @@ public class AWSAppSyncClient {
                                                                                                            deltaQuery: DeltaQuery,
                                                                                                            deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
                                                                                                            callbackQueue: DispatchQueue = DispatchQueue.main,
-                                                                                                           subscriptionWithSyncConfiguration: SubscriptionWithSyncConfiguration? = nil) -> Cancellable {
-        let subscriptionWithSyncConfiguration = subscriptionWithSyncConfiguration ?? SubscriptionWithSyncConfiguration()
-
+                                                                                                           syncConfiguration: SyncConfiguration = SyncConfiguration()) -> Cancellable {
         return AppSyncSubscriptionWithSync<Subscription, BaseQuery, DeltaQuery>(appSyncClient: self,
                                                                                 baseQuery: baseQuery,
                                                                                 deltaQuery: deltaQuery,
@@ -1000,7 +958,7 @@ public class AWSAppSyncClient {
                                                                                 deltaQueryHandler: deltaQueryResultHandler,
                                                                                 subscriptionResultHandler: subscriptionResultHandler,
                                                                                 subscriptionMetadataCache: self.subscriptionMetadataCache,
-                                                                                subscriptionWithSyncConfiguration: subscriptionWithSyncConfiguration,
+                                                                                syncConfiguration: syncConfiguration,
                                                                                 handlerQueue: callbackQueue)
     }
 
@@ -1009,101 +967,66 @@ public class AWSAppSyncClient {
     /// - Parameters:
     ///   - baseQuery: The base query to fetch which contains the primary data.
     ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
+    ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time.
+    ///   - deltaQueryResultHandler: Closure that is called when delta query executes.
+    ///   - callbackQueue: An optional queue on which sync callbacks will be invoked. Defaults to the main queue.
     ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
     /// - Returns: An object that can be used to cancel the sync operation.
-    @available(*, deprecated, message: "Use sync(baseQuery:baseQueryResultHandler:deltaQuery:deltaQueryResultHandler:callbackQueue:subscriptionWithSyncConfiguration:)")
-    public func sync<BaseQuery: GraphQLQuery>(
-        baseQuery: BaseQuery,
-        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
-        callbackQueue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
+    public func sync<BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>(baseQuery: BaseQuery,
+                                                                        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
+                                                                        deltaQuery: DeltaQuery,
+                                                                        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
+                                                                        callbackQueue: DispatchQueue = DispatchQueue.main,
+                                                                        syncConfiguration: SyncConfiguration = SyncConfiguration()) -> Cancellable {
+
+        // The compiler chokes on delegating to `AWSAppSyncClient.sync(baseQuery:baseQueryResultHandler:..)`, so we'll invoke
+        // the final return within this method, at the expense of some code duplication.
+        let subscription = EmptySubscription.init()
+        let subscriptionResultHandler: SubscriptionResultHandler<EmptySubscription> = { (_, _, _) in }
+
+        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, DeltaQuery>(appSyncClient: self,
+                                                                                     baseQuery: baseQuery,
+                                                                                     deltaQuery: deltaQuery,
+                                                                                     subscription: subscription,
+                                                                                     baseQueryHandler: baseQueryResultHandler,
+                                                                                     deltaQueryHandler: deltaQueryResultHandler,
+                                                                                     subscriptionResultHandler: subscriptionResultHandler,
+                                                                                     subscriptionMetadataCache: self.subscriptionMetadataCache,
+                                                                                     syncConfiguration: syncConfiguration,
+                                                                                     handlerQueue: callbackQueue)
+    }
+
+    /// Performs a sync operation where a base query is periodically called to fetch primary data from the server based on the syncConfiguration.
+    ///
+    /// - Parameters:
+    ///   - baseQuery: The base query to fetch which contains the primary data.
+    ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
+    ///   - callbackQueue: An optional queue on which sync callbacks will be invoked. Defaults to the main queue.
+    ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
+    /// - Returns: An object that can be used to cancel the sync operation.
+    public func sync<BaseQuery: GraphQLQuery>(baseQuery: BaseQuery,
+                                              baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
+                                              callbackQueue: DispatchQueue = DispatchQueue.main,
+                                              syncConfiguration: SyncConfiguration = SyncConfiguration()) -> Cancellable {
+
         let subs = EmptySubscription.init()
-        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
-        }
+        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in }
+
         let deltaQuery = EmptyQuery.init()
-        let deltaCallback: (GraphQLResult<EmptyQuery.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
-        }
+        let deltaCallback: (GraphQLResult<EmptyQuery.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in }
 
-        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, EmptyQuery>.init(appsyncClient: self,
-                                                                                       baseQuery: baseQuery,
-                                                                                       deltaQuery: deltaQuery,
-                                                                                       subscription: subs,
-                                                                                       baseQueryHandler: baseQueryResultHandler,
-                                                                                       deltaQueryHandler: deltaCallback,
-                                                                                       subscriptionResultHandler: subsCallback,
-                                                                                       subscriptionMetadataCache: self.subscriptionMetadataCache,
-                                                                                       syncConfiguration: syncConfiguration, handlerQueue: callbackQueue)
+        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, EmptyQuery>.init(appSyncClient: self,
+                                                                                          baseQuery: baseQuery,
+                                                                                          deltaQuery: deltaQuery,
+                                                                                          subscription: subs,
+                                                                                          baseQueryHandler: baseQueryResultHandler,
+                                                                                          deltaQueryHandler: deltaCallback,
+                                                                                          subscriptionResultHandler: subsCallback,
+                                                                                          subscriptionMetadataCache: self.subscriptionMetadataCache,
+                                                                                          syncConfiguration: syncConfiguration,
+                                                                                          handlerQueue: callbackQueue)
     }
 
-    /// Performs a sync operation where a delta query is initiated for missed updates and a base query  is used to fetch primary data from the server.
-    ///
-    /// - Parameters:
-    ///   - baseQuery: The base query to fetch which contains the primary data.
-    ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
-    ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time.
-    ///   - deltaQueryResultHandler: Closure that is called when delta query executes.
-    ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
-    /// - Returns: An object that can be used to cancel the sync operation.
-    @available(*, deprecated, message: "Use sync(baseQuery:baseQueryResultHandler:deltaQuery:deltaQueryResultHandler:callbackQueue:subscriptionWithSyncConfiguration:)")
-    public func sync<BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>(
-        baseQuery: BaseQuery,
-        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
-        deltaQuery: DeltaQuery,
-        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
-        callbackQueue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration()) -> Cancellable {
-
-        let subs = EmptySubscription.init()
-        let subsCallback: (GraphQLResult<EmptySubscription.Data>?, ApolloStore.ReadTransaction?, Error?) -> Void = { (_, _, _) in
-        }
-        
-        return AppSyncSubscriptionWithSync<EmptySubscription, BaseQuery, DeltaQuery>.init(appsyncClient: self,
-                                      baseQuery: baseQuery,
-                                      deltaQuery: deltaQuery,
-                                      subscription: subs,
-                                      baseQueryHandler: baseQueryResultHandler,
-                                      deltaQueryHandler: deltaQueryResultHandler,
-                                      subscriptionResultHandler: subsCallback,
-                                      subscriptionMetadataCache: self.subscriptionMetadataCache,
-                                      syncConfiguration: syncConfiguration, handlerQueue: callbackQueue)
-    }
-    
-    /// Performs a sync operation where a subscription is initiated for real-time updates and a base query or a delta query is used to fetch data from the server.
-    ///
-    /// - Parameters:
-    ///   - baseQuery: The base query to fetch which contains the primary data.
-    ///   - baseQueryResultHandler: Closure that is called when base query results are available or when an error occurs. Every time a sync operation is called, a fetch for the baseQuery from the cache will be done first before initiating any other operations.
-    ///   - subscription: The subscription which will provide real time updates.
-    ///   - subscriptionResultHandler: Closure that is called when a real time update is available or when an error occurs.
-    ///   - deltaQuery: The delta query which fetches data starting from the `lastSync` time.
-    ///   - deltaQueryResultHandler: Closure that is called when delta query executes.
-    ///   - syncConfiguration: The sync configuration where the baseQuery sync interval can be specified. (Defaults to 24 hours.)
-    /// - Returns: An object that can be used to cancel the sync operation.
-    @available(*, deprecated, message: "Use AWSAppSyncClient.sync(baseQuery:baseQueryResultHandler:subscription:subscriptionResultHandler:deltaQuery:deltaQueryResultHandler:callbackQueue:subscriptionWithSyncConfiguration:)")
-    public func sync<BaseQuery: GraphQLQuery, Subscription: GraphQLSubscription, DeltaQuery: GraphQLQuery>(
-        baseQuery: BaseQuery,
-        baseQueryResultHandler: @escaping OperationResultHandler<BaseQuery>,
-        subscription: Subscription,
-        subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
-        deltaQuery: DeltaQuery,
-        deltaQueryResultHandler: @escaping DeltaQueryResultHandler<DeltaQuery>,
-        callbackQueue: DispatchQueue = DispatchQueue.main,
-        syncConfiguration: SyncConfiguration = SyncConfiguration.defaultSyncConfiguration())
-    -> Cancellable {
-        
-        return AppSyncSubscriptionWithSync<Subscription, BaseQuery, DeltaQuery>(
-            appsyncClient: self,
-            baseQuery: baseQuery,
-            deltaQuery: deltaQuery,
-            subscription: subscription,
-            baseQueryHandler: baseQueryResultHandler,
-            deltaQueryHandler: deltaQueryResultHandler,
-            subscriptionResultHandler: subscriptionResultHandler,
-            subscriptionMetadataCache: self.subscriptionMetadataCache,
-            syncConfiguration: syncConfiguration,
-            handlerQueue: callbackQueue) as Cancellable
-    }
-    
     private func checkAndFetchS3Object(variables: GraphQLMap?) -> (bucket: String, key: String, region: String, contentType: String, localUri: String)? {
         if let variables = variables {
             for key in variables.keys {

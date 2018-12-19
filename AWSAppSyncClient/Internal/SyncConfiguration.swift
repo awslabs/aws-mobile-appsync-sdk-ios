@@ -13,27 +13,17 @@
 // permissions and limitations under the License.
 //
 
-import Foundation
-
 /// Configuration values for an AppSyncSubscriptionWithSync instance.
-@available(*, deprecated, renamed: "SubscriptionWithSyncConfiguration", message: "Use SubscriptionWithSyncConfiguration")
-public final class SyncConfiguration {
+public struct SyncConfiguration {
+    /// The interval, in whole seconds, at which the subscription will be refreshed using the `deltaQuery`. If more time has
+    /// elapsed since the last sync, then local data will be refreshed using `baseQuery` instead.
+    let syncIntervalInSeconds: Int
 
-    internal let seconds: Int
-
-    internal var syncIntervalInSeconds: Int {
-        return seconds
-    }
-
-    public init(baseRefreshIntervalInSeconds: Int) {
-        self.seconds = baseRefreshIntervalInSeconds
-    }
-
-    /// Returns a default configuration with `syncIntervalInSeconds` set to one day.
+    /// Creates a new SyncConfiguration with the specified sync interval.
     ///
-    /// - Deprecated: Use `SyncConfiguration.default` instead
-    /// - Returns: A default `SyncConfiguration` instance
-    public class func defaultSyncConfiguration() -> SyncConfiguration {
-        return SyncConfiguration(baseRefreshIntervalInSeconds: 86_400)
+    /// - Parameters:
+    ///   - syncIntervalInSeconds: The sync interval. Defaults to one day (86,400 seconds)
+    public init(syncIntervalInSeconds: Int = 86_400) {
+        self.syncIntervalInSeconds = syncIntervalInSeconds
     }
 }
