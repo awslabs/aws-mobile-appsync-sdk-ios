@@ -55,7 +55,29 @@ internal class AppSyncClientTestHelper: NSObject {
 
     let appSyncClient: DeinitNotifiableAppSyncClient
 
-    init(with authenticationType: AuthenticationType, databaseURL: URL? = nil) throws {
+    /// Creates a test helper that vends a `DeinitNotifiableAppSyncClient`
+    ///
+    /// - Parameters:
+    ///   - authenticationType: an `AuthenticationType` to use for authenticating the client.
+    ///     For tests where there are no network calls, use `.apiKey`
+    ///   - testConfiguration: an optional test configuration to use for setting up the client. If the test helper is being
+    ///     created for unit testing, use AppSyncClientTestConfiguration.UnitTestConfiguration. If nil, init will attempt to
+    ///     create a configuration using the `appsync_test_credentials.json` file in the test bundle. If that file is not
+    ///     present, it will use the values stored in `AppSyncClientTestConfigurationDefaults`, which must be updated to have
+    ///     valid values.
+    ///   - databaseURL: a URL to store the cache database, nor `nil` if the database should be in memory
+    ///   - httpTransport: an override for the default AWSNetworkTransport, e.g., `MockNetworkTransport` to allow
+    ///     inspection of network calls
+    /// - Throws:
+    ///    - `TestHelperError.setupError` if the test credentials aren't properly set up in either
+    ///      `AppSyncClientTestConfigurationDefaults` or `appsync_test_credentials.json`
+    ///    - Any errors received during configuration setup
+    init(with authenticationType: AuthenticationType,
+         testConfiguration: AppSyncClientTestConfiguration? = nil,
+         databaseURL: URL? = nil,
+         httpTransport: AWSNetworkTransport? = nil,
+         s3ObjectManager: AWSS3ObjectManager? = nil) throws {
+
         // Read credentials from appsync_test_credentials.json
         let testBundle = Bundle(for: AppSyncClientTestHelper.self)
         let testConfiguration = AppSyncClientTestConfiguration(with: testBundle) ?? AppSyncClientTestConfiguration()
@@ -69,8 +91,11 @@ internal class AppSyncClientTestHelper: NSObject {
         let appSyncConfig = try AppSyncClientTestHelper.makeAppSyncConfiguration(
             for: authenticationType,
             testConfiguration: testConfiguration,
-            databaseURL: databaseURL
+            databaseURL: databaseURL,
+            httpTransport: httpTransport,
+            s3ObjectManager: s3ObjectManager
         )
+
         appSyncClient = try DeinitNotifiableAppSyncClient(appSyncConfig: appSyncConfig)
 
         // Set id as the cache key for objects
@@ -84,13 +109,15 @@ internal class AppSyncClientTestHelper: NSObject {
     static func makeAppSyncConfiguration(
         for authenticationType: AuthenticationType,
         testConfiguration: AppSyncClientTestConfiguration,
-        databaseURL: URL?
+        databaseURL: URL?,
+        httpTransport: AWSNetworkTransport?,
+        s3ObjectManager: AWSS3ObjectManager?
     ) throws -> AWSAppSyncClientConfiguration {
 
-        let appSyncConfig: AWSAppSyncClientConfiguration
+        var appSyncConfig: AWSAppSyncClientConfiguration
         switch authenticationType {
         case .apiKey:
-            let apiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(with: testConfiguration)
+            let apiKeyAuthProvider = MockAWSAPIKeyAuthProvider(with: testConfiguration)
             appSyncConfig = try AWSAppSyncClientConfiguration(
                 url: testConfiguration.apiKeyEndpointURL,
                 serviceRegion: testConfiguration.apiKeyEndpointRegion,
@@ -108,7 +135,7 @@ internal class AppSyncClientTestHelper: NSObject {
             )
 
         case .invalidAPIKey:
-            let apiKeyAuthProvider = BasicAWSAPIKeyAuthProvider(with: "INVALID_API_KEY")
+            let apiKeyAuthProvider = MockAWSAPIKeyAuthProvider(with: "INVALID_API_KEY")
             appSyncConfig = try AWSAppSyncClientConfiguration(
                 url: testConfiguration.apiKeyEndpointURL,
                 serviceRegion: testConfiguration.apiKeyEndpointRegion,
@@ -117,7 +144,7 @@ internal class AppSyncClientTestHelper: NSObject {
             )
 
         case .invalidOIDC:
-            let oidcAuthProvider = InvalidOIDCAuthProvider()
+            let oidcAuthProvider = MockAWSOIDCAuthProvider()
             appSyncConfig = try AWSAppSyncClientConfiguration(
                 url: testConfiguration.apiKeyEndpointURL,
                 serviceRegion: testConfiguration.apiKeyEndpointRegion,
@@ -193,22 +220,6 @@ internal class AppSyncClientTestHelper: NSObject {
 
 }
 
-private class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
-    let apiKey: String
-
-    init(with apiKey: String) {
-        self.apiKey = apiKey
-    }
-
-    init(with configuration: AppSyncClientTestConfiguration) {
-        apiKey = configuration.apiKey
-    }
-
-    func getAPIKey() -> String {
-        return apiKey
-    }
-}
-
 private struct BasicAWSCognitoCredentialsProviderFactory {
     static func makeCredentialsProvider(with configuration: AppSyncClientTestConfiguration) -> AWSCognitoCredentialsProvider {
         let credentialsProvider = AWSCognitoCredentialsProvider(
@@ -218,11 +229,5 @@ private struct BasicAWSCognitoCredentialsProviderFactory {
         credentialsProvider.clearCredentials()
         credentialsProvider.clearKeychain()
         return credentialsProvider
-    }
-}
-
-private struct InvalidOIDCAuthProvider: AWSOIDCAuthProvider {
-    func getLatestAuthToken() -> String {
-        return "token"
     }
 }

@@ -117,16 +117,28 @@
 		B8F9295CA5BD72C9EEE11027 /* Pods_AWSAppSync_AWSAppSyncTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */; };
 		DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */; };
 		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
+		FA0C12B421CBEE7B00B438CB /* MockNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12B321CBEE7B00B438CB /* MockNetworkTransport.swift */; };
+		FA0C12B621CC2C9B00B438CB /* MockCancellable.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12B521CC2C9B00B438CB /* MockCancellable.swift */; };
+		FA0C12B821CC33F300B438CB /* MockS3ObjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12B721CC33F300B438CB /* MockS3ObjectManager.swift */; };
+		FA0C12BB21CD308A00B438CB /* AWSAppSyncClientConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12B921CD2FFB00B438CB /* AWSAppSyncClientConfiguration.swift */; };
+		FA0C12BD21CD319B00B438CB /* AWSAppSyncClientInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12BC21CD319B00B438CB /* AWSAppSyncClientInfo.swift */; };
+		FA0C12BF21CD360B00B438CB /* AuthType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12BE21CD360B00B438CB /* AuthType.swift */; };
+		FA0C12C121CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12C021CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift */; };
+		FA0C12C821CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12C721CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift */; };
 		FA30F364219B353800B92938 /* SubscriptionStressTestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA30F363219B353800B92938 /* SubscriptionStressTestHelper.swift */; };
 		FA30F366219B36B400B92938 /* DefaultEventTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA30F365219B36B400B92938 /* DefaultEventTestData.swift */; };
 		FA51833121B849F900F9752A /* AppSyncClientTestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */; };
 		FA51833321B867C900F9752A /* AppSyncClientTestConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */; };
+		FA72049F21CD9B9800938B81 /* AWSAppSyncClientInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA72049E21CD9B9800938B81 /* AWSAppSyncClientInfoTests.swift */; };
+		FA7204A121CDA06600938B81 /* awsconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = FA7204A021CDA06600938B81 /* awsconfiguration.json */; };
+		FA7204A321CDC04B00938B81 /* MockAuthProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7204A221CDC04B00938B81 /* MockAuthProviders.swift */; };
 		FAD17C6721C16DD9008D116C /* SyncStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6621C16DD9008D116C /* SyncStrategy.swift */; };
 		FAD17C6921C16E58008D116C /* SyncStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */; };
 		FAD17C6F21C1CDE6008D116C /* SubscriptionMessageQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */; };
 		FAD17C7121C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C7021C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift */; };
 		FAE3558621C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */; };
 		FAE3558E21C081A400513FAE /* SyncConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE3558D21C081A400513FAE /* SyncConfiguration.swift */; };
+		FAEC08E121CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAEC08E021CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -303,16 +315,28 @@
 		CF165C1FC5D3B19E5EEC4FD4 /* Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTests/Pods-AWSAppSync-AWSAppSyncTests.release.xcconfig"; sourceTree = "<group>"; };
 		D30DD5B10C8BBEF67A3F276F /* Pods_AWSAppSync_ApolloTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_ApolloTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSNetworkTransport.swift; sourceTree = "<group>"; };
+		FA0C12B321CBEE7B00B438CB /* MockNetworkTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockNetworkTransport.swift; sourceTree = "<group>"; };
+		FA0C12B521CC2C9B00B438CB /* MockCancellable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCancellable.swift; sourceTree = "<group>"; };
+		FA0C12B721CC33F300B438CB /* MockS3ObjectManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockS3ObjectManager.swift; sourceTree = "<group>"; };
+		FA0C12B921CD2FFB00B438CB /* AWSAppSyncClientConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientConfiguration.swift; sourceTree = "<group>"; };
+		FA0C12BC21CD319B00B438CB /* AWSAppSyncClientInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientInfo.swift; sourceTree = "<group>"; };
+		FA0C12BE21CD360B00B438CB /* AuthType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthType.swift; sourceTree = "<group>"; };
+		FA0C12C021CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicAWSAPIKeyAuthProvider.swift; sourceTree = "<group>"; };
+		FA0C12C721CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientConfigurationTests.swift; sourceTree = "<group>"; };
 		FA30F363219B353800B92938 /* SubscriptionStressTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStressTestHelper.swift; sourceTree = "<group>"; };
 		FA30F365219B36B400B92938 /* DefaultEventTestData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEventTestData.swift; sourceTree = "<group>"; };
 		FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestHelper.swift; sourceTree = "<group>"; };
 		FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestConfiguration.swift; sourceTree = "<group>"; };
+		FA72049E21CD9B9800938B81 /* AWSAppSyncClientInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientInfoTests.swift; sourceTree = "<group>"; };
+		FA7204A021CDA06600938B81 /* awsconfiguration.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = awsconfiguration.json; sourceTree = "<group>"; };
+		FA7204A221CDC04B00938B81 /* MockAuthProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthProviders.swift; sourceTree = "<group>"; };
 		FAD17C6621C16DD9008D116C /* SyncStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStrategy.swift; sourceTree = "<group>"; };
 		FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStrategyTests.swift; sourceTree = "<group>"; };
 		FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionMessageQueue.swift; sourceTree = "<group>"; };
 		FAD17C7021C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionMessagesQueueTests.swift; sourceTree = "<group>"; };
 		FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestConfigurationDefaults.swift; sourceTree = "<group>"; };
 		FAE3558D21C081A400513FAE /* SyncConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncConfiguration.swift; sourceTree = "<group>"; };
+		FAEC08E021CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientComplexObjectMutationUnitTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -444,21 +468,15 @@
 		174F80AD2109229C00775D0D /* AWSAppSyncTests */ = {
 			isa = PBXGroup;
 			children = (
+				FA0C12B221CBEE6800B438CB /* Helpers */,
+				FA0C12C421CD964100B438CB /* Unit Tests */,
 				1795777E2148531800C834E1 /* appsync_test_credentials.json */,
-				FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */,
-				FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */,
-				FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */,
 				AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */,
 				741880AF213878B400523CA8 /* AuthProviderTests.swift */,
 				17664128214F6732003AE269 /* AWSAppSyncAPIKeyAuthTests.swift */,
 				174F80AE2109229C00775D0D /* AWSAppSyncTests.swift */,
-				FA30F365219B36B400B92938 /* DefaultEventTestData.swift */,
-				174F80B8210924B200775D0D /* EventsAPI.swift */,
 				174F80B02109229C00775D0D /* Info.plist */,
-				AC48F9832142949C001C7D35 /* Object+Swizzling.swift */,
 				FAD17C7021C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift */,
-				FA30F363219B353800B92938 /* SubscriptionStressTestHelper.swift */,
-				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
 			);
 			path = AWSAppSyncTests;
 			sourceTree = "<group>";
@@ -470,8 +488,11 @@
 				1756980221349FC000319ABC /* AppSyncLogHelper.m */,
 				175698062134A62D00319ABC /* AppSyncLogWrapper.swift */,
 				17185D2C219DEA7800092934 /* AppSyncSubscriptionWithSync.swift */,
+				FA0C12BE21CD360B00B438CB /* AuthType.swift */,
+				FA0C12BC21CD319B00B438CB /* AWSAppSyncClientInfo.swift */,
 				179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */,
 				179E0A66215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift */,
+				FA0C12C021CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift */,
 				FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */,
 				FAE3558D21C081A400513FAE /* SyncConfiguration.swift */,
 				FAD17C6621C16DD9008D116C /* SyncStrategy.swift */,
@@ -494,6 +515,7 @@
 		1795778521485FA400C834E1 /* AWSAppSyncTestApp */ = {
 			isa = PBXGroup;
 			children = (
+				FA7204A021CDA06600938B81 /* awsconfiguration.json */,
 				1795778621485FA400C834E1 /* AppDelegate.swift */,
 				1795778821485FA400C834E1 /* ViewController.swift */,
 				1795778A21485FA400C834E1 /* Main.storyboard */,
@@ -540,6 +562,7 @@
 				17DECF611F59F5FF004B0512 /* AWSAppSync.h */,
 				178C8DA91FAAAC0600A7F725 /* AWSAppSyncAuthProvider.swift */,
 				17A66BA31F59FF69008DDA11 /* AWSAppSyncClient.swift */,
+				FA0C12B921CD2FFB00B438CB /* AWSAppSyncClientConfiguration.swift */,
 				178B31061FCDB34100EA4619 /* AWSAppSyncClientConflictResolutionExtensions.swift */,
 				178B31051FCDB34100EA4619 /* AWSAppSyncClientS3ObjectsExtensions.swift */,
 				17915B041F5F106600C4B73C /* AWSAppSyncHTTPNetworkTransport.swift */,
@@ -605,6 +628,35 @@
 				72AFEB46C29B8B9ACA5F4ECE /* Pods-AWSAppSync-ApolloTests.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		FA0C12B221CBEE6800B438CB /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */,
+				FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */,
+				FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */,
+				FA30F365219B36B400B92938 /* DefaultEventTestData.swift */,
+				174F80B8210924B200775D0D /* EventsAPI.swift */,
+				FA7204A221CDC04B00938B81 /* MockAuthProviders.swift */,
+				FA0C12B521CC2C9B00B438CB /* MockCancellable.swift */,
+				FA0C12B321CBEE7B00B438CB /* MockNetworkTransport.swift */,
+				FA0C12B721CC33F300B438CB /* MockS3ObjectManager.swift */,
+				AC48F9832142949C001C7D35 /* Object+Swizzling.swift */,
+				FA30F363219B353800B92938 /* SubscriptionStressTestHelper.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		FA0C12C421CD964100B438CB /* Unit Tests */ = {
+			isa = PBXGroup;
+			children = (
+				FAEC08E021CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift */,
+				FA0C12C721CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift */,
+				FA72049E21CD9B9800938B81 /* AWSAppSyncClientInfoTests.swift */,
+				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
+			);
+			path = "Unit Tests";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -828,6 +880,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA7204A121CDA06600938B81 /* awsconfiguration.json in Resources */,
 				1795779121485FA400C834E1 /* LaunchScreen.storyboard in Resources */,
 				1795778E21485FA400C834E1 /* Assets.xcassets in Resources */,
 				1795778C21485FA400C834E1 /* Main.storyboard in Resources */,
@@ -1001,6 +1054,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA0C12B621CC2C9B00B438CB /* MockCancellable.swift in Sources */,
+				FA72049F21CD9B9800938B81 /* AWSAppSyncClientInfoTests.swift in Sources */,
 				FAD17C7121C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift in Sources */,
 				FA51833321B867C900F9752A /* AppSyncClientTestConfiguration.swift in Sources */,
 				FA30F364219B353800B92938 /* SubscriptionStressTestHelper.swift in Sources */,
@@ -1010,10 +1065,15 @@
 				FAE3558621C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift in Sources */,
 				174F80B9210924B200775D0D /* EventsAPI.swift in Sources */,
 				AC48F9842142949C001C7D35 /* AppSyncMQTTClientTests.swift in Sources */,
+				FA0C12B821CC33F300B438CB /* MockS3ObjectManager.swift in Sources */,
+				FA7204A321CDC04B00938B81 /* MockAuthProviders.swift in Sources */,
 				741880B0213878B400523CA8 /* AuthProviderTests.swift in Sources */,
 				FAD17C6921C16E58008D116C /* SyncStrategyTests.swift in Sources */,
+				FAEC08E121CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift in Sources */,
+				FA0C12C821CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift in Sources */,
 				FA30F366219B36B400B92938 /* DefaultEventTestData.swift in Sources */,
 				17664129214F6732003AE269 /* AWSAppSyncAPIKeyAuthTests.swift in Sources */,
+				FA0C12B421CBEE7B00B438CB /* MockNetworkTransport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1039,6 +1099,7 @@
 				DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */,
 				179E0A67215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift in Sources */,
 				174F80A32107F17700775D0D /* AWSIoTKeychain.m in Sources */,
+				FA0C12BD21CD319B00B438CB /* AWSAppSyncClientInfo.swift in Sources */,
 				17E009C91FCAB234005031DB /* Record.swift in Sources */,
 				17E009D41FCAB234005031DB /* GraphQLResultNormalizer.swift in Sources */,
 				17E009C01FCAB234005031DB /* InMemoryNormalizedCache.swift in Sources */,
@@ -1077,9 +1138,11 @@
 				17E009C81FCAB234005031DB /* Locking.swift in Sources */,
 				174F80922107E74F00775D0D /* AWSMQTTDecoder.m in Sources */,
 				17E009D61FCAB234005031DB /* GraphQLSelectionSetMapper.swift in Sources */,
+				FA0C12BB21CD308A00B438CB /* AWSAppSyncClientConfiguration.swift in Sources */,
 				178B31081FCDB34100EA4619 /* AWSAppSyncClientConflictResolutionExtensions.swift in Sources */,
 				1729A0D01FA1365900F88594 /* AWSAppSyncSubscriptionWatcher.swift in Sources */,
 				17E009D91FCAB234005031DB /* JSONStandardTypeConversions.swift in Sources */,
+				FA0C12C121CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift in Sources */,
 				17E009D31FCAB234005031DB /* GraphQLResponseGenerator.swift in Sources */,
 				17E009D81FCAB234005031DB /* NetworkTransport.swift in Sources */,
 				17A7F8CA1FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift in Sources */,
@@ -1088,6 +1151,7 @@
 				17E009D11FCAB234005031DB /* Utilities.swift in Sources */,
 				17E009DA1FCAB234005031DB /* Result.swift in Sources */,
 				174F80A42107F17700775D0D /* AWSIoTCSR.m in Sources */,
+				FA0C12BF21CD360B00B438CB /* AuthType.swift in Sources */,
 				179577992149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift in Sources */,
 				17E009D21FCAB234005031DB /* RecordSet.swift in Sources */,
 				FAD17C6F21C1CDE6008D116C /* SubscriptionMessageQueue.swift in Sources */,
