@@ -375,9 +375,9 @@ public class AWSAppSyncClientConfiguration {
                                                           authProvider: credentialsProvider)
 
         case .amazonCognitoUserPools:
-            networkTransport = try makeNetworkTransportForOIDC(url: url,
-                                                               urlSessionConfiguration: urlSessionConfiguration,
-                                                               authProvider: userPoolsAuthProvider)
+            networkTransport = try makeNetworkTransportForCognitoUserPools(url: url,
+                                                                           urlSessionConfiguration: urlSessionConfiguration,
+                                                                           authProvider: userPoolsAuthProvider)
 
         case .oidcToken:
             networkTransport = try makeNetworkTransportForOIDC(url: url,
