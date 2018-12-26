@@ -26,7 +26,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     var userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil
     var oidcAuthProvider: AWSOIDCAuthProvider? = nil
     var endpoint: AWSEndpoint? = nil
-    let authType: AuthType
+    let authType: AWSAppSyncAuthType
     var activeTimers: [String: DispatchSourceTimer] = [:]
     
     /// Creates a network transport with the specified server URL and session configuration.

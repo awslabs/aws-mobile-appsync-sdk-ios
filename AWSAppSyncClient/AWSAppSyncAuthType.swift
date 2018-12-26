@@ -14,7 +14,7 @@
 //
 
 /// Supported authentication types for the AppSyncClient
-enum AuthType: String {
+public enum AWSAppSyncAuthType: String {
     /// AWS Identity and Access Management (IAM), for role-based authentication
     case awsIAM = "AWS_IAM"
 
@@ -28,9 +28,9 @@ enum AuthType: String {
     case amazonCognitoUserPools = "AMAZON_COGNITO_USER_POOLS"
 
     /// Convenience method to use instead of `AuthType(rawValue:)`
-    public static func getAuthType(rawValue: String) throws -> AuthType {
-        guard let authType = AuthType(rawValue: rawValue) else {
-            throw AWSAppSyncClientInfoError(errorMessage: "AuthType not recognized. Pass in a valid AuthType.")
+    public static func getAuthType(rawValue: String) throws -> AWSAppSyncAuthType {
+        guard let authType = AWSAppSyncAuthType(rawValue: rawValue) else {
+            throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AuthType not recognized. Pass in a valid AuthType.")
         }
         return authType
     }

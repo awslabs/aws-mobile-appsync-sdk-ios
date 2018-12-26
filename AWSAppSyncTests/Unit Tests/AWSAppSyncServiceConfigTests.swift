@@ -16,13 +16,12 @@
 import XCTest
 @testable import AWSAppSync
 
-@available(*, deprecated, message: "To be removed when we remove AWSAppSYncClientInfo")
-class AWSAppSyncClientInfoTests: XCTestCase {
+class AWSAppSyncServiceConfigTests: XCTestCase {
 
     func testCanLoadFromDefaultConfigSection() {
         do {
-            let config = try AWSAppSyncClientInfo()
-            XCTAssert(config.apiUrl.starts(with: "https://default.appsync-api"))
+            let config = try AWSAppSyncServiceConfig()
+            XCTAssert(config.endpoint.absoluteString.starts(with: "https://default.appsync-api"))
         } catch {
             XCTFail("Can't load from default config section: \(error.localizedDescription)")
         }
@@ -30,8 +29,8 @@ class AWSAppSyncClientInfoTests: XCTestCase {
 
     func testCanLoadFromSpecifiedConfigSection() {
         do {
-            let config = try AWSAppSyncClientInfo(forKey: "UnitTests_GoodAPIKeyConfiguration")
-            XCTAssert(config.apiUrl.starts(with: "https://good-api-key.appsync-api"))
+            let config = try AWSAppSyncServiceConfig(forKey: "UnitTests_GoodAPIKeyConfiguration")
+            XCTAssert(config.endpoint.absoluteString.starts(with: "https://good-api-key.appsync-api"))
         } catch {
             XCTFail("Can't load from good-api-key config section: \(error.localizedDescription)")
         }
@@ -39,7 +38,7 @@ class AWSAppSyncClientInfoTests: XCTestCase {
 
     func testCanLoadValidAPIConfiguration() {
         do {
-            let config = try AWSAppSyncClientInfo(forKey: "UnitTests_GoodAPIKeyConfiguration")
+            let config = try AWSAppSyncServiceConfig(forKey: "UnitTests_GoodAPIKeyConfiguration")
             XCTAssertEqual(config.apiKey, "THE_API_KEY")
         } catch {
             XCTFail("Can't load from good-api-key config section: \(error.localizedDescription)")
@@ -48,29 +47,26 @@ class AWSAppSyncClientInfoTests: XCTestCase {
 
     func testThrowsOnEmptyAPIKey() {
         do {
-            let _ = try AWSAppSyncClientInfo(forKey: "UnitTests_EmptyAPIKeyConfiguration")
+            let _ = try AWSAppSyncServiceConfig(forKey: "UnitTests_EmptyAPIKeyConfiguration")
             XCTFail("Expected validation to fail with empty API Key")
         } catch {
-            guard let clientInfoError = error as? AWSAppSyncClientInfoError else {
-                XCTFail("Expected validation to throw AWSAppSyncClientInfoError for empty API key, but got \(type(of: error))")
+            guard case AWSAppSyncServiceConfigError.invalidAPIKey = error else {
+                XCTFail("Expected validation to throw AWSAppSyncServiceConfigError.invalidAPIKey for empty API key, but got \(type(of: error))")
                 return
             }
-            XCTAssert(clientInfoError.localizedDescription.starts(with: "API_KEY"))
-            XCTAssert(true, "Threw validation error as expected: \(error.localizedDescription)")
         }
     }
 
     func testThrowsOnMissingAPIKey() {
         do {
-            let _ = try AWSAppSyncClientInfo(forKey: "UnitTests_MissingAPIKeyConfiguration")
+            let _ = try AWSAppSyncServiceConfig(forKey: "UnitTests_MissingAPIKeyConfiguration")
             XCTFail("Expected validation to fail with missing API Key")
         } catch {
-            guard let clientInfoError = error as? AWSAppSyncClientInfoError else {
-                XCTFail("Expected validation to throw AWSAppSyncClientInfoError for missing API key, but got \(type(of: error))")
+            guard case AWSAppSyncServiceConfigError.invalidAPIKey = error else {
+                XCTFail("Expected validation to throw AWSAppSyncServiceConfigError.invalidAPIKey for missing API key, but got \(type(of: error))")
                 return
             }
-            XCTAssert(clientInfoError.localizedDescription.starts(with: "API_KEY"))
-            XCTAssert(true, "Threw validation error as expected: \(error.localizedDescription)")
         }
     }
+
 }

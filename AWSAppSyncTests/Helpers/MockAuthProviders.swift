@@ -26,8 +26,14 @@ struct MockAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
         apiKey = configuration.apiKey
     }
 
+    @available(*, deprecated, message: "Will be removed when we remove AWSAppSyncClientInfo")
     init(with clientInfo: AWSAppSyncClientInfo) {
         apiKey = clientInfo.apiKey
+    }
+
+    /// NOTE: Force-unwraps `serviceConfig.apiKey`
+    init(with serviceConfig: AWSAppSyncServiceConfig) {
+        apiKey = serviceConfig.apiKey!
     }
 
     func getAPIKey() -> String {

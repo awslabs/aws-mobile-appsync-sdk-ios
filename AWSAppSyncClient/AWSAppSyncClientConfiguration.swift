@@ -50,28 +50,28 @@ public class AWSAppSyncClientConfiguration {
     /// AWSNetworkTransport. The service URL and region are retrieved from `appSyncClientInfo`.
     ///
     /// - Parameters:
-    ///   - appSyncClientInfo: The configuration information represented in awsconfiguration.json file.
+    ///   - appSyncServiceConfig: The configuration information represented in awsconfiguration.json file.
     ///   - networkTransport: The network transport used to communicate with the server.
     ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSS3ObjectPresignedURLGenerator` object.
-    public convenience init(appSyncClientInfo: AWSAppSyncClientInfoProviding,
+    public convenience init(appSyncServiceConfig: AWSAppSyncServiceConfigProviding,
                             networkTransport: AWSNetworkTransport,
                             databaseURL: URL? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
                             presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
-        let urlFromConfig = URL(string: appSyncClientInfo.apiUrl)!
-        let regionFromConfig = appSyncClientInfo.region.aws_regionTypeValue()
+        let urlFromConfig = appSyncServiceConfig.endpoint
+        let regionFromConfig = appSyncServiceConfig.region
 
         self.init(url: urlFromConfig,
-                      serviceRegion: regionFromConfig,
-                      networkTransport: networkTransport,
-                      databaseURL: databaseURL,
-                      connectionStateChangeHandler: connectionStateChangeHandler,
-                      s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                  serviceRegion: regionFromConfig,
+                  networkTransport: networkTransport,
+                  databaseURL: databaseURL,
+                  connectionStateChangeHandler: connectionStateChangeHandler,
+                  s3ObjectManager: s3ObjectManager,
+                  presignedURLClient: presignedURLClient)
     }
 
     /// Creates a configuration object for the `AWSAppSyncClient` using a caller-specified AWSNetworkTransport.
@@ -122,7 +122,7 @@ public class AWSAppSyncClientConfiguration {
     /// If none of those conditions are met, or if more than provider is specified, the initializer will throw an error.
     ///
     /// - Parameters:
-    ///   - appSyncClientInfo: The configuration information represented in awsconfiguration.json file.
+    ///   - appSyncServiceConfig: The configuration information represented in awsconfiguration.json file.
     ///   - apiKeyAuthProvider: A `AWSAPIKeyAuthProvider` protocol object for API Key based authorization.
     ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization.
     ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for User Pool based authorization.
@@ -134,7 +134,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
     ///
     /// - Throws: A AWSAppSyncClientConfigurationError if the auth configuration is invalid
-    public convenience init(appSyncClientInfo: AWSAppSyncClientInfoProviding,
+    public convenience init(appSyncServiceConfig: AWSAppSyncServiceConfigProviding,
                             apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil,
                             credentialsProvider: AWSCredentialsProvider? = nil,
                             oidcAuthProvider: AWSOIDCAuthProvider? = nil,
@@ -145,10 +145,10 @@ public class AWSAppSyncClientConfiguration {
                             s3ObjectManager: AWSS3ObjectManager? = nil,
                             presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
 
-        let apiKeyFromConfig = appSyncClientInfo.apiKey
-        let authTypeFromConfig: AuthType = try AuthType.getAuthType(rawValue: appSyncClientInfo.authType)
-        let urlFromConfig = URL(string: appSyncClientInfo.apiUrl)!
-        let regionFromConfig = appSyncClientInfo.region.aws_regionTypeValue()
+        let apiKeyFromConfig = appSyncServiceConfig.apiKey
+        let authTypeFromConfig = appSyncServiceConfig.authType
+        let urlFromConfig = appSyncServiceConfig.endpoint
+        let regionFromConfig = appSyncServiceConfig.region
 
         try self.init(url: urlFromConfig,
                       serviceRegion: regionFromConfig,
@@ -201,7 +201,7 @@ public class AWSAppSyncClientConfiguration {
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
                             presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
-        let authType: AuthType
+        let authType: AWSAppSyncAuthType
 
         if apiKeyAuthProvider != nil {
             authType = .apiKey
@@ -219,6 +219,100 @@ public class AWSAppSyncClientConfiguration {
                       serviceRegion: serviceRegion,
                       authType: authType,
                       apiKey: nil,
+                      apiKeyAuthProvider: apiKeyAuthProvider,
+                      credentialsProvider: credentialsProvider,
+                      userPoolsAuthProvider: userPoolsAuthProvider,
+                      oidcAuthProvider: oidcAuthProvider,
+                      urlSessionConfiguration: urlSessionConfiguration,
+                      databaseURL: databaseURL,
+                      connectionStateChangeHandler: connectionStateChangeHandler,
+                      s3ObjectManager: s3ObjectManager,
+                      presignedURLClient: presignedURLClient)
+    }
+
+    // MARK: - Initializers using the deprecated `AWSAppSyncClientInfo` class
+
+    /// Convenience initializer to create a configuration object for the `AWSAppSyncClient` using a caller-specified
+    /// AWSNetworkTransport. The service URL and region are retrieved from `appSyncClientInfo`.
+    ///
+    /// - Parameters:
+    ///   - appSyncClientInfo: The configuration information represented in awsconfiguration.json file.
+    ///   - networkTransport: The network transport used to communicate with the server.
+    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
+    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
+    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
+    ///   - presignedURLClient: The `AWSS3ObjectPresignedURLGenerator` object.
+    @available(*, deprecated, message: "Use an initializer that takes a AWSAppSyncServiceConfigProviding")
+    public convenience init(appSyncClientInfo: AWSAppSyncClientInfo,
+                            networkTransport: AWSNetworkTransport,
+                            databaseURL: URL? = nil,
+                            connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
+                            s3ObjectManager: AWSS3ObjectManager? = nil,
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
+        let urlFromConfig = URL(string: appSyncClientInfo.apiUrl)!
+        let regionFromConfig = appSyncClientInfo.region.aws_regionTypeValue()
+
+        self.init(url: urlFromConfig,
+                  serviceRegion: regionFromConfig,
+                  networkTransport: networkTransport,
+                  databaseURL: databaseURL,
+                  connectionStateChangeHandler: connectionStateChangeHandler,
+                  s3ObjectManager: s3ObjectManager,
+                  presignedURLClient: presignedURLClient)
+    }
+
+    /// Creates a configuration object for the `AWSAppSyncClient` using configurations from `appSyncClientInfo`.
+    ///
+    /// Internally, this method creates an AWSHTTPNetworkTransport using one of the provided auth providers.
+    /// The incoming arguments must meet exactly one of the following conditions
+    /// - `apiKeyAuthProvider` is nil, `appSyncClientInfo.authType` is "API_KEY", and `appSyncClientInfo.apiKey` has a valid
+    ///   value
+    /// - `apiKeyAuthProvider` is specified, and `appSyncClientInfo.authType` is "API_KEY". The value of
+    ///   `appSyncClientInfo.apiKey` is ignored.
+    /// - `credentialsProvider` is nil, `appSyncClientInfo.authType` is "AWS_IAM", and the app's `awsconfiguration.json` file
+    ///   has a valid "CredentialsProvider" configuration.
+    /// - `credentialsProvider` is specified, and `appSyncClientInfo.authType` is "AWS_IAM". The "CredentialsProvider" config in
+    ///   the app's `awsconfiguration.json` is ignored, except insofar as the caller may have used it to create the incoming
+    ///   `credentialsProvider`.
+    /// - `oidcAuthProvider` is specified, and `appSyncClientInfo.authType` is "OPENID_CONNECT"
+    /// - `userPoolsAuthProvider` is specified, and `appSyncClientInfo.authType` is "AMAZON_COGNITO_USER_POOLS"
+    ///
+    /// If none of those conditions are met, or if more than provider is specified, the initializer will throw an error.
+    ///
+    /// - Parameters:
+    ///   - appSyncClientInfo: The configuration information represented in awsconfiguration.json file.
+    ///   - apiKeyAuthProvider: A `AWSAPIKeyAuthProvider` protocol object for API Key based authorization.
+    ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization.
+    ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for User Pool based authorization.
+    ///   - oidcAuthProvider: A `AWSOIDCAuthProvider` protocol object for OIDC based authorization.
+    ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
+    ///   - databaseURL: The path to local sqlite database for persistent storage, if nil, an in-memory database is used.
+    ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
+    ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
+    ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///
+    /// - Throws: A AWSAppSyncClientConfigurationError if the auth configuration is invalid
+    @available(*, deprecated, message: "Use an initializer that takes a AWSAppSyncServiceConfigProviding")
+    public convenience init(appSyncClientInfo: AWSAppSyncClientInfo,
+                            apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil,
+                            credentialsProvider: AWSCredentialsProvider? = nil,
+                            oidcAuthProvider: AWSOIDCAuthProvider? = nil,
+                            userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil,
+                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            databaseURL: URL? = nil,
+                            connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
+                            s3ObjectManager: AWSS3ObjectManager? = nil,
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+
+        let apiKeyFromConfig = appSyncClientInfo.apiKey
+        let authTypeFromConfig = try AWSAppSyncAuthType.getAuthType(rawValue: appSyncClientInfo.authType)
+        let urlFromConfig = URL(string: appSyncClientInfo.apiUrl)!
+        let regionFromConfig = appSyncClientInfo.region.aws_regionTypeValue()
+
+        try self.init(url: urlFromConfig,
+                      serviceRegion: regionFromConfig,
+                      authType: authTypeFromConfig,
+                      apiKey: apiKeyFromConfig,
                       apiKeyAuthProvider: apiKeyAuthProvider,
                       credentialsProvider: credentialsProvider,
                       userPoolsAuthProvider: userPoolsAuthProvider,
@@ -252,7 +346,7 @@ public class AWSAppSyncClientConfiguration {
     /// - Throws: A AWSAppSyncClientConfigurationError if the auth configuration is invalid
     private init(url: URL,
                  serviceRegion: AWSRegionType,
-                 authType: AuthType,
+                 authType: AWSAppSyncAuthType,
                  apiKey: String?,
                  apiKeyAuthProvider: AWSAPIKeyAuthProvider?,
                  credentialsProvider: AWSCredentialsProvider?,
@@ -299,7 +393,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - oidcAuthProvider: Should be `nil` unless `authType` is `.oidcToken`
     ///   - userPoolsAuthProvider: Should be `nil` unless `authType` is `.amazonCognitoUserPools`
     /// - Returns: `true` if the auth providers not required for `authType` are all `nil`, `false` otherwise.
-    private static func unusedAuthProvidersAreNil(for authType: AuthType,
+    private static func unusedAuthProvidersAreNil(for authType: AWSAppSyncAuthType,
                                                   apiKeyAuthProvider: AWSAPIKeyAuthProvider?,
                                                   credentialsProvider: AWSCredentialsProvider?,
                                                   oidcAuthProvider: AWSOIDCAuthProvider?,
@@ -338,7 +432,7 @@ public class AWSAppSyncClientConfiguration {
     ///   the specified authType
     static private func getNetworkTransport(url: URL,
                                             urlSessionConfiguration: URLSessionConfiguration,
-                                            authType: AuthType,
+                                            authType: AWSAppSyncAuthType,
                                             region: AWSRegionType,
                                             apiKey: String?,
                                             apiKeyAuthProvider: AWSAPIKeyAuthProvider?,

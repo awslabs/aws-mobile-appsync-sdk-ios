@@ -23,16 +23,16 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     // This will directly test the convenience initializer, which delegates to the designated initializer. Since this has no
     // particularly interesting logic, one test will suffice to cover both initializers.
     func testInitializer_SpecifyingNetworkTransport_ClientInfo() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey,
             apiKey: "THE_API_KEY"
         )
 
         let networkTransport = MockNetworkTransport()
 
-        let _ = AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo, networkTransport: networkTransport)
+        let _ = AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig, networkTransport: networkTransport)
     }
 
     // MARK: - Test convenience initializer that derives the authType from the incoming auth providers
@@ -110,30 +110,30 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     // MARK: - Test initializers that derive the network transport from auth provider configuration
 
     func testInitializer_ClientInfoAuthType_SpecifiedAPIKeyButNoProvider() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey,
             apiKey: "THE_API_KEY"
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo)
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig)
         } catch {
             XCTFail("Error thrown during initialization: \(error.localizedDescription)")
         }
     }
 
     func testInitializer_ClientInfoAuthType_SpecifiedAPIKeyAndProvider() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey,
             apiKey: "THE_UNUSED_API_KEY"
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       apiKeyAuthProvider: MockAWSAPIKeyAuthProvider())
         } catch {
             XCTFail("Error thrown during initialization: \(error.localizedDescription)")
@@ -141,15 +141,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_ClientInfoAuthType_SpecifiedIAMAndProvider() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "AWS_IAM",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .awsIAM
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       credentialsProvider: MockAWSCredentialsProvider())
         } catch {
             XCTFail("Error thrown during initialization: \(error.localizedDescription)")
@@ -157,30 +156,28 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_ClientInfoAuthType_SpecifiedIAMButNoProvider() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "AWS_IAM",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .awsIAM
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo)
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig)
         } catch {
             XCTFail("Error thrown during initialization: \(error.localizedDescription)")
         }
     }
 
     func testInitializer_ClientInfoAuthType_SpecifiedOIDCAndProvider() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "OPENID_CONNECT",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .oidcToken
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       oidcAuthProvider: MockAWSOIDCAuthProvider())
         } catch {
             XCTFail("Error thrown during initialization: \(error.localizedDescription)")
@@ -188,15 +185,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_ClientInfoAuthType_SpecifiedOIDCButNoProviderFails() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "OPENID_CONNECT",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .oidcToken
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo)
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig)
             XCTFail("Expected validation to fail if not specifying OIDC provider")
         } catch {
             guard let clientInfoError = error as? AWSAppSyncClientConfigurationError else {
@@ -208,15 +204,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_ClientInfoAuthType_SpecifiedUserPoolsAndProvider() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "AMAZON_COGNITO_USER_POOLS",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .amazonCognitoUserPools
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       userPoolsAuthProvider: MockAWSCognitoUserPoolsAuthProvider())
         } catch {
             XCTFail("Error thrown during initialization: \(error.localizedDescription)")
@@ -224,15 +219,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_ClientInfoAuthType_SpecifiedUserPoolsButNoProviderFails() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "AMAZON_COGNITO_USER_POOLS",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .amazonCognitoUserPools
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo)
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig)
             XCTFail("Expected validation to fail if not specifying OIDC provider")
         } catch {
             guard let clientInfoError = error as? AWSAppSyncClientConfigurationError else {
@@ -246,15 +240,15 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     // MARK: - Test mismatched authType to provider list validation
 
     func testInitializer_MismatchedAuthTypeAndProvider_APIKey() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey,
             apiKey: "THE_API_KEY"
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       credentialsProvider: MockAWSCredentialsProvider())
         } catch {
             guard let clientInfoError = error as? AWSAppSyncClientConfigurationError else {
@@ -266,15 +260,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_MismatchedAuthTypeAndProvider_IAM() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "AWS_IAM",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .awsIAM
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       apiKeyAuthProvider: MockAWSAPIKeyAuthProvider())
         } catch {
             guard let clientInfoError = error as? AWSAppSyncClientConfigurationError else {
@@ -288,15 +281,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     // MARK: - Test multiple provider validation
 
     func testInitializer_MultipleProviders_APIKey() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       apiKeyAuthProvider: MockAWSAPIKeyAuthProvider(),
                                                       credentialsProvider: MockAWSCredentialsProvider())
             XCTFail("Expected validation to fail with multiple auth providers")
@@ -310,15 +302,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_MultipleProviders_IAM() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "AWS_IAM",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .awsIAM
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       apiKeyAuthProvider: MockAWSAPIKeyAuthProvider(),
                                                       credentialsProvider: MockAWSCredentialsProvider())
             XCTFail("Expected validation to fail with multiple auth providers")
@@ -332,15 +323,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_MultipleProviders_OIDC() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "OPENID_CONNECT",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .oidcToken
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       apiKeyAuthProvider: MockAWSAPIKeyAuthProvider(),
                                                       oidcAuthProvider: MockAWSOIDCAuthProvider())
             XCTFail("Expected validation to fail with multiple auth providers")
@@ -354,15 +344,14 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testInitializer_MultipleProviders_UserPools() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "AMAZON_COGNITO_USER_POOLS",
-            apiKey: ""
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .amazonCognitoUserPools
         )
 
         do {
-            let _ = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                       apiKeyAuthProvider: MockAWSAPIKeyAuthProvider(),
                                                       userPoolsAuthProvider: MockAWSCognitoUserPoolsAuthProvider())
             XCTFail("Expected validation to fail with multiple auth providers")
@@ -378,10 +367,10 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     // MARK: - Test other derived properties
 
     func testStoreAndSubscriptionCacheWithValidDatabaseURL() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey,
             apiKey: "THE_API_KEY"
         )
 
@@ -396,7 +385,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
 
         let configuration: AWSAppSyncClientConfiguration
         do {
-            configuration = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            configuration = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                               databaseURL: databaseURL)
         } catch {
             XCTFail("Unexpected error initializing client config: \(error)")
@@ -416,10 +405,10 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testStoreAndSubscriptionCacheWithEmptyDatabaseURL() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey,
             apiKey: "THE_API_KEY"
         )
 
@@ -434,7 +423,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
 
         let configuration: AWSAppSyncClientConfiguration
         do {
-            configuration = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo)
+            configuration = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig)
         } catch {
             XCTFail("Unexpected error initializing client config: \(error)")
             return
@@ -445,10 +434,10 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 
     func testStoreAndSubscriptionCacheWithInvalidDatabaseURL() {
-        let clientInfo = MockAWSAppSyncClientInfo(
-            apiUrl: "http://www.amazon.com/for_unit_testing",
-            region: "us-east-1",
-            authType: "API_KEY",
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .apiKey,
             apiKey: "THE_API_KEY"
         )
 
@@ -463,7 +452,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
 
         let configuration: AWSAppSyncClientConfiguration
         do {
-            configuration = try AWSAppSyncClientConfiguration(appSyncClientInfo: clientInfo,
+            configuration = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
                                                               databaseURL: databaseURL)
         } catch {
             XCTFail("Unexpected error initializing client config: \(error)")
@@ -476,9 +465,19 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 }
 
-private struct MockAWSAppSyncClientInfo: AWSAppSyncClientInfoProviding {
-    let apiUrl: String
-    let region: String
-    let authType: String
-    let apiKey: String
+private struct MockAWSAppSyncServiceConfig: AWSAppSyncServiceConfigProviding {
+    let endpoint: URL
+    let region: AWSRegionType
+    let authType: AWSAppSyncAuthType
+    let apiKey: String?
+
+    init(endpoint: URL,
+         region: AWSRegionType,
+         authType: AWSAppSyncAuthType,
+         apiKey: String? = nil) {
+        self.endpoint = endpoint
+        self.region = region
+        self.authType = authType
+        self.apiKey = apiKey
+    }
 }
