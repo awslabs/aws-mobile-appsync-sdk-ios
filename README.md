@@ -62,40 +62,60 @@ Contributing guidelines are noted [here](https://github.com/awslabs/aws-mobile-a
 
 ## Testing Contributions
 
-If you are contributing to the SDK, it is recommended to add some unit/ functional tests and evaluate against existing tests.
+If you are contributing to the SDK, it is recommended to add some unit and/or integration tests and evaluate against existing tests.
 
-### Unit Tests
+### Invoking tests
+
+The `AWSAppSync` target is configured to run both Unit and Integration tests in its `Test` configuration. After completing integration test setup following the instructions below, you can run both suites by invoking "Product > Test" (⌘-U) in Xcode.
+
+To run only one suite of tests (Unit or Integration), select the appropriate target from the Scheme selector and invoke "Product > Test" (⌘-U). While Unit tests run much faster than Integration tests, we recommend running both before submitting a PR.
+
+### Setting up unit tests
 
 Unit Tests do not require any specific setup and can be run directly from your Xcode IDE.
+  - NOTE: Currently, any test that requires network activity is placed in Integration tests, even if the test hits localhost and not a valid service.
 
-### Functional Tests
+### Setting up integration tests
 
-For running functional tests, we will need the following:
-- An AppSync API with an `Events App` schema
-- A Cognito Identity Pool with unauthenticated identities supported
-- The Cognito Identity Pool's unauth role should have the `AppSync Invoke Full Access` permission
+To run integration tests, you will need the following:
+- Two AppSync API instances with an `Posts` schema.
+  - The first AppSync instance should be configured to use a Cognito Identity Pool with unauthenticated identities supported.
+    - The Cognito Identity Pool's unauth role should have the `AppSync Invoke Full Access` permission.
+  - The second instance should be configured to use API Key authentication.
 
 You can get the backend setup by following the steps below:
 
-- Go to [AWS AppSync console](https://console.aws.amazon.com/appsync/home).
-- Click on `Create New API` and then select `Event App` and hit `Create`, take a note of the `API URL` of the created API.
-- Once the creation completes, select `Settings` from left side of the console and then select `AWS Identity and Access Management (IAM)` as the authorization type.
-- Next, create a new Cognito Identity Pool and attach `AppSync Invoke Full Access` permission to the unauth role of the Identity Pool. Keep a note of the Identity Pool ID of newly created pool.
-- Create another AppSync API using the same steps above, but use API Key Auth mode instead which is available by default.
+1. Create a stack with an AppSync API using API Key authentication
+    1. Go to the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation/home).
+    1. Click on __Create stack__ and then select __Upload a template file__. Click __Choose File__, and navigate to the Cloud Formation Template in this project: `AWSAppSyncIntegrationTests/ConsoleResources/appsync-integrationtests-cloudformation.yaml`
+    1. Click __Next__
+    1. Type a "Stack name" and a "ResourceNamePrefix"
+        - We recommend using a "ResourceNamePrefix" that makes it easy to tell that the stack is used for AppSync tests, such as `AppSyncTest<YYYYMMDDHHMM>`.
+        - Because you will create two stacks for these tests, one using API Key authentication and one using IAM (Cognito Identity) authentication, we recommend selecting a stack name that makes it easy to differentiate between the two, such as `AppSyncTest<YYYYMMDDHHMM>-APIKey` and `AppSyncTest<YYYYMMDDHHMM>-IAM`.
+    1. Select the `ApiKey` Auth Type
+    1. Once the stack is complete, click on the __Output__ tab.
+    1. Copy the appropriate values to the test configuration file `AppSyncIntegrationTests/appsync_test_credentials.json`:
+        - `AppSyncApiKey`
+        - `AppSyncEndpointAPIKey`
+        - `AppSyncEndpointAPIKeyRegion`
+1. Create another CloudFormation Stack following steps 1-6 above, but select the "IAM" Auth Type in step 5.
+    1. Copy the appropriate values to the test configuration file `AppSyncIntegrationTests/appsync_test_credentials.json`:
+        - `AppSyncEndpoint`
+        - `AppSyncRegion`
+        - `CognitoIdentityPoolId`
+        - `CognitoIdentityPoolRegion`
 
-Finally, you will need to setup a config file locally to access the server, either by using a local configuration file, or by editing defaults in the source code.
-
-> Note: You must either provide all values in the `AppSyncTests/appsync_test_credentials.json` or in code. There is no mechanism to handle partial overrides of one source with the other. All values must be specified before running the functional tests.
+> Note: You must either provide all values in the `AppSyncIntegrationTests/appsync_test_credentials.json` or in code. There is no mechanism to handle partial overrides of one source with the other. All values must be specified before running the integration tests.
 
 __Option 1: Use a test configuration file__
 
-Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSyncTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId`, `AppSyncEndpointAPIKey`, `AppSyncAPIKey` and regions if required:
+Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSyncIntegrationTests` folder and replace the values for `AppSyncEndpoint`,  `CognitoIdentityPoolId`, `AppSyncEndpointAPIKey`, `AppSyncAPIKey` and regions if required:
 
 ```json
 {
-  "AppSyncEndpoint": "https://asd32hl34523454532.appsync-api.us-east-1.amazonaws.com/graphql",
+  "AppSyncEndpoint": "https://iambasedendpoint.appsync-api.us-east-1.amazonaws.com/graphql",
   "AppSyncRegion": "us-east-1",
-  "CognitoIdentityPoolId": "us-east-1:abcas234-1234-12324-b4b7-aaa0c0831234",
+  "CognitoIdentityPoolId": "us-east-1:abcd1234-1234-12324-b4b7-aaa0c0831234",
   "CognitoIdentityPoolRegion": "us-east-1",
   "AppSyncEndpointAPIKey": "https://apikeybasedendpoint.appsync-api.us-east-1.amazonaws.com/graphql",
   "AppSyncEndpointAPIKeyRegion": "us-east-1",
@@ -107,9 +127,9 @@ Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSync
 
 __Option 2: Edit defaults in source code__
 
-Edit the file `AWSAppSyncTests/AppSyncClientTestConfigurationDefaults` with appropriate values.
+Edit the file `AWSAppSyncTestCommon/AppSyncClientTestConfigurationDefaults` with appropriate values.
 
-Now you should be able to run the functional tests by invoking "Product > Test" (⌘-U) in Xcode.
+Now you should be able to run the integration tests by invoking "Product > Test" (⌘-U) in Xcode.
 
 ## License
 

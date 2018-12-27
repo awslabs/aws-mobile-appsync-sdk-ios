@@ -486,4 +486,5 @@ public class AWSAppSyncClient {
                                                                                           syncConfiguration: syncConfiguration,
                                                                                           handlerQueue: callbackQueue)
     }
+
 }

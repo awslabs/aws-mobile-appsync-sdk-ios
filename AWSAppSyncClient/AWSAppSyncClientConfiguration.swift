@@ -227,7 +227,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSS3ObjectPresignedURLGenerator` object.
-    @available(*, deprecated, message: "Use an initializer that takes a AWSAppSyncServiceConfigProviding")
+    @available(*, deprecated, message: "Use an initializer that takes a AWSAppSyncServiceConfigProvider")
     public convenience init(appSyncClientInfo: AWSAppSyncClientInfo,
                             networkTransport: AWSNetworkTransport,
                             databaseURL: URL? = nil,
@@ -277,7 +277,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
     ///
     /// - Throws: A AWSAppSyncClientConfigurationError if the auth configuration is invalid
-    @available(*, deprecated, message: "Use an initializer that takes a AWSAppSyncServiceConfigProviding")
+    @available(*, deprecated, message: "Use an initializer that takes a AWSAppSyncServiceConfigProvider")
     public convenience init(appSyncClientInfo: AWSAppSyncClientInfo,
                             apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil,
                             credentialsProvider: AWSCredentialsProvider? = nil,

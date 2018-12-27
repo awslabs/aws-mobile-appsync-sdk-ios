@@ -1,0 +1,1008 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Sets up resources for AppSync integration tests, using either API Key or IAM authentication.
+
+Parameters:
+
+  AuthType:
+    Type: String
+    AllowedValues:
+    - ApiKey
+    - IAM
+    Description: Choose 'ApiKey' or 'IAM' to create appropriate resources for testing.
+
+  ResourceNamePrefix:
+    Default: AppSyncTestYYYYMMDDHHMM
+    Description: >-
+      Prefix for the names of the resources created by this template. This
+      includes, DynamoDB tables, and AppSync API names. Recommended pattern
+      "AppSyncTestYYYYMMDDHHMM". Cannot exceed 23 characters, as the AppSync
+      API name derived from this value cannot exceed 32 characters.
+    Type: String
+    MinLength: 1
+    MaxLength: 24
+    AllowedPattern: '^[a-zA-Z][a-zA-Z0-9]*$'
+
+Conditions:
+  AuthTypeIsAPIKey: !Equals [ !Ref AuthType, ApiKey ]
+  AuthTypeIsIAM: !Equals [ !Ref AuthType, IAM ]
+
+Resources:
+
+  #########################################################
+  # AWS AppSync API
+  #########################################################
+
+  GraphQLApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: !Sub ${ResourceNamePrefix}-${AuthType}
+      AuthenticationType: !If [AuthTypeIsAPIKey, API_KEY, AWS_IAM]
+
+  GraphQLSchema:
+    Type: "AWS::AppSync::GraphQLSchema"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Definition: |
+        input CreatePostWithFileInput {
+          author: String!
+          title: String!
+          content: String!
+          url: String
+          ups: Int
+          downs: Int
+          file: S3ObjectInput!
+        }
+
+        input CreatePostWithoutFileInput {
+          author: String!
+          title: String!
+          content: String!
+          url: String
+          ups: Int
+          downs: Int
+        }
+
+        input DeletePostInput {
+          id: ID!
+        }
+
+        enum DeltaAction {
+          DELETE
+        }
+
+        type Mutation {
+          createPostWithFileUsingInputType(input: CreatePostWithFileInput!): Post
+
+          createPostWithFileUsingParameters(
+            author: String!,
+            title: String!,
+            content: String!,
+            url: String,
+            ups: Int,
+            downs: Int,
+            file: S3ObjectInput!
+          ): Post
+
+          createPostWithoutFileUsingInputType(input: CreatePostWithoutFileInput!): Post
+
+          createPostWithoutFileUsingParameters(
+            author: String!,
+            title: String!,
+            content: String!,
+            url: String,
+            ups: Int,
+            downs: Int
+          ): Post
+
+          updatePostWithFileUsingInputType(input: UpdatePostWithFileInput!): Post
+
+          updatePostWithFileUsingParameters(
+            id: ID!,
+            author: String,
+            title: String,
+            content: String,
+            url: String,
+            ups: Int,
+            downs: Int,
+            file: S3ObjectInput!
+          ): Post
+
+          updatePostWithoutFileUsingInputType(input: UpdatePostWithoutFileInput!): Post
+
+          updatePostWithoutFileUsingParameters(
+            id: ID!,
+            author: String,
+            title: String,
+            content: String,
+            url: String,
+            ups: Int,
+            downs: Int
+          ): Post
+
+          deletePostUsingInputType(input: DeletePostInput!): Post
+
+          deletePostUsingParameters(id: ID!): Post
+        }
+
+        type Post {
+          id: ID!
+          author: String!
+          title: String!
+          content: String!
+          url: AWSURL
+          ups: Int
+          downs: Int
+          file: S3Object
+          createdDate: String
+          aws_ds: DeltaAction
+        }
+
+        type Query {
+          getPost(id: ID!): Post
+          listPosts: [Post]
+          listPostsDelta(lastSync: AWSTimestamp): [Post]
+        }
+
+        type S3Object {
+          bucket: String!
+          key: String!
+          region: String!
+        }
+
+        input S3ObjectInput {
+          bucket: String!
+          key: String!
+          region: String!
+          localUri: String!
+          mimeType: String!
+        }
+
+        type Subscription {
+          onDeltaPost: Post
+          @aws_subscribe(mutations: ["createPostWithFileUsingInputType", "createPostWithFileUsingParameters", "createPostWithoutFileUsingInputType", "createPostWithoutFileUsingParameters", "updatePostWithFileUsingInputType", "updatePostWithFileUsingParameters", "updatePostWithoutFileUsingInputType", "updatePostWithoutFileUsingParameters", "deletePostUsingInputType", "deletePostUsingParameters"])
+        }
+
+        input UpdatePostWithFileInput {
+          id: ID!
+          author: String
+          title: String
+          content: String
+          url: String
+          ups: Int
+          downs: Int
+          file: S3ObjectInput!
+        }
+
+        input UpdatePostWithoutFileInput {
+          id: ID!
+          author: String
+          title: String
+          content: String
+          url: String
+          ups: Int
+          downs: Int
+        }
+
+        schema {
+          query: Query
+          mutation: Mutation
+          subscription: Subscription
+        }
+
+  #########################################################
+  # AppSync API Key Auth resources
+  #########################################################
+
+  AppSyncApiKey:
+    Type: AWS::AppSync::ApiKey
+    Condition: AuthTypeIsAPIKey
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      # Hardcoded, since we don't have an easy way of deriving
+      # expiration date via a function. Current value:
+      # 27-Dec-2019
+      Expires: 1577433600
+
+  #########################################################
+  # AppSync IAM Auth resources
+  #########################################################
+
+  # Create an identity pool for use by the tests
+  AppSyncCognitoIdentityPool:
+    Type: "AWS::Cognito::IdentityPool"
+    Condition: AuthTypeIsIAM
+    Properties:
+      IdentityPoolName: !Sub ${ResourceNamePrefix}${AuthType}_IdentityPool
+      AllowUnauthenticatedIdentities: true
+
+  # The Pool requires both an authenticated and unauthenticated role,
+  # but the tests only use unauthenticated (for now).
+  AppSyncAuthenticatedRole:
+    Type: "AWS::IAM::Role"
+    Condition: AuthTypeIsIAM
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Principal:
+            Federated: "cognito-identity.amazonaws.com"
+          Action:
+          - "sts:AssumeRoleWithWebIdentity"
+          Condition:
+            StringEquals:
+              "cognito-identity.amazonaws.com:aud": !Ref AppSyncCognitoIdentityPool
+            "ForAnyValue:StringLike":
+              "cognito-identity.amazonaws.com:amr": authenticated
+      Policies:
+        - PolicyName: !Sub ${ResourceNamePrefix}${AuthType}_AppSyncAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: "Allow"
+              Action:
+              - "cognito-identity:*"
+              - "cognito-sync:*"
+              - "mobileanalytics:PutEvents"
+              Resource: "*"
+            - Effect: "Allow"
+              Action: "appsync:*"
+              Resource:
+                Fn::Join:
+                - ""
+                - - !GetAtt GraphQLApi.Arn
+                  - "*"
+            - Effect: "Allow"
+              Action: "appsync:*"
+              Resource:
+                Fn::Join:
+                - ""
+                - - !GetAtt GraphQLApi.Arn
+                  - "types/*/fields/*"
+
+  AppSyncUnauthenticatedRole:
+    Type: "AWS::IAM::Role"
+    Condition: AuthTypeIsIAM
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Principal:
+            Federated: "cognito-identity.amazonaws.com"
+          Action:
+          - "sts:AssumeRoleWithWebIdentity"
+          Condition:
+            StringEquals:
+              "cognito-identity.amazonaws.com:aud": !Ref AppSyncCognitoIdentityPool
+            "ForAnyValue:StringLike":
+              "cognito-identity.amazonaws.com:amr": unauthenticated
+      Policies:
+        - PolicyName: "AppSyncAllAccessPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: "Allow"
+              Action:
+              - "cognito-sync:*"
+              - "mobileanalytics:PutEvents"
+              Resource: "*"
+            - Effect: "Allow"
+              Action: "appsync:*"
+              Resource:
+                Fn::Join:
+                - ""
+                - - !GetAtt GraphQLApi.Arn
+                  - "*"
+            - Effect: "Allow"
+              Action: "appsync:*"
+              Resource:
+                Fn::Join:
+                - ""
+                - - !GetAtt GraphQLApi.Arn
+                  - "types/*/fields/*"
+
+  # Attach the roles to the pool
+  AppSyncCognitoIdentityPoolRoleAttachment:
+    Type: "AWS::Cognito::IdentityPoolRoleAttachment"
+    Condition: AuthTypeIsIAM
+    Properties:
+      IdentityPoolId: !Ref AppSyncCognitoIdentityPool
+      Roles:
+        authenticated: !GetAtt AppSyncAuthenticatedRole.Arn
+        unauthenticated: !GetAtt AppSyncUnauthenticatedRole.Arn
+
+
+  #########################################################
+  # AWS AppSync Datasources
+  #########################################################
+
+  DynamoDBPostsTableDatasource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: AMAZON_DYNAMODB
+      Name: posts
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
+      DynamoDBConfig:
+        TableName:
+          Ref: DynamoDBPostsTable
+        AwsRegion:
+          Ref: AWS::Region
+        UseCallerCredentials: FALSE
+
+  DynamoDBPostsDeltaTableDatasource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: AMAZON_DYNAMODB
+      Name: deltas
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
+      DynamoDBConfig:
+        TableName:
+          Ref: DynamoDBDeltaTable
+        AwsRegion:
+          Ref: AWS::Region
+        UseCallerCredentials: FALSE
+
+
+  #########################################################
+  # AWS AppSync Resolvers
+  #########################################################
+
+  PostFileResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Post"
+      FieldName: "file"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        {
+          "version" : "2017-02-28",
+          "operation" : "Query",
+          "query" : {
+            ## Provide a query expression. **
+            "expression": "id = :id",
+            "expressionValues" : {
+              ":id" : {
+                "S" : "${ctx.args.id}"
+              }
+            }
+          }
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        $util.toJson($util.dynamodb.fromS3ObjectJson($ctx.source.file))
+
+  GetPostResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Query"
+      FieldName: "getPost"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        {
+          "version" : "2018-05-29",
+          "operation" : "GetItem",
+          "key" : {
+            "id" : $util.dynamodb.toDynamoDBJson($ctx.args.id)
+          }
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        $util.toJson($ctx.result)
+
+  ListPostsResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Query"
+      FieldName: "listPosts"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        {
+          "version" : "2018-05-29",
+          "operation" : "Scan"
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        $util.toJson($ctx.result.items)
+
+  ListPostsDeltaResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Query"
+      FieldName: "listPostsDelta"
+      DataSourceName: !GetAtt DynamoDBPostsDeltaTableDatasource.Name
+      RequestMappingTemplate: |
+        ## Note on times:
+        ## - the incoming argument `lastSync` is an AWSTimestamp, representing epoch SECONDS (not milliseconds)
+        ## - the DynamoDB TTL attribute `expdate` is in epoch SECONDS
+        ## - the DynamoDB `timestamp` attribute is in epoch MILLISECONDS
+        #if($ctx.args.lastSync)
+          #set($lastSyncInMilliSeconds = $ctx.args.lastSync * 1000)
+        #else
+          ## lastSync argument is optional, by default retrieve the last 10 minutes of deltas.
+          #set($lastSyncInMilliSeconds = $util.time.nowEpochMilliSeconds() - (10 * 60 * 1000))
+        #end
+
+        {
+            "version" : "2018-05-29",
+            "operation" : "Scan",
+            "filter" : {
+                "expression": "#ts >= :timestamp AND #exp > :expdate",
+                "expressionNames": {
+                  "#ts": "timestamp",
+                  "#exp" : "expdate",
+                },
+                "expressionValues" : {
+                  ":timestamp" : { "N" : "${lastSyncInMilliSeconds}" },
+                  ":expdate" : { "N" : ${util.time.nowEpochSeconds()} },
+                }
+            }
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+            $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        $util.toJson($ctx.result.items)
+
+  CreatePostWithFileUsingInputTypeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "createPostWithFileUsingInputType"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt CreatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  CreatePostWithFileUsingParametersResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "createPostWithFileUsingParameters"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt CreatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  CreatePostWithoutFileUsingInputTypeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "createPostWithoutFileUsingInputType"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt CreatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  CreatePostWithoutFileUsingParametersResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "createPostWithoutFileUsingParameters"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt CreatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  CreatePostFunction:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: "createPost"
+      Description: "Creates a Post in the base table"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        #if($ctx.args.input)
+          #set($input = $ctx.args.input)
+        #else
+          #set($input = $ctx.args)
+        #end
+
+        #if($input.id)
+          #set($id = $input.id)
+        #else
+          #set($id = $util.autoId())
+        #end
+
+        ## Prepare object for write
+        #set($baseobject = {'id': $id, 'createdDate': $util.time.nowEpochMilliSeconds(), 'version': 1})
+        #foreach($key in $input.keySet())
+          #if($key == 'file')
+            #set($file = $input.get($key))
+            #if(!$util.isNull($file))
+              #if($util.isNull($file.version))
+                #set($s3Object = $util.dynamodb.toS3Object($file.key, $file.bucket, $file.region).get("S"))
+              #else
+                #set($s3Object = $util.dynamodb.toS3Object($file.key, $file.bucket, $file.region, $file.version).get("S"))
+              #end
+              $util.qr($input.put($key, $s3Object))
+            #end
+          #end
+
+          $util.qr($baseobject.put($key, $input.get($key)))
+        #end
+
+        {
+          "version" : "2018-05-29",
+          "operation" : "PutItem",
+          "key" : {
+            "id" : $util.dynamodb.toDynamoDBJson($id)
+          },
+          "attributeValues" : $util.dynamodb.toMapValuesJson($baseobject)
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        $util.toJson($ctx.result)
+      FunctionVersion: "2018-05-29"
+
+  DeltaCreateOrUpdateItemFunction:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: "deltaCreateOrUpdateItem"
+      Description: "Creates/updates a Post in the delta table. NOTE: This function is not suitable for production, as it does not include targeted updates--it simply overwrites the payload with the latest value."
+      DataSourceName: !GetAtt DynamoDBPostsDeltaTableDatasource.Name
+      RequestMappingTemplate: |
+        #set($id = $ctx.prev.result.id)
+
+        ## Delta Sync configs
+        #set($delta = 24 * 3600 * 1000)
+        #set($timestamp = $util.time.nowEpochMilliSeconds())
+        ##TTL must be in seconds for DDB to evict items.
+        #set($exp = ($delta + $timestamp)/1000)
+
+        #set($deltaobject = {
+          'id': $id,
+          'timestamp': $timestamp,
+          'expdate': $exp
+        })
+        #foreach($key in $ctx.prev.result.keySet())
+          $util.qr($deltaobject.put($key, $ctx.prev.result.get($key)))
+        #end
+
+        {
+          "version" : "2018-05-29",
+          "operation" : "PutItem",
+          "key" : {
+            "id" : { "S" : "$id" }
+          },
+          "attributeValues" : $util.dynamodb.toMapValuesJson($deltaobject),
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.errorType)
+        #end
+        $util.toJson($ctx.result)
+      FunctionVersion: "2018-05-29"
+
+  UpdatePostWithFileUsingInputTypeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "updatePostWithFileUsingInputType"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt UpdatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  UpdatePostWithFileUsingParametersResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "updatePostWithFileUsingParameters"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt UpdatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  UpdatePostWithoutFileUsingInputTypeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "updatePostWithoutFileUsingInputType"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt UpdatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  UpdatePostWithoutFileUsingParametersResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "updatePostWithoutFileUsingParameters"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt UpdatePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  UpdatePostFunction:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: "updatePost"
+      Description: "Updates Post to base table"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        #if($ctx.args.input)
+          #set($input = $ctx.args.input)
+        #else
+          #set($input = $ctx.args)
+        #end
+
+        ## Set up some space to keep track of things we're updating **
+        #set( $id = $input.id )
+        #set( $expNames  = {} )
+        #set( $expValues = {} )
+        #set( $expSet = {} )
+        #set( $expRemove = [] )
+
+        ## Iterate through each argument, skipping "id" and "expectedVersion" **
+        #foreach( $entry in $input.entrySet() )
+          #if( $entry.key != "id")
+            #if( (!$entry.value) && ("$!{entry.value}" == "") )
+              ## If the argument is set to "null", then remove that attribute from the item in DynamoDB **
+              $util.qr($expRemove.add("#${entry.key}"))
+              $util.qr($expNames.put("#${entry.key}", "$entry.key"))
+            #else
+              ## Otherwise set (or update) the attribute on the item in DynamoDB **
+              $util.qr($expSet.put("#${entry.key}", ":${entry.key}"))
+              $util.qr($expNames.put("#${entry.key}", "$entry.key"))
+
+              #if( $entry.key == "file" )
+                #set($file = $entry.value)
+                #if($util.isNull($file.version))
+                  #set($s3Object = $util.dynamodb.toS3Object($file.key, $file.bucket, $file.region).get("S"))
+                #else
+                  #set($s3Object = $util.dynamodb.toS3Object($file.key, $file.bucket, $file.region, $file.version).get("S"))
+                #end
+                $util.qr($expValues.put(":${entry.key}", $s3Object))
+              #else
+                $util.qr($expValues.put(":${entry.key}", ${entry.value}))
+              #end
+            #end
+          #end
+        #end
+
+        ## Start building the update expression, starting with attributes we're going to SET **
+        #set( $expression = "" )
+        #if( !${expSet.isEmpty()} )
+          #set( $expression = "SET" )
+          #foreach( $entry in $expSet.entrySet() )
+            #set( $expression = "${expression} ${entry.key} = ${entry.value}" )
+            #if ( $foreach.hasNext )
+              #set( $expression = "${expression}," )
+            #end
+          #end
+        #end
+
+        ## Continue building the update expression, adding attributes we're going to REMOVE **
+        #if( !${expRemove.isEmpty()} )
+          #set( $expression = "${expression} REMOVE" )
+          #foreach( $entry in $expRemove )
+            #set( $expression = "${expression} ${entry}" )
+            #if ( $foreach.hasNext )
+              #set( $expression = "${expression}," )
+            #end
+          #end
+        #end
+
+        ## Finally, write the update expression into the document, along with any expressionNames and expressionValues **
+        {
+          "version" : "2018-05-29",
+          "operation" : "UpdateItem",
+          "key" : {
+            "id" : $util.dynamodb.toDynamoDBJson($id)
+          },
+          "update" : {
+            "expression" : "${expression}"
+            #if( !${expNames.isEmpty()} )
+              ,"expressionNames" : $utils.toJson($expNames)
+            #end
+            #if( !${expValues.isEmpty()} )
+              ,"expressionValues" : $util.dynamodb.toMapValuesJson($expValues)
+            #end
+          },
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        $util.toJson($ctx.result)
+      FunctionVersion: "2018-05-29"
+
+  DeletePostUsingInputTypeResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "deletePostUsingInputType"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt DeletePostFunction.FunctionId
+        - !GetAtt MarkDeltaDeletedFunction.FunctionId
+
+  DeletePostUsingParametersResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "deletePostUsingParameters"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt DeletePostFunction.FunctionId
+        - !GetAtt MarkDeltaDeletedFunction.FunctionId
+
+  DeletePostFunction:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: "deletePost"
+      Description: "Deletes Post from base table"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        #if($ctx.args.input)
+          #set($input = $ctx.args.input)
+        #else
+          #set($input = $ctx.args)
+        #end
+        {
+          "version" : "2018-05-29",
+          "operation" : "DeleteItem",
+          "key" : {
+            "id" : $util.dynamodb.toDynamoDBJson($input.id)
+          },
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        ## returns the deleted item
+        $util.toJson($ctx.result)
+      FunctionVersion: "2018-05-29"
+
+  MarkDeltaDeletedFunction:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: "markDeltaDeleted"
+      Description: "Updates Post delta with aws_ds = DELETE"
+      DataSourceName: !GetAtt DynamoDBPostsDeltaTableDatasource.Name
+      RequestMappingTemplate: |
+        #set($id = $ctx.prev.result.id)
+
+        ## Delta Sync configs
+        #set($delta = 24 * 3600 * 1000)
+        #set($timestamp = $util.time.nowEpochMilliSeconds())
+        ##TTL must be in seconds for DDB to evict items.
+        #set($exp = ($delta + $timestamp)/1000)
+
+        #set($deltaobject = {
+          'id': $id,
+          'timestamp': $timestamp,
+          'expdate': $exp,
+          'aws_ds': "DELETE"
+        })
+        #foreach($key in $ctx.prev.result.keySet())
+          $util.qr($deltaobject.put($key, $ctx.prev.result.get($key)))
+        #end
+
+        {
+          "version" : "2018-05-29",
+          "operation" : "PutItem",
+          "key" : {
+            "id" : $util.dynamodb.toDynamoDBJson($id)
+          },
+          "attributeValues" : $util.dynamodb.toMapValuesJson($deltaobject),
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.errorType)
+        #end
+        $util.toJson($ctx.result)
+      FunctionVersion: "2018-05-29"
+
+
+  #########################################################
+  # AWS IAM Roles & Policies
+  #
+  # These are applicable to all supported auth types, as
+  # they control service-to-service interaction rather than
+  # user-to-service interaction
+  #########################################################
+
+  DynamoDBRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ResourceNamePrefix}-${AuthType}-DynamoDBRole
+      ManagedPolicyArns:
+      - Ref: DynamoDBPolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - sts:AssumeRole
+          Principal:
+            Service:
+            - appsync.amazonaws.com
+    DependsOn:
+    - DynamoDBPolicy
+
+  DynamoDBPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Managed policy to allow AWS AppSync to access the tables created by this template.
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:DeleteItem
+          - dynamodb:UpdateItem
+          - dynamodb:Scan
+          - dynamodb:Query
+          Resource:
+          - Fn::Join:
+            - ""
+            - - !GetAtt DynamoDBPostsTable.Arn
+              - "*"
+          - Fn::Join:
+            - ""
+            - - !GetAtt DynamoDBDeltaTable.Arn
+              - "*"
+
+  #########################################################
+  # Amazon DynamoDB Tables
+  #########################################################
+
+  # Table for base table posts - delta sync
+  DynamoDBPostsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ResourceNamePrefix}-${AuthType}-post
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: '5'
+        WriteCapacityUnits: '5'
+
+  # Table for delta table posts - delta sync
+  DynamoDBDeltaTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ResourceNamePrefix}-${AuthType}-delta
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: '5'
+        WriteCapacityUnits: '5'
+      TimeToLiveSpecification:
+        AttributeName: "expdate"
+        Enabled: true
+
+Outputs:
+  # Output names are specified for easy inclusion in `appsync_test_credentials.json` file if needed
+  # Names for API_KEY auth type
+  AppSyncEndpointAPIKey:
+    Condition: AuthTypeIsAPIKey
+    Description: The URL of the AppSync GraphQL API endpoint that uses API Key authentication. This value should be included in your appsync_test_credentials.json file.
+    Value: !GetAtt GraphQLApi.GraphQLUrl
+  AppSyncEndpointAPIKeyRegion:
+    Condition: AuthTypeIsAPIKey
+    Description: The AWS Region of the AppSync GraphQL API endpoint that uses API Key authentication. This value should be included in your appsync_test_credentials.json file.
+    Value: !Ref AWS::Region
+  AppSyncApiKey:
+    Condition: AuthTypeIsAPIKey
+    Description: The API Key to authenticate with the AppSync API. This value should be included in your appsync_test_credentials.json file.
+    Value: !GetAtt AppSyncApiKey.ApiKey
+
+  # Names for AWS_IAM auth type
+  AppSyncEndpoint:
+    Condition: AuthTypeIsIAM
+    Description: The URL of the AppSync GraphQL API endpoint that uses AWS IAM authentication. This value should be included in your appsync_test_credentials.json file.
+    Value: !GetAtt GraphQLApi.GraphQLUrl
+  AppSyncRegion:
+    Condition: AuthTypeIsIAM
+    Description: The AWS Region of the AppSync GraphQL API endpoint that uses AWS IAM authentication. This value should be included in your appsync_test_credentials.json file.
+    Value: !Ref AWS::Region
+  CognitoIdentityPoolId:
+    Condition: AuthTypeIsIAM
+    Description: The Identity Pool ID to authenticate with the AppSync API. This value should be included in your appsync_test_credentials.json file.
+    Value: !Ref AppSyncCognitoIdentityPool
+  CognitoIdentityPoolRegion:
+    Condition: AuthTypeIsIAM
+    Description: The AWS Region of CognitoIdentityPoolId. This value should be included in your appsync_test_credentials.json file.
+    Value: !Ref AWS::Region
+
+  AppSyncUnauthRole:
+    Condition: AuthTypeIsIAM
+    Description: The role created to allow unauthenticated users to connect to the AppSync API.
+    Value: !GetAtt AppSyncUnauthenticatedRole.Arn
+  AppSyncAuthRole:
+    Condition: AuthTypeIsIAM
+    Description: The role created to allow authenticated users to connect to the AppSync API.
+    Value: !GetAtt AppSyncAuthenticatedRole.Arn
+
+  # General values (not used in appsync_test_credentials.json, but useful for reference)
+  AppSyncApiId:
+    Description: The ID of the AppSync API, useful for code generation with `amplify codegen --apiId <id>`
+    Value: !GetAtt GraphQLApi.ApiId
+
+  DynamoDBRole:
+    Description: The IAM Role ARN that AWS Appsync will assume when interacting with Amazon DynamoDB.
+    Value: !GetAtt DynamoDBRole.Arn
+  DynamoDBPostsTable:
+    Description: The name of the Amazon DynamoDB table containing base data.
+    Value: !Ref DynamoDBPostsTable
+  DynamoDBDeltaTable:
+    Description: The name of the Amazon DynamoDB table containing deltas.
+    Value: !Ref DynamoDBDeltaTable

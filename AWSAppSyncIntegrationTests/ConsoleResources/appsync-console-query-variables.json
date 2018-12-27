@@ -1,0 +1,73 @@
+{
+  "getPost": "a-post-id",
+
+	"createPostWithFileUsingInputType": {
+    "author": "Console, createPostWithFileUsingInputType",
+    "title": "createPostWithFileUsingInputType",
+    "content": "New content",
+    "url": "http://www.amazon.com",
+    "file": {
+      "bucket": "my-bucket",
+      "key": "public/new-image.jpg",
+      "region": "us-east-1",
+      "localUri": "/path/to/new-image.jpg",
+      "mimeType": "image/jpeg"
+    }
+  },
+
+  "createPostWithFileUsingParameters_author": "Console, createPostWithFileUsingParameters",
+	"createPostWithFileUsingParameters_title": "createPostWithFileUsingParameters",
+	"createPostWithFileUsingParameters_content": "New content",
+	"createPostWithFileUsingParameters_url": "http://www.amazon.com/",
+	"createPostWithFileUsingParameters_file_bucket": "my-bucket",
+	"createPostWithFileUsingParameters_file_key": "public/new-image.jpg",
+	"createPostWithFileUsingParameters_file_region": "us-east-1",
+	"createPostWithFileUsingParameters_file_localUri": "/path/to/new-image.jpg",
+	"createPostWithFileUsingParameters_file_mimeType": "image/jpeg",
+
+  "createPostWithoutFileUsingInputType": {
+    "author": "Console, createPostWithoutFileUsingInputType",
+    "title": "createPostWithoutFileUsingInputType",
+    "content": "New content",
+    "url": "http://www.amazon.com"
+  },
+
+	"createPostWithoutFileUsingParameters_author": "Console, createPostWithoutFileUsingParameters",
+	"createPostWithoutFileUsingParameters_title": "createPostWithoutFileUsingParameters",
+	"createPostWithoutFileUsingParameters_content": "New content",
+	"createPostWithoutFileUsingParameters_url": "http://www.amazon.com/",
+
+  "updatePostWithFileUsingInputType": {
+    "id": "a-post-id",
+    "content": "updatePostWithFileUsingInputType",
+    "file": {
+    	"bucket": "my-updated-bucket",
+      "key": "public/updated-image.png",
+      "region": "us-east-1",
+      "localUri": "/path/to/updated-image.png",
+      "mimeType": "image/png"
+	  }
+  },
+
+  "updatePostWithFileUsingParameters_id": "a-post-id",
+	"updatePostWithFileUsingParameters_content": "updatePostWithFileUsingParameters",
+	"updatePostWithFileUsingParameters_file_bucket": "my-updated-bucket",
+	"updatePostWithFileUsingParameters_file_key": "public/updated-image.png",
+	"updatePostWithFileUsingParameters_file_region": "us-east-1",
+	"updatePostWithFileUsingParameters_file_localUri": "/path/to/updated-image.png",
+	"updatePostWithFileUsingParameters_file_mimeType": "image/png",
+
+  "updatePostWithoutFileUsingInputType": {
+    "id": "a-post-id",
+    "content": "updatePostWithoutFileUsingInputType"
+  },
+
+  "updatePostWithoutFileUsingParameters_id": "a-post-id",
+	"updatePostWithoutFileUsingParameters_content": "updatePostWithoutFileUsingParameters",
+
+  "deletePostUsingInputType": {
+    "id": "a-post-id"
+  },
+
+  "deletePostUsingParameters": "a-post-id"
+}

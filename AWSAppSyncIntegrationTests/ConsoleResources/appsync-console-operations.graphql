@@ -1,0 +1,160 @@
+query ListPosts {
+  listPosts {
+    ...postAllFields
+  }
+}
+
+query GetPost($getPost: ID!) {
+  getPost(id: $getPost) {
+    ...postAllFields
+  }
+}
+
+mutation CreatePostWithFileUsingInputType($createPostWithFileUsingInputType: CreatePostWithFileInput!) {
+  createPostWithFileUsingInputType(input: $createPostWithFileUsingInputType) {
+    ...postAllFields
+  }
+}
+
+mutation CreatePostWithFileUsingParameters(
+	$createPostWithFileUsingParameters_author: String!,
+	$createPostWithFileUsingParameters_title: String!,
+	$createPostWithFileUsingParameters_content: String!
+	$createPostWithFileUsingParameters_url: String,
+	$createPostWithFileUsingParameters_file_bucket: String!,
+	$createPostWithFileUsingParameters_file_key: String!,
+	$createPostWithFileUsingParameters_file_region: String!,
+	$createPostWithFileUsingParameters_file_localUri: String!,
+	$createPostWithFileUsingParameters_file_mimeType: String!
+) {
+  createPostWithFileUsingParameters(
+    author: $createPostWithFileUsingParameters_author,
+    title: $createPostWithFileUsingParameters_title,
+    content: $createPostWithFileUsingParameters_content,
+    url: $createPostWithFileUsingParameters_url,
+    file: {
+      bucket: $createPostWithFileUsingParameters_file_bucket,
+      key: $createPostWithFileUsingParameters_file_key,
+      region: $createPostWithFileUsingParameters_file_region,
+      localUri: $createPostWithFileUsingParameters_file_localUri,
+      mimeType: $createPostWithFileUsingParameters_file_mimeType
+    }
+  ) {
+    ...postAllFields
+  }
+}
+
+mutation CreatePostWithoutFileUsingInputType($createPostWithoutFileUsingInputType: CreatePostWithoutFileInput!) {
+  createPostWithoutFileUsingInputType(input: $createPostWithoutFileUsingInputType) {
+    ...postAllFields
+  }
+}
+
+mutation CreatePostWithoutFileUsingParameters(
+	$createPostWithoutFileUsingParameters_author: String!,
+	$createPostWithoutFileUsingParameters_title: String!,
+	$createPostWithoutFileUsingParameters_content: String!
+	$createPostWithoutFileUsingParameters_url: String
+) {
+  createPostWithoutFileUsingParameters(
+		author: $createPostWithoutFileUsingParameters_author,
+		title: $createPostWithoutFileUsingParameters_title,
+		content: $createPostWithoutFileUsingParameters_content,
+		url: $createPostWithoutFileUsingParameters_url
+  ) {
+    ...postAllFields
+  }
+}
+
+mutation UpdatePostWithFileUsingInputType($updatePostWithFileUsingInputType: UpdatePostWithFileInput!) {
+  updatePostWithFileUsingInputType(input: $updatePostWithFileUsingInputType) {
+    id
+    content
+    file {
+      ...s3ObjectAllFields
+    }
+  }
+}
+
+mutation UpdatePostWithFileUsingParameters(
+  $updatePostWithFileUsingParameters_id: ID!,
+  $updatePostWithFileUsingParameters_content: String,
+  $updatePostWithFileUsingParameters_file_bucket: String!,
+  $updatePostWithFileUsingParameters_file_key: String!,
+  $updatePostWithFileUsingParameters_file_region: String!,
+  $updatePostWithFileUsingParameters_file_localUri: String!,
+  $updatePostWithFileUsingParameters_file_mimeType: String!
+) {
+  updatePostWithFileUsingParameters(
+    id: $updatePostWithFileUsingParameters_id,
+    content: $updatePostWithFileUsingParameters_content,
+    file: {
+      bucket: $updatePostWithFileUsingParameters_file_bucket,
+      key: $updatePostWithFileUsingParameters_file_key,
+      region: $updatePostWithFileUsingParameters_file_region,
+      localUri: $updatePostWithFileUsingParameters_file_localUri,
+      mimeType: $updatePostWithFileUsingParameters_file_mimeType
+    }
+  ) {
+    id
+    content
+    file {
+      ...s3ObjectAllFields
+    }
+  }
+}
+
+mutation UpdatePostWithoutFileUsingInputType($updatePostWithoutFileUsingInputType: UpdatePostWithoutFileInput!) {
+  updatePostWithoutFileUsingInputType(input: $updatePostWithoutFileUsingInputType) {
+    id
+    content
+  }
+}
+
+mutation UpdatePostWithoutFileUsingParameters(
+  $updatePostWithoutFileUsingParameters_id: ID!,
+  $updatePostWithoutFileUsingParameters_content: String
+) {
+  updatePostWithoutFileUsingParameters(
+    id: $updatePostWithoutFileUsingParameters_id,
+    content: $updatePostWithoutFileUsingParameters_content
+  ) {
+    id
+    content
+  }
+}
+
+mutation DeletePostUsingInputType($deletePostUsingInputType: DeletePostInput!) {
+  deletePostUsingInputType(input: $deletePostUsingInputType) {
+    ...postAllFields
+  }
+}
+
+mutation DeletePostUsingParameters($deletePostUsingParameters: ID!) {
+  deletePostUsingParameters(
+    id: $deletePostUsingParameters
+  ) {
+    ...postAllFields
+  }
+}
+
+fragment postAllFields on Post {
+  id
+	author
+	title
+	content
+	url
+	ups
+	downs
+	file {
+    ...s3ObjectAllFields
+  }
+	createdDate
+	aws_ds
+}
+
+fragment s3ObjectAllFields on S3Object {
+  bucket
+  key
+  region
+}
