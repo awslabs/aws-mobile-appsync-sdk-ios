@@ -16,7 +16,7 @@
 import Foundation
 
 /// Client-side configurations of an AWSAppSync service instance
-public protocol AWSAppSyncServiceConfigProviding {
+public protocol AWSAppSyncServiceConfigProvider {
     /// The API endpoint
     var endpoint: URL { get }
 
@@ -32,7 +32,7 @@ public protocol AWSAppSyncServiceConfigProviding {
 }
 
 /// Client-side configurations of an AWSAppSync service instance
-public struct AWSAppSyncServiceConfig: AWSAppSyncServiceConfigProviding {
+public struct AWSAppSyncServiceConfig: AWSAppSyncServiceConfigProvider {
     public let endpoint: URL
     public let region: AWSRegionType
     public let authType: AWSAppSyncAuthType

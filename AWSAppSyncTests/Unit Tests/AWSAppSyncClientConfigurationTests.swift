@@ -465,7 +465,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
     }
 }
 
-private struct MockAWSAppSyncServiceConfig: AWSAppSyncServiceConfigProviding {
+private struct MockAWSAppSyncServiceConfig: AWSAppSyncServiceConfigProvider {
     let endpoint: URL
     let region: AWSRegionType
     let authType: AWSAppSyncAuthType
