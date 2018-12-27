@@ -73,11 +73,3 @@ public class AWSAppSyncClientInfo {
         return regionString
     }
 }
-
-public struct AWSAppSyncClientInfoError: Error, LocalizedError {
-    public let errorMessage: String?
-
-    public var errorDescription: String? {
-        return errorMessage
-    }
-}

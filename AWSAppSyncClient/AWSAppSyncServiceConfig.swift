@@ -32,11 +32,11 @@ public protocol AWSAppSyncServiceConfigProviding {
 }
 
 /// Client-side configurations of an AWSAppSync service instance
-public struct AWSAppSyncServiceConfig {
-    let endpoint: URL
-    let region: AWSRegionType
-    let authType: AWSAppSyncAuthType
-    let apiKey: String?
+public struct AWSAppSyncServiceConfig: AWSAppSyncServiceConfigProviding {
+    public let endpoint: URL
+    public let region: AWSRegionType
+    public let authType: AWSAppSyncAuthType
+    public let apiKey: String?
 
     /// Reads configuration from `awsconfiguration.json` using the supplied key. If no key is supplied, reads configuration from
     /// "Default".
@@ -82,30 +82,5 @@ public struct AWSAppSyncServiceConfig {
         guard authType != AWSAppSyncAuthType.apiKey || !apiKey.isEmpty else {
             throw AWSAppSyncServiceConfigError.invalidAPIKey
         }
-    }
-}
-
-public enum AWSAppSyncServiceConfigError: String, Error, LocalizedError {
-    /// An error occurred reading the configuration file, or the file did not contain a properly configured "AppSync" section
-    case invalidConfigFile
-
-    /// An error occurred loading the API endpoing URL
-    case invalidAPIURL
-
-    /// An error occurred loading the API region
-    case invalidRegion
-
-    /// An error occurred loading the auth mode
-    case invalidAuthMode
-
-    /// AuthMode was set to "API_KEY" but a valid value for API_KEY was not found
-    case invalidAPIKey
-
-    public var errorDescription: String {
-        return self.rawValue
-    }
-
-    public var localizedDescription: String {
-        return errorDescription
     }
 }

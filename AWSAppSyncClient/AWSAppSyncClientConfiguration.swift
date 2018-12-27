@@ -16,21 +16,6 @@
 import Foundation
 import AWSCore
 
-public enum AWSAppSyncClientConfigurationError: Error, LocalizedError {
-    case invalidAuthConfiguration(String)
-
-    var errorDescription: String {
-        switch self {
-        case .invalidAuthConfiguration(let message):
-            return "Invalid Auth Configuration: \(message)"
-        }
-    }
-
-    var localizedDescription: String {
-        return errorDescription
-    }
-}
-
 public class AWSAppSyncClientConfiguration {
     private(set) var url: URL
     private(set) var networkTransport: AWSNetworkTransport
