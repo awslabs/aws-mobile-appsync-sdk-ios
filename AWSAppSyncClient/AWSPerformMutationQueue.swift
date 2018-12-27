@@ -45,7 +45,11 @@ final class AWSPerformMutationQueue {
         if let fileURL = fileURL {
             do {
                 persistentCache = try AWSMutationCache(fileURL: fileURL)
-                loadMutations()
+
+                operationQueue.addOperation {
+                    self.loadMutations()
+                }
+                operationQueue.isSuspended = false
             } catch {
                 debugPrint("persistentCache initialization error: \(error)")
             }
