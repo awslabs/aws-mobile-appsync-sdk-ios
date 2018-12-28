@@ -246,7 +246,7 @@ class AWSAppSyncTests: XCTestCase {
         appSyncClient.perform(mutation: addEvent, optimisticUpdate: { (transaction) in
             do {
             try transaction?.update(query: fetchQuery, { (data) in
-                data.listEvents?.items?.append(ListEventsQuery.Data.ListEvent.Item.init(id: "RandomId", description: self.EventDescription, name: self.EventName, when: self.EventTime, where: self.EventLocation, comments: nil))
+                data.listEvents?.items?.append(ListEventsQuery.Data.ListEvent.Item(id: "RandomId", description: self.EventDescription, name: self.EventName, when: self.EventTime, where: self.EventLocation, comments: nil))
             })
             successfulOptimisticWriteExpectation.fulfill()
             } catch {

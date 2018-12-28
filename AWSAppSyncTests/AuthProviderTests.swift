@@ -34,6 +34,11 @@ class AuthProviderTests: XCTestCase {
             self.forceError = forceError
         }
         
+        public func getLatestAuthToken() -> String {
+            expectation?.fulfill()
+            return "OIDCAuthProviderAsync"
+        }
+
         func getLatestAuthToken(_ callback: @escaping (String?, Error?) -> Void) {
             if forceError {
                 callback(nil, AuthProviderTestError())
@@ -57,21 +62,23 @@ class AuthProviderTests: XCTestCase {
     }
     
     class CognitoUserPoolsAuthProviderAsync: AWSCognitoUserPoolsAuthProviderAsync {
-        
         var expectation: XCTestExpectation?
         init(_ expectation: XCTestExpectation){
             self.expectation = expectation;
         }
-        
+
+        public func getLatestAuthToken() -> String {
+            expectation?.fulfill()
+            return "CognitoUserPoolsAuthProviderAsync"
+        }
+
         func getLatestAuthToken(_ callback: @escaping (String?, Error?) -> Void) {
             callback("CognitoUserPoolsAuthProviderAsync", nil)
-            self.expectation?.fulfill()
+            expectation?.fulfill()
         }
     }
 
     class CognitoUserPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider {
-       
-        
         var expectation: XCTestExpectation?
         init(_ expectation: XCTestExpectation){
             self.expectation = expectation;
