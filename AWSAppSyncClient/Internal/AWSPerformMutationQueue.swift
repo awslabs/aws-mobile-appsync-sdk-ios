@@ -17,7 +17,7 @@ import Foundation
 
 final class AWSPerformMutationQueue {
 
-    private let appSyncClient: AWSAppSyncClient
+    private unowned let appSyncClient: AWSAppSyncClient
     private let networkClient: AWSNetworkTransport
     private let snapshotProcessController: SnapshotProcessController
 
@@ -46,10 +46,9 @@ final class AWSPerformMutationQueue {
             do {
                 persistentCache = try AWSMutationCache(fileURL: fileURL)
 
-                operationQueue.addOperation {
-                    self.loadMutations()
+                operationQueue.addOperation { [weak self] in
+                    self?.loadMutations()
                 }
-                operationQueue.isSuspended = false
             } catch {
                 debugPrint("persistentCache initialization error: \(error)")
             }

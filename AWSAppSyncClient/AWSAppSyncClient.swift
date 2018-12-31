@@ -93,7 +93,7 @@ class SnapshotProcessController {
         }
     }
 
-    func canExecute(_ operation: AWSAppSyncGraphQLOperation) -> Bool {
+    func isEligibleForExecution(_ operation: AWSAppSyncGraphQLOperation) -> Bool {
         switch operation {
         case .mutation:
             return isNetworkReachable
@@ -282,7 +282,7 @@ public class AWSAppSyncClient {
     internal var connectionStateChangeHandler: ConnectionStateChangeHandler?
 
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
-    private var offlineMutationQueue: AWSPerformMutationQueue!
+    private var mutationQueue: AWSPerformMutationQueue!
 
     private var networkStatusWatchers: [NetworkConnectionNotification] = []
     private var autoSubmitOfflineMutations: Bool = false
@@ -310,13 +310,13 @@ public class AWSAppSyncClient {
 
         self.apolloClient = ApolloClient(networkTransport: self.httpTransport!, store: appSyncConfig.store)
 
-        self.offlineMutationQueue = AWSPerformMutationQueue(
+        self.mutationQueue = AWSPerformMutationQueue(
             appSyncClient: self,
             networkClient: httpTransport!,
             handlerQueue: .main,
             snapshotProcessController: SnapshotProcessController(endpointURL: appSyncConfig.url),
             fileURL: appSyncConfig.databaseURL)
-        networkStatusWatchers.append(offlineMutationQueue)
+        networkStatusWatchers.append(mutationQueue)
 
         if AWSAppSyncNetworkStatusChangeNotifier.sharedInstance == nil {
             AWSAppSyncNetworkStatusChangeNotifier.setupSharedInstance(host: appSyncConfig.url.host!, allowsCellular: appSyncConfig.allowsCellularAccess)
@@ -430,7 +430,7 @@ public class AWSAppSyncClient {
             }
         }
 
-        return offlineMutationQueue.add(
+        return mutationQueue.add(
             mutation,
             mutationPriority: mutationPriority,
             mutationConflictHandler: conflictResolutionBlock,

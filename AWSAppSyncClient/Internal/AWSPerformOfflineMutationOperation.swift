@@ -50,7 +50,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         }
     }
 
-    private func _send(
+    private func send(
         completion: @escaping ((JSONObject?, Error?) -> Void)) -> Cancellable? {
 
         if let s3Object = mutation.s3ObjectInput {
@@ -72,7 +72,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         }
     }
 
-    private func _notifyCompletion(
+    private func notifyCompletion(
         _ result: JSONObject?, error: Error?) {
         operationCompletionBlock?(self, error)
 
@@ -96,9 +96,9 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
 
         state = .executing
 
-        networkTask = _send { result, error in
+        networkTask = send { result, error in
             if error == nil {
-                self._notifyCompletion(result, error: nil)
+                self.notifyCompletion(result, error: nil)
                 self.state = .finished
 
                 return
@@ -109,7 +109,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
                 return
             }
 
-            self._notifyCompletion(result, error: error)
+            self.notifyCompletion(result, error: error)
             self.state = .finished
         }
     }
@@ -121,7 +121,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         networkTask?.cancel()
     }
 
-    // MARK: - CustomStringConvertible
+    // MARK: CustomStringConvertible
 
     override var description: String {
         var desc: String = "<\(self):\(mutation.self)"
