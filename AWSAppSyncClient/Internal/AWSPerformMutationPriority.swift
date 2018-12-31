@@ -9,11 +9,11 @@
 import Foundation
 
 public enum AWSPerformMutationPriority: Int {
-    case veryLow = -10
-    case low = -20
+    case veryLow = -8
+    case low = -4
     case normal = 0
-    case high = 10
-    case veryHigh = 20
+    case high = 4
+    case veryHigh = 8
 }
 
 // MARK: - CustomStringConvertible
