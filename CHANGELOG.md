@@ -2,6 +2,16 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## vNext
+
+### Misc. Updates
+
+* Perform mutation logic is rewritten and uses `OperationQueue` now.
+
+* **Breaking API Changes**
+  * `AWSPerformMutationOperation` was `public`, now it's `internal`
+  * `AWSAppSyncClientAWSAppSyncClient.perform` now returns `Cancellable` instead of `AWSPerformMutationOperation`
+
 ## 2.8.0
 
 ### Misc. Updates
@@ -121,5 +131,3 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Bug Fixes
 * Fixed a bug in `cancel` method of `SubscriptionWatcher` where calling `cancel` and then restarting a subscription in the same view controller would cause a crash.
-
-
