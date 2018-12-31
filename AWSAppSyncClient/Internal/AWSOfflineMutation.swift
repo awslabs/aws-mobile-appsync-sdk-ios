@@ -67,7 +67,7 @@ final class InternalS3ObjectDetails: AWSS3InputObjectProtocol, AWSS3ObjectProtoc
     }
 }
 
-final class AWSAppSyncOfflineMutation {
+final class AWSAppSyncMutationRecord {
     var jsonRecord: JSONObject?
     var data: Data?
     var contentMap: GraphQLMap?
@@ -91,7 +91,7 @@ final class AWSAppSyncOfflineMutation {
 
 // MARK: - CustomStringConvertible
 
-extension AWSAppSyncOfflineMutation: CustomStringConvertible {
+extension AWSAppSyncMutationRecord: CustomStringConvertible {
 
     var description: String {
         var desc: String = "<\(self):\(recordIdentitifer)"

@@ -91,13 +91,13 @@ final class AWSPerformMutationQueue {
 
     private func save<Mutation: GraphQLMutation>(
         _ mutation: Mutation,
-        mutationPriority: AWSPerformMutationPriority) throws -> AWSAppSyncOfflineMutation? {
+        mutationPriority: AWSPerformMutationPriority) throws -> AWSAppSyncMutationRecord? {
         guard let persistentCache = persistentCache else { return nil }
 
         let requestBody = AWSRequestBuilder.requestBody(from: mutation)
         let data = try JSONSerializationFormat.serialize(value: requestBody)
 
-        let offlineMutation = AWSAppSyncOfflineMutation()
+        let offlineMutation = AWSAppSyncMutationRecord()
 
         if let s3Object = AWSRequestBuilder.s3Object(from: mutation.variables) {
             offlineMutation.type = .graphQLMutationWithS3Object
@@ -128,7 +128,7 @@ final class AWSPerformMutationQueue {
         mutationConflictHandler: MutationConflictHandler<Mutation>?,
         mutationResultHandler: OperationResultHandler<Mutation>?) -> Cancellable {
 
-        let offlineMutation: AWSAppSyncOfflineMutation?
+        let offlineMutation: AWSAppSyncMutationRecord?
         do {
             offlineMutation = try save(
                 mutation,

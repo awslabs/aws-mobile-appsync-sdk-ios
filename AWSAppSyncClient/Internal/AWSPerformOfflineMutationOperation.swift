@@ -20,7 +20,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
     private let appSyncClient: AWSAppSyncClient
     private let networkClient: AWSNetworkTransport
     private let handlerQueue: DispatchQueue
-    let mutation: AWSAppSyncOfflineMutation
+    let mutation: AWSAppSyncMutationRecord
 
     var operationCompletionBlock: ((AWSPerformOfflineMutationOperation, Error?) -> Void)?
 
@@ -28,7 +28,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         appSyncClient: AWSAppSyncClient,
         networkClient: AWSNetworkTransport,
         handlerQueue: DispatchQueue,
-        mutation: AWSAppSyncOfflineMutation) {
+        mutation: AWSAppSyncMutationRecord) {
         self.appSyncClient = appSyncClient
         self.networkClient = networkClient
         self.handlerQueue = handlerQueue
@@ -38,7 +38,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
     private var networkTask: Cancellable?
 
     private func _send(
-        _ mutation: AWSAppSyncOfflineMutation,
+        _ mutation: AWSAppSyncMutationRecord,
         completion: @escaping ((JSONObject?, Error?) -> Void)) {
         guard let data = mutation.data else {
             completion(nil, nil)

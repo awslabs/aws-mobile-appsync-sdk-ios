@@ -75,7 +75,7 @@ public final class AWSMutationCache {
         try db.run(mutationRecords.createIndex(recordIdentifier, unique: true, ifNotExists: true))
     }
     
-    internal func saveMutationRecord(record: AWSAppSyncOfflineMutation) throws {
+    internal func saveMutationRecord(record: AWSAppSyncMutationRecord) throws {
         if let s3Object = record.s3ObjectInput {
             let insert = mutationRecords.insert(
                 recordIdentifier <- record.recordIdentitifer,
@@ -105,12 +105,12 @@ public final class AWSMutationCache {
         
     }
     
-    internal func updateMutationRecord(record: AWSAppSyncOfflineMutation) throws {
+    internal func updateMutationRecord(record: AWSAppSyncMutationRecord) throws {
         let sqlRecord = mutationRecords.filter(recordIdentifier == record.recordIdentitifer)
         try db.run(sqlRecord.update(recordState <- record.recordState.rawValue))
     }
     
-    internal func deleteMutationRecord(record: AWSAppSyncOfflineMutation) throws {
+    internal func deleteMutationRecord(record: AWSAppSyncMutationRecord) throws {
         let sqlRecord = mutationRecords.filter(recordIdentifier == record.recordIdentitifer)
         try db.run(sqlRecord.delete())
     }
@@ -120,12 +120,12 @@ public final class AWSMutationCache {
         try db.run(sqlRecord.delete())
     }
     
-    internal func getStoredMutationRecordsInQueue() throws -> [AWSAppSyncOfflineMutation] {
+    internal func getStoredMutationRecordsInQueue() throws -> [AWSAppSyncMutationRecord] {
         let sqlRecords = mutationRecords.filter(recordState == MutationRecordState.inQueue.rawValue).order(timestamp.asc)
-        var mutationRecordQueue: [AWSAppSyncOfflineMutation] = []
+        var mutationRecordQueue: [AWSAppSyncMutationRecord] = []
         for record in try db.prepare(sqlRecords) {
             do {
-                let mutationRecord = AWSAppSyncOfflineMutation(
+                let mutationRecord = AWSAppSyncMutationRecord(
                     recordIdentifier: try record.get(recordIdentifier),
                     timestamp: try record.get(timestamp))
                 mutationRecord.data = try record.get(data)
