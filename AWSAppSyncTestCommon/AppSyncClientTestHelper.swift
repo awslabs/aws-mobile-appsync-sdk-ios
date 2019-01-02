@@ -186,58 +186,6 @@ public class AppSyncClientTestHelper: NSObject {
         return appSyncConfig
     }
 
-//    func deleteAll() {
-//        let query = ListEventsQuery(limit: 99)
-//        let listEventsExpectation = expectation(description: "Fetch done successfully.")
-//
-//        var events: [ListEventsQuery.Data.ListEvent.Item?]?
-//
-//        appSyncClient.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { (result, error) in
-//            XCTAssertNil(error, "Error expected to be nil, but is not.")
-//            XCTAssertNotNil(result?.data?.listEvents?.items, "Items array should not be nil.")
-//            events = result?.data?.listEvents?.items
-//            listEventsExpectation.fulfill()
-//        }
-//
-//        // Wait for the list to complete
-//        wait(for: [listEventsExpectation], timeout: 5.0)
-//
-//        guard let eventsToDelete = events else {
-//            return
-//        }
-//
-//        var deleteExpectations = [XCTestExpectation]()
-//        for event in eventsToDelete {
-//            guard let event = event else {
-//                continue
-//            }
-//
-//            let deleteExpectation = expectation(description: "Delete event \(event.id)")
-//            deleteExpectations.append(deleteExpectation)
-//
-//            appSyncClient.perform(
-//                mutation: DeleteEventMutation(id: event.id),
-//                queue: DispatchQueue.main,
-//                optimisticUpdate: nil,
-//                conflictResolutionBlock: nil,
-//                resultHandler: {
-//                    (result, error) in
-//                    guard let _ = result else {
-//                        if let error = error {
-//                            XCTFail(error.localizedDescription)
-//                        } else {
-//                            XCTFail("Error deleting \(event.id)")
-//                        }
-//                        return
-//                    }
-//                    deleteExpectation.fulfill()
-//            }
-//            )
-//        }
-//
-//        wait(for: deleteExpectations, timeout: 5.0)
-//    }
-
 }
 
 private struct BasicAWSCognitoCredentialsProviderFactory {

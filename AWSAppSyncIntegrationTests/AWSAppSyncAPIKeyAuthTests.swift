@@ -25,10 +25,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
     let authType = AppSyncClientTestHelper.AuthenticationType.apiKey
 
-    /// Set this to `true` in tests that add items to the backing store, so that tests that run
-    /// afterward start from a known empty state
-    var shouldDeleteDuringTearDown = false
-
     static func makeAppSyncClient(authType: AppSyncClientTestHelper.AuthenticationType,
                                   databaseURL: URL? = nil) throws -> DeinitNotifiableAppSyncClient {
         let testBundle = Bundle(for: AWSAppSyncAPIKeyAuthTests.self)
@@ -47,67 +43,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         } catch {
             XCTFail(error.localizedDescription)
         }
-    }
-
-    override func tearDown() {
-        super.tearDown()
-        guard shouldDeleteDuringTearDown else {
-            return
-        }
-
-        deleteAll()
-    }
-
-    func deleteAll() {
-        let query = ListPostsQuery()
-        let listPostsExpectation = expectation(description: "Fetch done successfully.")
-
-        var listPostsItems: [ListPostsQuery.Data.ListPost?]?
-
-        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { result, error in
-            XCTAssertNil(error)
-            XCTAssertNotNil(result?.data?.listPosts)
-            listPostsItems = result?.data?.listPosts
-            listPostsExpectation.fulfill()
-        }
-
-        // Wait for the list to complete
-        wait(for: [listPostsExpectation], timeout: 5.0)
-
-        guard let itemsToDelete = listPostsItems else {
-            return
-        }
-
-        var deleteExpectations = [XCTestExpectation]()
-        for item in itemsToDelete {
-            guard let item = item else {
-                continue
-            }
-
-            let deleteExpectation = expectation(description: "Delete item \(item.id)")
-            deleteExpectations.append(deleteExpectation)
-
-            appSyncClient?.perform(
-                mutation: DeletePostUsingParametersMutation(id: item.id),
-                queue: DispatchQueue.main,
-                optimisticUpdate: nil,
-                conflictResolutionBlock: nil,
-                resultHandler: {
-                    (result, error) in
-                    guard let _ = result else {
-                        if let error = error {
-                            XCTFail(error.localizedDescription)
-                        } else {
-                            XCTFail("Error deleting \(item.id)")
-                        }
-                        return
-                    }
-                    deleteExpectation.fulfill()
-            }
-            )
-        }
-
-        wait(for: deleteExpectations, timeout: 5.0)
     }
 
     func testClientDeinit() throws {
@@ -133,6 +68,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 result!.data!.createPostWithoutFileUsingParameters?.author,
                 DefaultTestPostData.author
             )
+            print("Created post \(result?.data?.createPostWithoutFileUsingParameters?.id ?? "(ID unexpectedly nil)")")
             postCreated.fulfill()
         }
 
@@ -174,14 +110,11 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTFail("appSyncClient should not be nil")
             return
         }
-        deleteAll()
         let subscriptionStressTestHelper = SubscriptionStressTestHelper()
         subscriptionStressTestHelper.stressTestSubscriptions(with: appSyncClient)
     }
 
     func testSubscription() throws {
-        shouldDeleteDuringTearDown = true
-
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
@@ -261,7 +194,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     }
 
     func testOptimisticWriteWithQueryParameter() {
-        shouldDeleteDuringTearDown = true
         let postCreated = expectation(description: "Post created successfully.")
         let successfulMutationEvent2Expectation = expectation(description: "Mutation done successfully.")
         let successfulOptimisticWriteExpectation = expectation(description: "Optimisitc write done successfully.")
@@ -355,8 +287,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
 
         let baseRefreshIntervalInSeconds = 86_400
-
-        deleteAll()
 
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation

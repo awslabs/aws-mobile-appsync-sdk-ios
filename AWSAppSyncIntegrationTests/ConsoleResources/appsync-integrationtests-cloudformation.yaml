@@ -1023,6 +1023,8 @@ Resources:
   #########################################################
 
   # Table for base table posts - delta sync
+  # NOTE: This table is set up to expire records 24 hours after they are created.
+  # Do not use this definition in production.
   DynamoDBPostsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -1036,6 +1038,9 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: '5'
         WriteCapacityUnits: '5'
+      TimeToLiveSpecification:
+        AttributeName: "createdDate"
+        Enabled: true
 
   # Table for delta table posts - delta sync
   DynamoDBDeltaTable:
