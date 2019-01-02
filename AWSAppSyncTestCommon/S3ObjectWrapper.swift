@@ -16,59 +16,7 @@
 import AWSAppSync
 import AWSS3
 
-/// A convenience type for modeling S3 uploads
-public struct S3Object: GraphQLMapConvertible {
-    public var graphQLMap: GraphQLMap
-
-    public init(bucket: String, key: String, region: String, localUri: String, mimeType: String) {
-        graphQLMap = ["bucket": bucket, "key": key, "region": region]
-    }
-
-    public var bucket: String {
-        get {
-            return graphQLMap["bucket"] as! String
-        }
-        set {
-            graphQLMap.updateValue(newValue, forKey: "bucket")
-        }
-    }
-
-    public var key: String {
-        get {
-            return graphQLMap["key"] as! String
-        }
-        set {
-            graphQLMap.updateValue(newValue, forKey: "key")
-        }
-    }
-
-    public var region: String {
-        get {
-            return graphQLMap["region"] as! String
-        }
-        set {
-            graphQLMap.updateValue(newValue, forKey: "region")
-        }
-    }
-}
-
-/// Conform S3Object to AppSync's S3Object protocol which defines behaviors necessary for uploading &
-/// downloading objects
-extension S3Object: AWSS3ObjectProtocol {
-    public func getBucketName() -> String {
-        return bucket
-    }
-
-    public func getKeyName() -> String {
-        return key
-    }
-
-    public func getRegion() -> String {
-        return region
-    }
-}
-
-/// Conform the default `input` type, S3ObjectInput, to the necessary protocols to allow complex objects
+/// Partially conforms the default `input` type, S3ObjectInput, to the necessary protocols to allow complex objects
 /// to be discovered and automatically uploaded in a mutation.
 extension S3ObjectInput: AWSS3ObjectProtocol {
     public func getBucketName() -> String {
@@ -84,7 +32,7 @@ extension S3ObjectInput: AWSS3ObjectProtocol {
     }
 }
 
-/// Conform the default `input` type, S3ObjectInput, to the necessary protocols to allow complex objects
+/// Partially conforms the default `input` type, S3ObjectInput, to the necessary protocols to allow complex objects
 /// to be discovered and automatically uploaded in a mutation.
 extension S3ObjectInput: AWSS3InputObjectProtocol {
     public func getLocalSourceFileURL() -> URL? {

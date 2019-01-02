@@ -15,58 +15,6 @@
 
 import Foundation
 
-public enum MutationRecordState: String {
-    case inProgress
-    case inQueue
-    case isDone
-}
-
-public enum MutationType: String {
-    case graphQLMutation
-    case graphQLMutationWithS3Object
-}
-
-final class InternalS3ObjectDetails: AWSS3InputObjectProtocol, AWSS3ObjectProtocol {
-
-    let bucket: String
-    let key: String
-    let region: String
-    let mimeType: String
-    let localUri: String
-
-    init(bucket: String, key: String, region: String, contentType: String, localUri: String) {
-        self.bucket = bucket
-        self.key = key
-        self.region = region
-        self.mimeType = contentType
-        self.localUri = localUri
-    }
-
-    // MARK: AWSS3InputObjectProtocol
-
-    func getLocalSourceFileURL() -> URL? {
-        return URL(string: localUri)
-    }
-
-    func getMimeType() -> String {
-        return mimeType
-    }
-
-    // MARK: AWSS3ObjectProtocol
-
-    func getBucketName() -> String {
-        return bucket
-    }
-
-    func getKeyName() -> String {
-        return key
-    }
-
-    func getRegion() -> String {
-        return region
-    }
-}
-
 final class AWSAppSyncMutationRecord {
     var jsonRecord: JSONObject?
     var data: Data?

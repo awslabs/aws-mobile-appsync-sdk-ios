@@ -20,7 +20,7 @@ import XCTest
 
 class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
 
-    func test_clientQueuesMutationOfCorrectType_WhenS3ObjectIsPartOfInput() throws {
+    func test_s3UploaderIsInvoked_WhenS3ObjectIsPartOfInputType() throws {
         let fileInput = S3ObjectInput(
             bucket: "the-bucket",
             key: "the-key.jpg",
@@ -66,11 +66,10 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
 
         appSyncClient.perform(mutation: addPostWithFile)
 
-        wait(for: [s3ObjectManagerUploadWasInvoked], timeout: 2.0)
+        wait(for: [s3ObjectManagerUploadWasInvoked], timeout: 1.0)
     }
 
-    // TODO: Test in progress
-    func test_clientQueuesMutationOfCorrectType_WhenS3ObjectIsParameterOfMutation() throws {
+    func test_s3UploaderIsInvoked_WhenS3ObjectIsParameterOfMutation() throws {
         let fileInput = S3ObjectInput(
             bucket: "the-bucket",
             key: "the-key.jpg",
@@ -114,7 +113,35 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
 
         appSyncClient.perform(mutation: addPostWithFile)
 
-        wait(for: [s3ObjectManagerUploadWasInvoked], timeout: 2.0)
+        wait(for: [s3ObjectManagerUploadWasInvoked], timeout: 1.0)
+    }
+
+    func test_s3UploaderIsNotInvoked_WhenNoS3ObjectIsPresent() throws {
+        // Use a mock transport so we don't send any network traffic during this test
+        let mockHTTPTransport = MockNetworkTransport()
+
+        let s3ObjectManagerUploadWasNotInvoked = expectation(description: "s3ObjectManager.upload() was not invoked")
+        s3ObjectManagerUploadWasNotInvoked.isInverted = true
+
+        let mockS3ObjectManager = MockS3ObjectManager()
+        mockS3ObjectManager.uploadHandler = { (object, completionBlock) in
+            print("Upload incorrectly invoked result: \(object)")
+            s3ObjectManagerUploadWasNotInvoked.fulfill()
+        }
+
+        let helper = try AppSyncClientTestHelper(
+            with: .apiKey,
+            testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
+            httpTransport: mockHTTPTransport,
+            s3ObjectManager: mockS3ObjectManager
+        )
+
+        let appSyncClient = helper.appSyncClient
+
+        let addPostWithNoFile = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+        appSyncClient.perform(mutation: addPostWithNoFile)
+
+        wait(for: [s3ObjectManagerUploadWasNotInvoked], timeout: 1.0)
     }
 
 }

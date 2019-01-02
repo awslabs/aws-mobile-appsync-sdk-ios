@@ -17,25 +17,31 @@ import Foundation
 
 final class AWSRequestBuilder {
 
+    /// Given a `GraphQLMap` (e.g., parameters to a mutation, or an input type for a mutation), inspects the graph
+    /// to find a set of variables that can be cast to an S3InputObject. This currently only supports one S3Object per
+    /// GraphQLMap. The behavior of maps containing multiple S3 objects is undefined.
     static func s3Object(from variables: GraphQLMap?) -> InternalS3ObjectDetails? {
-        guard let variables = variables else { return nil }
-
-        for case let object as [String: String] in variables.values {
-            guard let bucket = object["bucket"] else { continue }
-            guard let key = object["key"] else { continue }
-            guard let region = object["region"] else { continue }
-            guard let contentType = object["mimeType"] else { continue }
-            guard let localUri = object["localUri"] else { continue }
-
-            return InternalS3ObjectDetails(
-                bucket: bucket,
-                key: key,
-                region: region,
-                contentType: contentType,
-                localUri: localUri)
+        guard let variables = variables else {
+            return nil
         }
 
-        return nil
+        var builder = InternalS3ObjectDetailsBuilder()
+
+        for (key, value) in variables {
+            guard let value = value else {
+                continue
+            }
+
+            if let nestedMap = value as? GraphQLMapConvertible {
+                if let s3Object = s3Object(from: nestedMap.graphQLMap) {
+                    return s3Object
+                }
+            }
+
+            builder.offer(key: key, value: value)
+        }
+
+        return builder.build()
     }
 
     static func requestBody<Operation: GraphQLOperation>(

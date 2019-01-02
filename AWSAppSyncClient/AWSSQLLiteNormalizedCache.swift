@@ -146,7 +146,7 @@ public final class AWSMutationCache {
                             bucket: bucket,
                             key: key,
                             region: region,
-                            contentType: mimeType,
+                            mimeType: mimeType,
                             localUri: localUri)
                     }
                 } catch {}
