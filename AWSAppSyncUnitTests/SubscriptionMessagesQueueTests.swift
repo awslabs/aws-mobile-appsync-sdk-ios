@@ -20,15 +20,6 @@ extension AWSS3ObjectProtocol {
         return result
     }
 
-    var asOnDeltaPostFile: OnDeltaPostSubscription.Data.OnDeltaPost.File {
-        let result = OnDeltaPostSubscription.Data.OnDeltaPost.File(
-            bucket: getBucketName(),
-            key: getKeyName(),
-            region: getRegion()
-        )
-        return result
-    }
-
     var asUpdatePostWithFileUsingInputTypeMutationFile: UpdatePostWithFileUsingInputTypeMutation.Data.UpdatePostWithFileUsingInputType.File {
         let result = UpdatePostWithFileUsingInputTypeMutation.Data.UpdatePostWithFileUsingInputType.File(
             bucket: getBucketName(),
@@ -37,6 +28,16 @@ extension AWSS3ObjectProtocol {
         )
         return result
     }
+
+    var asOnUpvotePostFile: OnUpvotePostSubscription.Data.OnUpvotePost.File {
+        let result = OnUpvotePostSubscription.Data.OnUpvotePost.File(
+            bucket: getBucketName(),
+            key: getKeyName(),
+            region: getRegion()
+        )
+        return result
+    }
+
 }
 
 class SubscriptionMessagesQueueTests: XCTestCase {
@@ -46,12 +47,12 @@ class SubscriptionMessagesQueueTests: XCTestCase {
                                     title: String = "",
                                     content: String = "",
                                     url: String = "",
-                                    ups: Int? = nil,
-                                    downs: Int? = nil,
+                                    ups: Int = 0,
+                                    downs: Int = 0,
                                     file: S3Object? = nil,
                                     createdDate: String? = nil,
-                                    awsDs: DeltaAction? = nil) -> GraphQLResult<OnDeltaPostSubscription.Data> {
-        let onDeltaPost = OnDeltaPostSubscription.Data.OnDeltaPost(
+                                    awsDs: DeltaAction? = nil) -> GraphQLResult<OnUpvotePostSubscription.Data> {
+        let onUpvotePost = OnUpvotePostSubscription.Data.OnUpvotePost(
             id: id,
             author: author,
             title: title,
@@ -59,13 +60,13 @@ class SubscriptionMessagesQueueTests: XCTestCase {
             url: url,
             ups: ups,
             downs: downs,
-            file: file?.asOnDeltaPostFile,
+            file: file?.asOnUpvotePostFile,
             createdDate: createdDate,
             awsDs: awsDs
         )
 
-        let data = OnDeltaPostSubscription.Data(onDeltaPost: onDeltaPost)
-        let result = GraphQLResult<OnDeltaPostSubscription.Data>(
+        let data = OnUpvotePostSubscription.Data(onUpvotePost: onUpvotePost)
+        let result = GraphQLResult<OnUpvotePostSubscription.Data>(
             data: data,
             errors: nil,
             source: .server,
@@ -78,7 +79,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         let messageNotDelivered = expectation(description: "Message should not be delivered while queue is stopped")
         messageNotDelivered.isInverted = true
 
-        let messagesQueue = SubscriptionMessagesQueue<OnDeltaPostSubscription>(for: "testOperation1") { (_, _, _) in
+        let messagesQueue = SubscriptionMessagesQueue<OnUpvotePostSubscription>(for: "testOperation1") { (_, _, _) in
             messageNotDelivered.fulfill()
         }
 
@@ -93,7 +94,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
     func test_itemAddedToStartedQueueIsDelivered() {
         let messageDelivered = expectation(description: "Message should be delivered while queue is started")
 
-        let messagesQueue = SubscriptionMessagesQueue<OnDeltaPostSubscription>(for: "testOperation1") { (_, _, _) in
+        let messagesQueue = SubscriptionMessagesQueue<OnUpvotePostSubscription>(for: "testOperation1") { (_, _, _) in
             messageDelivered.fulfill()
         }
 
@@ -111,7 +112,7 @@ class SubscriptionMessagesQueueTests: XCTestCase {
 
         let messageDeliveredWhenQueueIsStarted = expectation(description: "Message should be delivered after queue is started")
 
-        let messagesQueue = SubscriptionMessagesQueue<OnDeltaPostSubscription>(for: "testOperation1") { (_, _, _) in
+        let messagesQueue = SubscriptionMessagesQueue<OnUpvotePostSubscription>(for: "testOperation1") { (_, _, _) in
             messageNotDeliveredWhileQueueIsStopped.fulfill()
             messageDeliveredWhenQueueIsStarted.fulfill()
         }
@@ -133,8 +134,8 @@ class SubscriptionMessagesQueueTests: XCTestCase {
     func test_canDrainLargeQueue() {
         var messageDeliveredExpectations = [XCTestExpectation]()
 
-        let messagesQueue = SubscriptionMessagesQueue<OnDeltaPostSubscription>(for: "testOperation1") { (result, _, _) in
-            guard let id = result.data?.onDeltaPost?.id else {
+        let messagesQueue = SubscriptionMessagesQueue<OnUpvotePostSubscription>(for: "testOperation1") { (result, _, _) in
+            guard let id = result.data?.onUpvotePost?.id else {
                 XCTFail("Id unexpectedly nil")
                 return
             }
@@ -164,8 +165,8 @@ class SubscriptionMessagesQueueTests: XCTestCase {
         var messageDeliveredInOrderExpectations = [XCTestExpectation]()
 
         var expectedIndex = 0
-        let messagesQueue = SubscriptionMessagesQueue<OnDeltaPostSubscription>(for: "testOperation1") { (result, _, _) in
-            guard let id = result.data?.onDeltaPost?.id else {
+        let messagesQueue = SubscriptionMessagesQueue<OnUpvotePostSubscription>(for: "testOperation1") { (result, _, _) in
+            guard let id = result.data?.onUpvotePost?.id else {
                 XCTFail("id unexpectedly nil")
                 return
             }
@@ -201,8 +202,8 @@ class SubscriptionMessagesQueueTests: XCTestCase {
     func test_itemAddedToDrainingQueueWillEventuallyBeDelivered() {
         var messageDeliveredExpectations = [XCTestExpectation]()
 
-        let messagesQueue = SubscriptionMessagesQueue<OnDeltaPostSubscription>(for: "testOperation1") { (result, _, _) in
-            guard let id = result.data?.onDeltaPost?.id else {
+        let messagesQueue = SubscriptionMessagesQueue<OnUpvotePostSubscription>(for: "testOperation1") { (result, _, _) in
+            guard let id = result.data?.onUpvotePost?.id else {
                 XCTFail("Id unexpectedly nil")
                 return
             }

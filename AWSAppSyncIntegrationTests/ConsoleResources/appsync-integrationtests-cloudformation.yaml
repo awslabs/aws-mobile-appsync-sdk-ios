@@ -49,8 +49,8 @@ Resources:
           title: String!
           content: String!
           url: String
-          ups: Int
-          downs: Int
+          ups: Int = 0
+          downs: Int = 0
           file: S3ObjectInput!
         }
 
@@ -59,8 +59,8 @@ Resources:
           title: String!
           content: String!
           url: String
-          ups: Int
-          downs: Int
+          ups: Int = 0
+          downs: Int = 0
         }
 
         input DeletePostInput {
@@ -79,8 +79,8 @@ Resources:
             title: String!,
             content: String!,
             url: String,
-            ups: Int,
-            downs: Int,
+            ups: Int = 0,
+            downs: Int = 0,
             file: S3ObjectInput!
           ): Post
 
@@ -91,8 +91,8 @@ Resources:
             title: String!,
             content: String!,
             url: String,
-            ups: Int,
-            downs: Int
+            ups: Int = 0,
+            downs: Int = 0,
           ): Post
 
           updatePostWithFileUsingInputType(input: UpdatePostWithFileInput!): Post
@@ -103,8 +103,8 @@ Resources:
             title: String,
             content: String,
             url: String,
-            ups: Int,
-            downs: Int,
+            ups: Int = 0,
+            downs: Int = 0,
             file: S3ObjectInput!
           ): Post
 
@@ -116,13 +116,18 @@ Resources:
             title: String,
             content: String,
             url: String,
-            ups: Int,
-            downs: Int
+            ups: Int = 0,
+            downs: Int = 0
           ): Post
+
+          upvotePost(id: ID!): Post
+
+          downvotePost(id: ID!): Post
 
           deletePostUsingInputType(input: DeletePostInput!): Post
 
           deletePostUsingParameters(id: ID!): Post
+
         }
 
         type Post {
@@ -131,8 +136,8 @@ Resources:
           title: String!
           content: String!
           url: AWSURL
-          ups: Int
-          downs: Int
+          ups: Int!
+          downs: Int!
           file: S3Object
           createdDate: String
           aws_ds: DeltaAction
@@ -160,7 +165,13 @@ Resources:
 
         type Subscription {
           onDeltaPost: Post
-          @aws_subscribe(mutations: ["createPostWithFileUsingInputType", "createPostWithFileUsingParameters", "createPostWithoutFileUsingInputType", "createPostWithoutFileUsingParameters", "updatePostWithFileUsingInputType", "updatePostWithFileUsingParameters", "updatePostWithoutFileUsingInputType", "updatePostWithoutFileUsingParameters", "deletePostUsingInputType", "deletePostUsingParameters"])
+          @aws_subscribe(mutations: ["createPostWithFileUsingInputType", "createPostWithFileUsingParameters", "createPostWithoutFileUsingInputType", "createPostWithoutFileUsingParameters", "updatePostWithFileUsingInputType", "updatePostWithFileUsingParameters", "updatePostWithoutFileUsingInputType", "updatePostWithoutFileUsingParameters", "deletePostUsingInputType", "deletePostUsingParameters", "upvotePost", "downvotePost"])
+
+          onUpvotePost(id: ID!): Post
+          @aws_subscribe(mutations: ["upvotePost"])
+
+          onDownvotePost(id: ID!): Post
+          @aws_subscribe(mutations: ["downvotePost"])
         }
 
         input UpdatePostWithFileInput {
@@ -169,8 +180,8 @@ Resources:
           title: String
           content: String
           url: String
-          ups: Int
-          downs: Int
+          ups: Int = 0
+          downs: Int = 0
           file: S3ObjectInput!
         }
 
@@ -180,8 +191,8 @@ Resources:
           title: String
           content: String
           url: String
-          ups: Int
-          downs: Int
+          ups: Int = 0
+          downs: Int = 0
         }
 
         schema {
@@ -860,6 +871,101 @@ Resources:
         $util.toJson($ctx.result)
       FunctionVersion: "2018-05-29"
 
+  UpvotePostResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "upvotePost"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt UpvotePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  UpvotePostFunction:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: "upvotePost"
+      Description: "Increments a Post's 'ups' count"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        #if($ctx.args.input)
+          #set($input = $ctx.args.input)
+        #else
+          #set($input = $ctx.args)
+        #end
+        {
+          "version" : "2017-02-28",
+          "operation" : "UpdateItem",
+          "key" : {
+            "id" : $util.dynamodb.toDynamoDBJson($input.id)
+          },
+          "update" : {
+            "expression" : "ADD ups :one",
+            "expressionValues" : {
+              ":one" : { "N" : 1 }
+            }
+          }
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        ## returns the deleted item
+        $util.toJson($ctx.result)
+      FunctionVersion: "2018-05-29"
+
+  DownvotePostResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "downvotePost"
+      RequestMappingTemplate: "{}"
+      ResponseMappingTemplate: "$util.toJson($ctx.result)"
+      Kind: "PIPELINE"
+      PipelineConfig:
+        Functions:
+        - !GetAtt DownvotePostFunction.FunctionId
+        - !GetAtt DeltaCreateOrUpdateItemFunction.FunctionId
+
+  DownvotePostFunction:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: "downvotePost"
+      Description: "Increments a Post's 'downs' count"
+      DataSourceName: !GetAtt DynamoDBPostsTableDatasource.Name
+      RequestMappingTemplate: |
+        #if($ctx.args.input)
+          #set($input = $ctx.args.input)
+        #else
+          #set($input = $ctx.args)
+        #end
+        {
+          "version" : "2017-02-28",
+          "operation" : "UpdateItem",
+          "key" : {
+            "id" : $util.dynamodb.toDynamoDBJson($input.id)
+          },
+          "update" : {
+            "expression" : "ADD downs :one",
+            "expressionValues" : {
+              ":one" : { "N" : 1 }
+            }
+          }
+        }
+      ResponseMappingTemplate: |
+        #if($ctx.error)
+          $util.error($ctx.error.message, $ctx.error.type)
+        #end
+        ## returns the deleted item
+        $util.toJson($ctx.result)
+      FunctionVersion: "2018-05-29"
 
   #########################################################
   # AWS IAM Roles & Policies

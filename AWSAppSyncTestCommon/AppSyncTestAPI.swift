@@ -435,8 +435,8 @@ public final class CreatePostWithFileUsingInputTypeMutation: GraphQLMutation {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -448,7 +448,7 @@ public final class CreatePostWithFileUsingInputTypeMutation: GraphQLMutation {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -506,18 +506,18 @@ public final class CreatePostWithFileUsingInputTypeMutation: GraphQLMutation {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -673,8 +673,8 @@ public final class CreatePostWithFileUsingParametersMutation: GraphQLMutation {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -686,7 +686,7 @@ public final class CreatePostWithFileUsingParametersMutation: GraphQLMutation {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -744,18 +744,18 @@ public final class CreatePostWithFileUsingParametersMutation: GraphQLMutation {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -899,8 +899,8 @@ public final class CreatePostWithoutFileUsingInputTypeMutation: GraphQLMutation 
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -912,7 +912,7 @@ public final class CreatePostWithoutFileUsingInputTypeMutation: GraphQLMutation 
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -970,18 +970,18 @@ public final class CreatePostWithoutFileUsingInputTypeMutation: GraphQLMutation 
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -1135,8 +1135,8 @@ public final class CreatePostWithoutFileUsingParametersMutation: GraphQLMutation
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -1148,7 +1148,7 @@ public final class CreatePostWithoutFileUsingParametersMutation: GraphQLMutation
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -1206,18 +1206,18 @@ public final class CreatePostWithoutFileUsingParametersMutation: GraphQLMutation
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -1361,8 +1361,8 @@ public final class UpdatePostWithFileUsingInputTypeMutation: GraphQLMutation {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -1374,7 +1374,7 @@ public final class UpdatePostWithFileUsingInputTypeMutation: GraphQLMutation {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -1432,18 +1432,18 @@ public final class UpdatePostWithFileUsingInputTypeMutation: GraphQLMutation {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -1601,8 +1601,8 @@ public final class UpdatePostWithFileUsingParametersMutation: GraphQLMutation {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -1614,7 +1614,7 @@ public final class UpdatePostWithFileUsingParametersMutation: GraphQLMutation {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -1672,18 +1672,18 @@ public final class UpdatePostWithFileUsingParametersMutation: GraphQLMutation {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -1827,8 +1827,8 @@ public final class UpdatePostWithoutFileUsingInputTypeMutation: GraphQLMutation 
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -1840,7 +1840,7 @@ public final class UpdatePostWithoutFileUsingInputTypeMutation: GraphQLMutation 
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -1898,18 +1898,18 @@ public final class UpdatePostWithoutFileUsingInputTypeMutation: GraphQLMutation 
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -2065,8 +2065,8 @@ public final class UpdatePostWithoutFileUsingParametersMutation: GraphQLMutation
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -2078,7 +2078,7 @@ public final class UpdatePostWithoutFileUsingParametersMutation: GraphQLMutation
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -2136,18 +2136,470 @@ public final class UpdatePostWithoutFileUsingParametersMutation: GraphQLMutation
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "downs")
+        }
+      }
+
+      public var file: File? {
+        get {
+          return (snapshot["file"] as? Snapshot).flatMap { File(snapshot: $0) }
+        }
+        set {
+          snapshot.updateValue(newValue?.snapshot, forKey: "file")
+        }
+      }
+
+      public var createdDate: String? {
+        get {
+          return snapshot["createdDate"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "createdDate")
+        }
+      }
+
+      public var awsDs: DeltaAction? {
+        get {
+          return snapshot["aws_ds"] as? DeltaAction
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "aws_ds")
+        }
+      }
+
+      public struct File: GraphQLSelectionSet {
+        public static let possibleTypes = ["S3Object"]
+
+        public static let selections: [GraphQLSelection] = [
+          GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+          GraphQLField("bucket", type: .nonNull(.scalar(String.self))),
+          GraphQLField("key", type: .nonNull(.scalar(String.self))),
+          GraphQLField("region", type: .nonNull(.scalar(String.self))),
+        ]
+
+        public var snapshot: Snapshot
+
+        public init(snapshot: Snapshot) {
+          self.snapshot = snapshot
+        }
+
+        public init(bucket: String, key: String, region: String) {
+          self.init(snapshot: ["__typename": "S3Object", "bucket": bucket, "key": key, "region": region])
+        }
+
+        public var __typename: String {
+          get {
+            return snapshot["__typename"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "__typename")
+          }
+        }
+
+        public var bucket: String {
+          get {
+            return snapshot["bucket"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "bucket")
+          }
+        }
+
+        public var key: String {
+          get {
+            return snapshot["key"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "key")
+          }
+        }
+
+        public var region: String {
+          get {
+            return snapshot["region"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "region")
+          }
+        }
+      }
+    }
+  }
+}
+
+public final class UpvotePostMutation: GraphQLMutation {
+  public static let operationString =
+    "mutation UpvotePost($id: ID!) {\n  upvotePost(id: $id) {\n    __typename\n    id\n    author\n    title\n    content\n    url\n    ups\n    downs\n    file {\n      __typename\n      bucket\n      key\n      region\n    }\n    createdDate\n    aws_ds\n  }\n}"
+
+  public var id: GraphQLID
+
+  public init(id: GraphQLID) {
+    self.id = id
+  }
+
+  public var variables: GraphQLMap? {
+    return ["id": id]
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes = ["Mutation"]
+
+    public static let selections: [GraphQLSelection] = [
+      GraphQLField("upvotePost", arguments: ["id": GraphQLVariable("id")], type: .object(UpvotePost.selections)),
+    ]
+
+    public var snapshot: Snapshot
+
+    public init(snapshot: Snapshot) {
+      self.snapshot = snapshot
+    }
+
+    public init(upvotePost: UpvotePost? = nil) {
+      self.init(snapshot: ["__typename": "Mutation", "upvotePost": upvotePost.flatMap { $0.snapshot }])
+    }
+
+    public var upvotePost: UpvotePost? {
+      get {
+        return (snapshot["upvotePost"] as? Snapshot).flatMap { UpvotePost(snapshot: $0) }
+      }
+      set {
+        snapshot.updateValue(newValue?.snapshot, forKey: "upvotePost")
+      }
+    }
+
+    public struct UpvotePost: GraphQLSelectionSet {
+      public static let possibleTypes = ["Post"]
+
+      public static let selections: [GraphQLSelection] = [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("id", type: .nonNull(.scalar(GraphQLID.self))),
+        GraphQLField("author", type: .nonNull(.scalar(String.self))),
+        GraphQLField("title", type: .nonNull(.scalar(String.self))),
+        GraphQLField("content", type: .nonNull(.scalar(String.self))),
+        GraphQLField("url", type: .scalar(String.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("file", type: .object(File.selections)),
+        GraphQLField("createdDate", type: .scalar(String.self)),
+        GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
+      ]
+
+      public var snapshot: Snapshot
+
+      public init(snapshot: Snapshot) {
+        self.snapshot = snapshot
+      }
+
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+        self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
+      }
+
+      public var __typename: String {
+        get {
+          return snapshot["__typename"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var id: GraphQLID {
+        get {
+          return snapshot["id"]! as! GraphQLID
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "id")
+        }
+      }
+
+      public var author: String {
+        get {
+          return snapshot["author"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "author")
+        }
+      }
+
+      public var title: String {
+        get {
+          return snapshot["title"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "title")
+        }
+      }
+
+      public var content: String {
+        get {
+          return snapshot["content"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "content")
+        }
+      }
+
+      public var url: String? {
+        get {
+          return snapshot["url"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "url")
+        }
+      }
+
+      public var ups: Int {
+        get {
+          return snapshot["ups"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "ups")
+        }
+      }
+
+      public var downs: Int {
+        get {
+          return snapshot["downs"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "downs")
+        }
+      }
+
+      public var file: File? {
+        get {
+          return (snapshot["file"] as? Snapshot).flatMap { File(snapshot: $0) }
+        }
+        set {
+          snapshot.updateValue(newValue?.snapshot, forKey: "file")
+        }
+      }
+
+      public var createdDate: String? {
+        get {
+          return snapshot["createdDate"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "createdDate")
+        }
+      }
+
+      public var awsDs: DeltaAction? {
+        get {
+          return snapshot["aws_ds"] as? DeltaAction
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "aws_ds")
+        }
+      }
+
+      public struct File: GraphQLSelectionSet {
+        public static let possibleTypes = ["S3Object"]
+
+        public static let selections: [GraphQLSelection] = [
+          GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+          GraphQLField("bucket", type: .nonNull(.scalar(String.self))),
+          GraphQLField("key", type: .nonNull(.scalar(String.self))),
+          GraphQLField("region", type: .nonNull(.scalar(String.self))),
+        ]
+
+        public var snapshot: Snapshot
+
+        public init(snapshot: Snapshot) {
+          self.snapshot = snapshot
+        }
+
+        public init(bucket: String, key: String, region: String) {
+          self.init(snapshot: ["__typename": "S3Object", "bucket": bucket, "key": key, "region": region])
+        }
+
+        public var __typename: String {
+          get {
+            return snapshot["__typename"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "__typename")
+          }
+        }
+
+        public var bucket: String {
+          get {
+            return snapshot["bucket"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "bucket")
+          }
+        }
+
+        public var key: String {
+          get {
+            return snapshot["key"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "key")
+          }
+        }
+
+        public var region: String {
+          get {
+            return snapshot["region"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "region")
+          }
+        }
+      }
+    }
+  }
+}
+
+public final class DownvotePostMutation: GraphQLMutation {
+  public static let operationString =
+    "mutation DownvotePost($id: ID!) {\n  downvotePost(id: $id) {\n    __typename\n    id\n    author\n    title\n    content\n    url\n    ups\n    downs\n    file {\n      __typename\n      bucket\n      key\n      region\n    }\n    createdDate\n    aws_ds\n  }\n}"
+
+  public var id: GraphQLID
+
+  public init(id: GraphQLID) {
+    self.id = id
+  }
+
+  public var variables: GraphQLMap? {
+    return ["id": id]
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes = ["Mutation"]
+
+    public static let selections: [GraphQLSelection] = [
+      GraphQLField("downvotePost", arguments: ["id": GraphQLVariable("id")], type: .object(DownvotePost.selections)),
+    ]
+
+    public var snapshot: Snapshot
+
+    public init(snapshot: Snapshot) {
+      self.snapshot = snapshot
+    }
+
+    public init(downvotePost: DownvotePost? = nil) {
+      self.init(snapshot: ["__typename": "Mutation", "downvotePost": downvotePost.flatMap { $0.snapshot }])
+    }
+
+    public var downvotePost: DownvotePost? {
+      get {
+        return (snapshot["downvotePost"] as? Snapshot).flatMap { DownvotePost(snapshot: $0) }
+      }
+      set {
+        snapshot.updateValue(newValue?.snapshot, forKey: "downvotePost")
+      }
+    }
+
+    public struct DownvotePost: GraphQLSelectionSet {
+      public static let possibleTypes = ["Post"]
+
+      public static let selections: [GraphQLSelection] = [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("id", type: .nonNull(.scalar(GraphQLID.self))),
+        GraphQLField("author", type: .nonNull(.scalar(String.self))),
+        GraphQLField("title", type: .nonNull(.scalar(String.self))),
+        GraphQLField("content", type: .nonNull(.scalar(String.self))),
+        GraphQLField("url", type: .scalar(String.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("file", type: .object(File.selections)),
+        GraphQLField("createdDate", type: .scalar(String.self)),
+        GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
+      ]
+
+      public var snapshot: Snapshot
+
+      public init(snapshot: Snapshot) {
+        self.snapshot = snapshot
+      }
+
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+        self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
+      }
+
+      public var __typename: String {
+        get {
+          return snapshot["__typename"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var id: GraphQLID {
+        get {
+          return snapshot["id"]! as! GraphQLID
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "id")
+        }
+      }
+
+      public var author: String {
+        get {
+          return snapshot["author"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "author")
+        }
+      }
+
+      public var title: String {
+        get {
+          return snapshot["title"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "title")
+        }
+      }
+
+      public var content: String {
+        get {
+          return snapshot["content"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "content")
+        }
+      }
+
+      public var url: String? {
+        get {
+          return snapshot["url"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "url")
+        }
+      }
+
+      public var ups: Int {
+        get {
+          return snapshot["ups"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "ups")
+        }
+      }
+
+      public var downs: Int {
+        get {
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -2291,8 +2743,8 @@ public final class DeletePostUsingInputTypeMutation: GraphQLMutation {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -2304,7 +2756,7 @@ public final class DeletePostUsingInputTypeMutation: GraphQLMutation {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -2362,18 +2814,18 @@ public final class DeletePostUsingInputTypeMutation: GraphQLMutation {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -2517,8 +2969,8 @@ public final class DeletePostUsingParametersMutation: GraphQLMutation {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -2530,7 +2982,7 @@ public final class DeletePostUsingParametersMutation: GraphQLMutation {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -2588,18 +3040,18 @@ public final class DeletePostUsingParametersMutation: GraphQLMutation {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -2743,8 +3195,8 @@ public final class GetPostQuery: GraphQLQuery {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -2756,7 +3208,7 @@ public final class GetPostQuery: GraphQLQuery {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -2814,18 +3266,18 @@ public final class GetPostQuery: GraphQLQuery {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -2962,8 +3414,8 @@ public final class ListPostsQuery: GraphQLQuery {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -2975,7 +3427,7 @@ public final class ListPostsQuery: GraphQLQuery {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -3033,18 +3485,18 @@ public final class ListPostsQuery: GraphQLQuery {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -3188,8 +3640,8 @@ public final class ListPostsDeltaQuery: GraphQLQuery {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -3201,7 +3653,7 @@ public final class ListPostsDeltaQuery: GraphQLQuery {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -3259,18 +3711,18 @@ public final class ListPostsDeltaQuery: GraphQLQuery {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")
@@ -3407,8 +3859,8 @@ public final class OnDeltaPostSubscription: GraphQLSubscription {
         GraphQLField("title", type: .nonNull(.scalar(String.self))),
         GraphQLField("content", type: .nonNull(.scalar(String.self))),
         GraphQLField("url", type: .scalar(String.self)),
-        GraphQLField("ups", type: .scalar(Int.self)),
-        GraphQLField("downs", type: .scalar(Int.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
         GraphQLField("file", type: .object(File.selections)),
         GraphQLField("createdDate", type: .scalar(String.self)),
         GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
@@ -3420,7 +3872,7 @@ public final class OnDeltaPostSubscription: GraphQLSubscription {
         self.snapshot = snapshot
       }
 
-      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
         self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
       }
 
@@ -3478,18 +3930,470 @@ public final class OnDeltaPostSubscription: GraphQLSubscription {
         }
       }
 
-      public var ups: Int? {
+      public var ups: Int {
         get {
-          return snapshot["ups"] as? Int
+          return snapshot["ups"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "ups")
         }
       }
 
-      public var downs: Int? {
+      public var downs: Int {
         get {
-          return snapshot["downs"] as? Int
+          return snapshot["downs"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "downs")
+        }
+      }
+
+      public var file: File? {
+        get {
+          return (snapshot["file"] as? Snapshot).flatMap { File(snapshot: $0) }
+        }
+        set {
+          snapshot.updateValue(newValue?.snapshot, forKey: "file")
+        }
+      }
+
+      public var createdDate: String? {
+        get {
+          return snapshot["createdDate"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "createdDate")
+        }
+      }
+
+      public var awsDs: DeltaAction? {
+        get {
+          return snapshot["aws_ds"] as? DeltaAction
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "aws_ds")
+        }
+      }
+
+      public struct File: GraphQLSelectionSet {
+        public static let possibleTypes = ["S3Object"]
+
+        public static let selections: [GraphQLSelection] = [
+          GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+          GraphQLField("bucket", type: .nonNull(.scalar(String.self))),
+          GraphQLField("key", type: .nonNull(.scalar(String.self))),
+          GraphQLField("region", type: .nonNull(.scalar(String.self))),
+        ]
+
+        public var snapshot: Snapshot
+
+        public init(snapshot: Snapshot) {
+          self.snapshot = snapshot
+        }
+
+        public init(bucket: String, key: String, region: String) {
+          self.init(snapshot: ["__typename": "S3Object", "bucket": bucket, "key": key, "region": region])
+        }
+
+        public var __typename: String {
+          get {
+            return snapshot["__typename"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "__typename")
+          }
+        }
+
+        public var bucket: String {
+          get {
+            return snapshot["bucket"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "bucket")
+          }
+        }
+
+        public var key: String {
+          get {
+            return snapshot["key"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "key")
+          }
+        }
+
+        public var region: String {
+          get {
+            return snapshot["region"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "region")
+          }
+        }
+      }
+    }
+  }
+}
+
+public final class OnUpvotePostSubscription: GraphQLSubscription {
+  public static let operationString =
+    "subscription OnUpvotePost($id: ID!) {\n  onUpvotePost(id: $id) {\n    __typename\n    id\n    author\n    title\n    content\n    url\n    ups\n    downs\n    file {\n      __typename\n      bucket\n      key\n      region\n    }\n    createdDate\n    aws_ds\n  }\n}"
+
+  public var id: GraphQLID
+
+  public init(id: GraphQLID) {
+    self.id = id
+  }
+
+  public var variables: GraphQLMap? {
+    return ["id": id]
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes = ["Subscription"]
+
+    public static let selections: [GraphQLSelection] = [
+      GraphQLField("onUpvotePost", arguments: ["id": GraphQLVariable("id")], type: .object(OnUpvotePost.selections)),
+    ]
+
+    public var snapshot: Snapshot
+
+    public init(snapshot: Snapshot) {
+      self.snapshot = snapshot
+    }
+
+    public init(onUpvotePost: OnUpvotePost? = nil) {
+      self.init(snapshot: ["__typename": "Subscription", "onUpvotePost": onUpvotePost.flatMap { $0.snapshot }])
+    }
+
+    public var onUpvotePost: OnUpvotePost? {
+      get {
+        return (snapshot["onUpvotePost"] as? Snapshot).flatMap { OnUpvotePost(snapshot: $0) }
+      }
+      set {
+        snapshot.updateValue(newValue?.snapshot, forKey: "onUpvotePost")
+      }
+    }
+
+    public struct OnUpvotePost: GraphQLSelectionSet {
+      public static let possibleTypes = ["Post"]
+
+      public static let selections: [GraphQLSelection] = [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("id", type: .nonNull(.scalar(GraphQLID.self))),
+        GraphQLField("author", type: .nonNull(.scalar(String.self))),
+        GraphQLField("title", type: .nonNull(.scalar(String.self))),
+        GraphQLField("content", type: .nonNull(.scalar(String.self))),
+        GraphQLField("url", type: .scalar(String.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("file", type: .object(File.selections)),
+        GraphQLField("createdDate", type: .scalar(String.self)),
+        GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
+      ]
+
+      public var snapshot: Snapshot
+
+      public init(snapshot: Snapshot) {
+        self.snapshot = snapshot
+      }
+
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+        self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
+      }
+
+      public var __typename: String {
+        get {
+          return snapshot["__typename"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var id: GraphQLID {
+        get {
+          return snapshot["id"]! as! GraphQLID
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "id")
+        }
+      }
+
+      public var author: String {
+        get {
+          return snapshot["author"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "author")
+        }
+      }
+
+      public var title: String {
+        get {
+          return snapshot["title"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "title")
+        }
+      }
+
+      public var content: String {
+        get {
+          return snapshot["content"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "content")
+        }
+      }
+
+      public var url: String? {
+        get {
+          return snapshot["url"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "url")
+        }
+      }
+
+      public var ups: Int {
+        get {
+          return snapshot["ups"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "ups")
+        }
+      }
+
+      public var downs: Int {
+        get {
+          return snapshot["downs"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "downs")
+        }
+      }
+
+      public var file: File? {
+        get {
+          return (snapshot["file"] as? Snapshot).flatMap { File(snapshot: $0) }
+        }
+        set {
+          snapshot.updateValue(newValue?.snapshot, forKey: "file")
+        }
+      }
+
+      public var createdDate: String? {
+        get {
+          return snapshot["createdDate"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "createdDate")
+        }
+      }
+
+      public var awsDs: DeltaAction? {
+        get {
+          return snapshot["aws_ds"] as? DeltaAction
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "aws_ds")
+        }
+      }
+
+      public struct File: GraphQLSelectionSet {
+        public static let possibleTypes = ["S3Object"]
+
+        public static let selections: [GraphQLSelection] = [
+          GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+          GraphQLField("bucket", type: .nonNull(.scalar(String.self))),
+          GraphQLField("key", type: .nonNull(.scalar(String.self))),
+          GraphQLField("region", type: .nonNull(.scalar(String.self))),
+        ]
+
+        public var snapshot: Snapshot
+
+        public init(snapshot: Snapshot) {
+          self.snapshot = snapshot
+        }
+
+        public init(bucket: String, key: String, region: String) {
+          self.init(snapshot: ["__typename": "S3Object", "bucket": bucket, "key": key, "region": region])
+        }
+
+        public var __typename: String {
+          get {
+            return snapshot["__typename"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "__typename")
+          }
+        }
+
+        public var bucket: String {
+          get {
+            return snapshot["bucket"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "bucket")
+          }
+        }
+
+        public var key: String {
+          get {
+            return snapshot["key"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "key")
+          }
+        }
+
+        public var region: String {
+          get {
+            return snapshot["region"]! as! String
+          }
+          set {
+            snapshot.updateValue(newValue, forKey: "region")
+          }
+        }
+      }
+    }
+  }
+}
+
+public final class OnDownvotePostSubscription: GraphQLSubscription {
+  public static let operationString =
+    "subscription OnDownvotePost($id: ID!) {\n  onDownvotePost(id: $id) {\n    __typename\n    id\n    author\n    title\n    content\n    url\n    ups\n    downs\n    file {\n      __typename\n      bucket\n      key\n      region\n    }\n    createdDate\n    aws_ds\n  }\n}"
+
+  public var id: GraphQLID
+
+  public init(id: GraphQLID) {
+    self.id = id
+  }
+
+  public var variables: GraphQLMap? {
+    return ["id": id]
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes = ["Subscription"]
+
+    public static let selections: [GraphQLSelection] = [
+      GraphQLField("onDownvotePost", arguments: ["id": GraphQLVariable("id")], type: .object(OnDownvotePost.selections)),
+    ]
+
+    public var snapshot: Snapshot
+
+    public init(snapshot: Snapshot) {
+      self.snapshot = snapshot
+    }
+
+    public init(onDownvotePost: OnDownvotePost? = nil) {
+      self.init(snapshot: ["__typename": "Subscription", "onDownvotePost": onDownvotePost.flatMap { $0.snapshot }])
+    }
+
+    public var onDownvotePost: OnDownvotePost? {
+      get {
+        return (snapshot["onDownvotePost"] as? Snapshot).flatMap { OnDownvotePost(snapshot: $0) }
+      }
+      set {
+        snapshot.updateValue(newValue?.snapshot, forKey: "onDownvotePost")
+      }
+    }
+
+    public struct OnDownvotePost: GraphQLSelectionSet {
+      public static let possibleTypes = ["Post"]
+
+      public static let selections: [GraphQLSelection] = [
+        GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+        GraphQLField("id", type: .nonNull(.scalar(GraphQLID.self))),
+        GraphQLField("author", type: .nonNull(.scalar(String.self))),
+        GraphQLField("title", type: .nonNull(.scalar(String.self))),
+        GraphQLField("content", type: .nonNull(.scalar(String.self))),
+        GraphQLField("url", type: .scalar(String.self)),
+        GraphQLField("ups", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("downs", type: .nonNull(.scalar(Int.self))),
+        GraphQLField("file", type: .object(File.selections)),
+        GraphQLField("createdDate", type: .scalar(String.self)),
+        GraphQLField("aws_ds", type: .scalar(DeltaAction.self)),
+      ]
+
+      public var snapshot: Snapshot
+
+      public init(snapshot: Snapshot) {
+        self.snapshot = snapshot
+      }
+
+      public init(id: GraphQLID, author: String, title: String, content: String, url: String? = nil, ups: Int, downs: Int, file: File? = nil, createdDate: String? = nil, awsDs: DeltaAction? = nil) {
+        self.init(snapshot: ["__typename": "Post", "id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file.flatMap { $0.snapshot }, "createdDate": createdDate, "aws_ds": awsDs])
+      }
+
+      public var __typename: String {
+        get {
+          return snapshot["__typename"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var id: GraphQLID {
+        get {
+          return snapshot["id"]! as! GraphQLID
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "id")
+        }
+      }
+
+      public var author: String {
+        get {
+          return snapshot["author"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "author")
+        }
+      }
+
+      public var title: String {
+        get {
+          return snapshot["title"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "title")
+        }
+      }
+
+      public var content: String {
+        get {
+          return snapshot["content"]! as! String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "content")
+        }
+      }
+
+      public var url: String? {
+        get {
+          return snapshot["url"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "url")
+        }
+      }
+
+      public var ups: Int {
+        get {
+          return snapshot["ups"]! as! Int
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "ups")
+        }
+      }
+
+      public var downs: Int {
+        get {
+          return snapshot["downs"]! as! Int
         }
         set {
           snapshot.updateValue(newValue, forKey: "downs")

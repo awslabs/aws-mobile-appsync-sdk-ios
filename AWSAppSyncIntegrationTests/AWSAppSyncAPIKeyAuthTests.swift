@@ -176,7 +176,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
         deleteAll()
         let subscriptionStressTestHelper = SubscriptionStressTestHelper()
-        subscriptionStressTestHelper.stressTestSubscriptions(withAppSyncClient: appSyncClient)
+        subscriptionStressTestHelper.stressTestSubscriptions(with: appSyncClient)
     }
 
     func testSubscription() throws {
@@ -203,12 +203,12 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         // This handler will be invoked if an error occurs during the setup, or if we receive a successful mutation response.
         let subscriptionResultHandlerInvoked = expectation(description: "Subscription received successfully.")
-        var subscription: AWSAppSyncSubscriptionWatcher<OnDeltaPostSubscription>?
+        var subscription: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>?
         defer {
             subscription?.cancel()
         }
 
-        subscription = try self.appSyncClient?.subscribe(subscription: OnDeltaPostSubscription()) {
+        subscription = try self.appSyncClient?.subscribe(subscription: OnUpvotePostSubscription(id: id)) {
             result, _, error in
             print("Subscription result handler invoked")
             guard error == nil else {
@@ -226,7 +226,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         // Currently, subscriptions don't have a good way to inspect that they have been registered on the service.
         // We'll check for `getTopics` returning a non-empty value to stand in for a completion handler
-        let subscriptionIsRegisteredExpectation = expectation(description: "New comments subscription should have a non-empty topics list")
+        let subscriptionIsRegisteredExpectation = expectation(description: "Upvote subscription should have a non-empty topics list")
         let subscriptionGetTopicsTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) {
             _ in
             guard let subscription = subscription else {
@@ -248,18 +248,12 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         sleep(5)
 
         let upvotePerformed = expectation(description: "Upvote mutation performed")
-        let upvoteMutation = UpdatePostWithoutFileUsingParametersMutation(
-            id: id,
-            author: DefaultTestPostData.author,
-            title: DefaultTestPostData.title,
-            content: DefaultTestPostData.content,
-            ups: 1
-        )
+        let upvoteMutation = UpvotePostMutation(id: id)
         self.appSyncClient?.perform(mutation: upvoteMutation) {
             result, error in
-            print("Received create comment mutation response.")
+            print("Received upvote mutation response.")
             XCTAssertNil(error)
-            XCTAssertNotNil(result?.data?.updatePostWithoutFileUsingParameters?.id)
+            XCTAssertNotNil(result?.data?.upvotePost?.id)
             upvotePerformed.fulfill()
         }
 
@@ -306,7 +300,9 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                         id: "TestItemId",
                         author: DefaultTestPostData.author,
                         title: DefaultTestPostData.title,
-                        content: DefaultTestPostData.content
+                        content: DefaultTestPostData.content,
+                        ups: 0,
+                        downs: 0
                     )
                     data.listPosts?.append(item)
                 }
@@ -398,9 +394,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         let initialSubscriptionHandlerShouldBeInvokedDuringMonitoring =
             expectation(description: "Initial subscription query result handler should be invoked during monitoring")
-        // The AppSync service uses a QoS that may deliver multiple results for a single mutation, in order to guard against
-        // data loss. Allow this expectation to be overfulfilled without error
-        initialSubscriptionHandlerShouldBeInvokedDuringMonitoring.assertForOverFulfill = false
 
         let initialDeltaHandlerShouldNotBeInvokedDuringSetup =
             expectation(description: "Initial delta query result handler should not be invoked during setup")
@@ -434,7 +427,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             }
         }
 
-        let initialSubscriptionResultHandler: (GraphQLResult<OnDeltaPostSubscription.Data>?, ApolloStore.ReadWriteTransaction?, Error?) -> Void = {
+        let initialSubscriptionResultHandler: (GraphQLResult<OnUpvotePostSubscription.Data>?, ApolloStore.ReadWriteTransaction?, Error?) -> Void = {
             result, transaction, error in
             print("Initial subscription result handler invoked")
             XCTAssertNotNil(result)
@@ -463,7 +456,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let syncConfiguration = SyncConfiguration(baseRefreshIntervalInSeconds: baseRefreshIntervalInSeconds)
 
         let listPostsQuery = ListPostsQuery()
-        let subscription = OnDeltaPostSubscription()
+        let subscription = OnUpvotePostSubscription(id: id)
 
         syncWatcher = appSyncClient.sync(
             baseQuery: listPostsQuery,
@@ -492,13 +485,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         // Now that we've subscribed, mutate the post to trigger the subscription
         _currentSyncWatcherLifecyclePhase = .monitoring
-        let firstUpvoteMutation = UpdatePostWithoutFileUsingParametersMutation(
-            id: id,
-            author: DefaultTestPostData.author,
-            title: DefaultTestPostData.title,
-            content: DefaultTestPostData.content,
-            ups: 1
-        )
+        let firstUpvoteMutation = UpvotePostMutation(id: id)
         let firstUpvoteComplete = expectation(description: "First upvote should be completed on service")
 
         // Wait 3 seconds to ensure sync/subscription is active, then trigger the mutation
@@ -508,7 +495,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 (result, error) in
                 print("Received first upvote mutation response")
                 XCTAssertNil(error)
-                XCTAssertNotNil(result?.data?.updatePostWithoutFileUsingParameters?.id)
+                XCTAssertNotNil(result?.data?.upvotePost?.id)
                 firstUpvoteComplete.fulfill()
             }
         }
@@ -545,9 +532,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         let restartedSubscriptionHandlerShouldBeInvokedDuringMonitoring =
             expectation(description: "Restarted subscription query result handler should be invoked during monitoring")
-        // The AppSync service uses a QoS that may deliver multiple results for a single mutation, in order to guard against
-        // data loss. Allow this expectation to be overfulfilled without error
-        restartedSubscriptionHandlerShouldBeInvokedDuringMonitoring.assertForOverFulfill = false
 
         let restartedDeltaHandlerShouldBeInvokedDuringSetup =
             expectation(description: "Restarted delta query result handler should not be invoked during setup")
@@ -579,7 +563,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             }
         }
 
-        let restartedSubscriptionResultHandler: (GraphQLResult<OnDeltaPostSubscription.Data>?, ApolloStore.ReadWriteTransaction?, Error?) -> Void = {
+        let restartedSubscriptionResultHandler: (GraphQLResult<OnUpvotePostSubscription.Data>?, ApolloStore.ReadWriteTransaction?, Error?) -> Void = {
             result, transaction, error in
             print("Restarted subscription result handler invoked")
             XCTAssertNotNil(result)
@@ -632,13 +616,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         // Trigger the restarted watcher's subscription
         _currentSyncWatcherLifecyclePhase = .monitoring
-        let secondUpvoteMutation = UpdatePostWithoutFileUsingParametersMutation(
-            id: id,
-            author: DefaultTestPostData.author,
-            title: DefaultTestPostData.title,
-            content: DefaultTestPostData.content,
-            ups: 2
-        )
+        let secondUpvoteMutation = UpvotePostMutation(id: id)
         let secondUpvoteComplete = expectation(description: "Second upvote should be completed on service")
 
         // Wait 3 seconds to ensure sync/subscription is active, then trigger the mutation
@@ -646,9 +624,9 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             sleep(3)
             self.appSyncClient?.perform(mutation: secondUpvoteMutation) {
                 (result, error) in
-                print("Received second create comment mutation response")
+                print("Received second upvote mutation response")
                 XCTAssertNil(error)
-                XCTAssertNotNil(result?.data?.updatePostWithoutFileUsingParameters?.id)
+                XCTAssertNotNil(result?.data?.upvotePost?.id)
                 secondUpvoteComplete.fulfill()
             }
         }

@@ -65,6 +65,14 @@
   "updatePostWithoutFileUsingParameters_id": "a-post-id",
 	"updatePostWithoutFileUsingParameters_content": "updatePostWithoutFileUsingParameters",
 
+  "upvotePost": "a-post-id",
+
+  "downvotePost": "a-post-id",
+
+  "onUpvotePost": "a-post-id",
+
+  "onDownvotePost": "a-post-id",
+
   "deletePostUsingInputType": {
     "id": "a-post-id"
   },

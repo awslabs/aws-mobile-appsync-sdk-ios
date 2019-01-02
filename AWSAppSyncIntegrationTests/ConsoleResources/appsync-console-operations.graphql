@@ -124,6 +124,44 @@ mutation UpdatePostWithoutFileUsingParameters(
   }
 }
 
+mutation UpvotePost($upvotePost: ID!) {
+  upvotePost(id: $upvotePost) {
+    id
+    ups
+    downs
+  }
+}
+
+mutation DownvotePost($downvotePost: ID!) {
+  downvotePost(id: $downvotePost) {
+    id
+    ups
+    downs
+  }
+}
+
+subscription OnDeltaPost {
+  onDeltaPost {
+    ...postAllFields
+  }
+}
+
+subscription OnUpvotePost($onUpvotePost: ID!) {
+  onUpvotePost(id: $onUpvotePost) {
+    id
+    ups
+    downs
+  }
+}
+
+subscription OnDownvotePost($onDownvotePost: ID!) {
+  onDownvotePost(id: $onDownvotePost) {
+    id
+    ups
+    downs
+  }
+}
+
 mutation DeletePostUsingInputType($deletePostUsingInputType: DeletePostInput!) {
   deletePostUsingInputType(input: $deletePostUsingInputType) {
     ...postAllFields

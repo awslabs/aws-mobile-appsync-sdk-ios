@@ -14,15 +14,14 @@
 //
 
 @testable import AWSAppSync
-@testable import AWSAppSyncTestCommon
 
 struct DefaultTestPostData {
-    static let author: String = "Test author"
-    static let title: String = "Test title"
-    static let content: String = "Test content"
+    static let author = "Test author"
+    static let title = "Test title"
+    static let content = "Test content"
     static let url: String? = nil
-    static let ups: Int? = nil
-    static let downs: Int? = nil
+    static let ups = 0
+    static let downs = 0
 
     static var defaultCreatePostWithoutFileUsingParametersMutation: CreatePostWithoutFileUsingParametersMutation {
         let mutation = CreatePostWithoutFileUsingParametersMutation(
@@ -35,23 +34,4 @@ struct DefaultTestPostData {
         )
         return mutation
     }
-
-//    static func updatePostWithoutFileUsingParametersMutation(id: GraphQLID,
-//                                                             author: String = DefaultTestPostData.author,
-//                                                             title: String = DefaultTestPostData.title,
-//                                                             content: String = DefaultTestPostData.content,
-//                                                             url: String? = DefaultTestPostData.url,
-//                                                             ups: Int? = DefaultTestPostData.ups,
-//                                                             downs: Int? = DefaultTestPostData.downs) -> UpdatePostWithoutFileUsingParametersMutation {
-//        let mutation = UpdatePostWithoutFileUsingParametersMutation(
-//            id: id
-//            author: author,
-//            title: title,
-//            content: content,
-//            url: url,
-//            ups: ups,
-//            downs: downs
-//        )
-//        return mutation
-//    }
 }
