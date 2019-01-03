@@ -71,7 +71,7 @@ final class AWSPerformMutationQueue {
                     networkClient: networkClient,
                     handlerQueue: handlerQueue,
                     mutation: mutation)
-                operation.queuePriority = mutation.priority?.operationQueuePriority ?? .normal
+
                 operation.operationCompletionBlock = { [weak self] operation, error in
                     let identifier = operation.mutation.recordIdentitifer
 
@@ -89,9 +89,7 @@ final class AWSPerformMutationQueue {
         }
     }
 
-    private func save<Mutation: GraphQLMutation>(
-        _ mutation: Mutation,
-        mutationPriority: AWSPerformMutationPriority) throws -> AWSAppSyncMutationRecord? {
+    private func save<Mutation: GraphQLMutation>(_ mutation: Mutation) throws -> AWSAppSyncMutationRecord? {
         guard let persistentCache = persistentCache else { return nil }
 
         let requestBody = AWSRequestBuilder.requestBody(from: mutation)
@@ -109,7 +107,6 @@ final class AWSPerformMutationQueue {
         offlineMutation.jsonRecord = mutation.variables?.jsonObject
         offlineMutation.recordState = .inQueue
         offlineMutation.operationString = Mutation.operationString
-        offlineMutation.priority = mutationPriority
 
         try persistentCache.saveMutationRecord(record: offlineMutation)
 
@@ -124,18 +121,14 @@ final class AWSPerformMutationQueue {
 
     func add<Mutation: GraphQLMutation>(
         _ mutation: Mutation,
-        mutationPriority: AWSPerformMutationPriority,
         mutationConflictHandler: MutationConflictHandler<Mutation>?,
         mutationResultHandler: OperationResultHandler<Mutation>?) -> Cancellable {
 
         let offlineMutation: AWSAppSyncMutationRecord?
         do {
-            offlineMutation = try save(
-                mutation,
-                mutationPriority: mutationPriority)
+            offlineMutation = try save(mutation)
         } catch {
             offlineMutation = nil
-
             debugPrint("\(#function) error: \(error)")
         }
 
@@ -145,8 +138,9 @@ final class AWSPerformMutationQueue {
             mutation: mutation,
             mutationConflictHandler: mutationConflictHandler,
             mutationResultHandler: mutationResultHandler)
+
         operation.identifier = offlineMutation?.recordIdentitifer
-        operation.queuePriority = mutationPriority.operationQueuePriority
+
         operation.operationCompletionBlock = { [weak self] operation, error in
             guard let identifier = operation.identifier else { return }
 

@@ -1,0 +1,11 @@
+{
+    "projectName": "AWSAppSyncTests",
+    "projectPath": "/Users/schmelte/src/github-repos/aws-mobile-appsync-sdk-ios/AWSAppSyncTests",
+    "defaultEditor": "none",
+    "frontendHandler": {
+        "ios": "/Users/schmelte/.nvm/versions/node/v8.11.1/lib/node_modules/@aws-amplify/cli/node_modules/amplify-frontend-ios"
+    },
+    "providers": {
+        "awscloudformation": "/Users/schmelte/.nvm/versions/node/v8.11.1/lib/node_modules/@aws-amplify/cli/node_modules/amplify-provider-awscloudformation"
+    }
+}

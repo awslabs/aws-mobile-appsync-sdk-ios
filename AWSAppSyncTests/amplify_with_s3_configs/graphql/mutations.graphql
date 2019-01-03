@@ -1,0 +1,85 @@
+# this is an auto generated file. This will be overwritten
+mutation CreateEvent(
+  $name: String!
+  $when: String!
+  $where: String!
+  $description: String!
+) {
+  createEvent(
+    name: $name
+    when: $when
+    where: $where
+    description: $description
+  ) {
+    id
+    name
+    where
+    when
+    description
+    comments {
+      items {
+        eventId
+        commentId
+        content
+        createdAt
+      }
+      nextToken
+    }
+  }
+}
+mutation CreateEventWithFile(
+  $name: String!
+  $when: String!
+  $where: String!
+  $description: String!
+  $file: S3ObjectInput
+) {
+  createEventWithFile(
+    name: $name
+    when: $when
+    where: $where
+    description: $description
+    file: $file
+  ) {
+    id
+    name
+    where
+    when
+    description
+    comments {
+      items {
+        eventId
+        commentId
+        content
+        createdAt
+      }
+      nextToken
+    }
+  }
+}
+mutation DeleteEvent($id: ID!) {
+  deleteEvent(id: $id) {
+    id
+    name
+    where
+    when
+    description
+    comments {
+      items {
+        eventId
+        commentId
+        content
+        createdAt
+      }
+      nextToken
+    }
+  }
+}
+mutation CommentOnEvent($eventId: ID!, $content: String!, $createdAt: String!) {
+  commentOnEvent(eventId: $eventId, content: $content, createdAt: $createdAt) {
+    eventId
+    commentId
+    content
+    createdAt
+  }
+}

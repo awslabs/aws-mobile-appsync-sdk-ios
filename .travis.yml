@@ -6,8 +6,9 @@ env:
 xcode_workspace: AWSAppSyncClient.xcworkspace
 xcode_scheme: AWSAppSync
 before_install:
-- openssl aes-256-cbc -K $encrypted_79b276987c9f_key -iv $encrypted_79b276987c9f_iv
-  -in AWSAppSyncTests/appsync_test_credentials.json.enc -out AWSAppSyncTests/appsync_test_credentials.json
+- openssl aes-256-cbc -K $encrypted_6919a533707f_key -iv $encrypted_6919a533707f_iv
+  -in AWSAppSyncIntegrationTests/appsync_test_credentials.json.enc
+  -out AWSAppSyncIntegrationTests/appsync_test_credentials.json
   -d
 - brew update
 - brew outdated carthage || brew upgrade carthage

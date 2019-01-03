@@ -13,14 +13,7 @@
 // permissions and limitations under the License.
 //
 
-class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
-    var apiKey: String
+import Foundation
 
-    init(key: String) {
-        apiKey = key
-    }
-
-    func getAPIKey() -> String {
-        return apiKey
-    }
-}
+// Conform String to error module so we can easily use bare strings in Result failures
+extension String: Error {}

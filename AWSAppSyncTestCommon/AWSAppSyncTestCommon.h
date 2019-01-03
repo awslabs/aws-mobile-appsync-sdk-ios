@@ -13,14 +13,14 @@
 // permissions and limitations under the License.
 //
 
-class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
-    var apiKey: String
+#import <UIKit/UIKit.h>
 
-    init(key: String) {
-        apiKey = key
-    }
+//! Project version number for AWSAppSyncTestCommon.
+FOUNDATION_EXPORT double AWSAppSyncTestCommonVersionNumber;
 
-    func getAPIKey() -> String {
-        return apiKey
-    }
-}
+//! Project version string for AWSAppSyncTestCommon.
+FOUNDATION_EXPORT const unsigned char AWSAppSyncTestCommonVersionString[];
+
+// In this header, you should import all the public headers of your framework using statements like #import <AWSAppSyncTestCommon/PublicHeader.h>
+
+
