@@ -105,6 +105,54 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(for: [listPostsCompleted], timeout: 5.0)
     }
 
+    func testClearCache() {
+        let postCreated = expectation(description: "Post created successfully.")
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+
+        appSyncClient?.perform(mutation: addPost) { result, error in
+            XCTAssertNil(error)
+            XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
+            XCTAssertEqual(
+                result!.data!.createPostWithoutFileUsingParameters?.author,
+                DefaultTestPostData.author
+            )
+            postCreated.fulfill()
+        }
+
+        wait(for: [postCreated], timeout: 5.0)
+
+        let query = ListPostsQuery()
+
+        let listPostsCompleted = expectation(description: "Fetch query ignoring cache")
+
+        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { result, error in
+            defer { listPostsCompleted.fulfill() }
+
+            XCTAssertNil(error)
+            XCTAssertNotNil(result?.data?.listPosts)
+            XCTAssertGreaterThan(result!.data!.listPosts!.count, 0, "Expected service to return at least 1 post.")
+        }
+
+        wait(for: [listPostsCompleted], timeout: 5.0)
+
+        do {
+            try appSyncClient?.clearCache().await()
+        } catch {
+            XCTFail()
+        }
+
+        let emptyCacheCompleted = expectation(description: "Fetch query from empty cache")
+
+        appSyncClient?.fetch(query: query, cachePolicy: .returnCacheDataDontFetch) { (result, error) in
+            defer { emptyCacheCompleted.fulfill() }
+
+            XCTAssertNil(result, "Expected empty cache")
+            XCTAssertNil(error, "Expected no error")
+        }
+
+        wait(for: [emptyCacheCompleted], timeout: 5.0)
+    }
+
     func testSubscription_Stress() {
         guard let appSyncClient = appSyncClient else {
             XCTFail("appSyncClient should not be nil")
