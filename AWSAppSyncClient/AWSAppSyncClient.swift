@@ -285,6 +285,14 @@ public class AWSAppSyncClient {
         self.connectionStateChangeHandler?.stateChanged(networkState: accessState)
     }
 
+    /// Clears apollo cache
+    ///
+    /// - Returns: Promise
+    public func clearCache() -> Promise<Void> {
+        guard let store = store else { return Promise(fulfilled: ()) }
+        return store.clearCache()
+    }
+
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
     ///
     /// - Parameters:
