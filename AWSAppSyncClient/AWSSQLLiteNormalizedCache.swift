@@ -229,6 +229,12 @@ public final class AWSSQLLiteNormalizedCache: NormalizedCache {
         let fields = try SQLiteSerialization.deserialize(data: recordData)
         return Record(key: row[key], fields)
     }
+
+    public func clear() -> Promise<Void> {
+        return Promise {
+            try db.run(self.records.delete())
+        }
+    }
 }
 
 private let serializedReferenceKey = "$reference"
