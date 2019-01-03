@@ -106,11 +106,11 @@
 		17E009DB1FCAB234005031DB /* NormalizedCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B91FCAB234005031DB /* NormalizedCache.swift */; };
 		17E009DC1FCAB234005031DB /* ApolloClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009BA1FCAB234005031DB /* ApolloClient.swift */; };
 		8032C5415EF414C038394D69 /* Pods_AWSAppSyncTestCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */; };
+		C4980354FE541C9D8DC01364 /* Pods_ApolloTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */; };
 		CC96F8A521BABE5600446EBD /* AWSPerformMutationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A421BABE5600446EBD /* AWSPerformMutationQueue.swift */; };
 		CC96F8A721BACA1C00446EBD /* AWSPerformMutationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A621BACA1C00446EBD /* AWSPerformMutationOperation.swift */; };
 		CC96F8A921BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A821BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift */; };
 		CC96F8AB21BAF68300446EBD /* AWSRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8AA21BAF68300446EBD /* AWSRequestBuilder.swift */; };
-		CC96F8AD21BBC6E800446EBD /* AWSPerformMutationPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8AC21BBC6E500446EBD /* AWSPerformMutationPriority.swift */; };
 		CCEF79D921DAD167004AD64D /* SnapshotProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79D821DAD167004AD64D /* SnapshotProcessController.swift */; };
 		DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */; };
 		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
@@ -369,6 +369,7 @@
 		17E009BA1FCAB234005031DB /* ApolloClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ApolloClient.swift; path = Apollo/Sources/Apollo/ApolloClient.swift; sourceTree = "<group>"; };
 		1CC71FAD4E9B09922B42E040 /* Pods_AWSAppSync_AWSAppSyncIntegrationTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncIntegrationTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EFDEC03028113885E64C3EF /* Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncUnitTests/Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		41C7F099AA45E55D08A8BA68 /* Pods-ApolloTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ApolloTests/Pods-ApolloTests.release.xcconfig"; sourceTree = "<group>"; };
 		43DE4437D9C5383591E2097D /* Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncUnitTests/Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		501C2133634282FF97CF8826 /* Pods-AWSAppSync-AWSAppSyncTestCommon.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncTestCommon.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTestCommon/Pods-AWSAppSync-AWSAppSyncTestCommon.release.xcconfig"; sourceTree = "<group>"; };
 		53895D2B728EEBF96828979B /* Pods_StarWarsAPI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_StarWarsAPI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -377,6 +378,7 @@
 		6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncTestCommon.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		741880AF213878B400523CA8 /* AuthProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthProviderTests.swift; sourceTree = "<group>"; };
+		82E714A3E9BFB80BD9E5EF90 /* Pods-ApolloTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ApolloTests/Pods-ApolloTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8623D545D4837963CF2FFF02 /* Pods-AWSAppSyncUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncUnitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncUnitTests/Pods-AWSAppSyncUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		90CBFC0B3531908E949BF9F0 /* Pods-AWSAppSyncIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncIntegrationTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncIntegrationTests/Pods-AWSAppSyncIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
 		AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSyncMQTTClientTests.swift; sourceTree = "<group>"; };
@@ -390,8 +392,8 @@
 		CC96F8A621BACA1C00446EBD /* AWSPerformMutationOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSPerformMutationOperation.swift; sourceTree = "<group>"; };
 		CC96F8A821BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSPerformOfflineMutationOperation.swift; sourceTree = "<group>"; };
 		CC96F8AA21BAF68300446EBD /* AWSRequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSRequestBuilder.swift; sourceTree = "<group>"; };
-		CC96F8AC21BBC6E500446EBD /* AWSPerformMutationPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSPerformMutationPriority.swift; sourceTree = "<group>"; };
 		CCEF79D821DAD167004AD64D /* SnapshotProcessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotProcessController.swift; sourceTree = "<group>"; };
+		CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D30DD5B10C8BBEF67A3F276F /* Pods_AWSAppSync_ApolloTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_ApolloTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D40466195913ADF51E9ABDE3 /* Pods-AWSAppSync-AWSAppSyncIntegrationTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncIntegrationTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncIntegrationTests/Pods-AWSAppSync-AWSAppSyncIntegrationTests.debug.xcconfig"; sourceTree = "<group>"; };
 		DB9BA0C06B23E99CE44BA032 /* Pods_AWSAppSync_AWSAppSyncTestCommon.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncTestCommon.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -451,6 +453,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1700503B21543E41008B16B6 /* AWSAppSync.framework in Frameworks */,
+				C4980354FE541C9D8DC01364 /* Pods_ApolloTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -593,11 +596,9 @@
 				175698062134A62D00319ABC /* AppSyncLogWrapper.swift */,
 				17185D2C219DEA7800092934 /* AppSyncSubscriptionWithSync.swift */,
 				179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */,
-				179E0A66215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift */,
 				FAF5D78E21D3F0C100FC04D2 /* AWSConfigurationFile.swift */,
 				17D2C2061F6F44A3006C6818 /* AWSOfflineMutation.swift */,
 				CC96F8A621BACA1C00446EBD /* AWSPerformMutationOperation.swift */,
-				CC96F8AC21BBC6E500446EBD /* AWSPerformMutationPriority.swift */,
 				CC96F8A421BABE5600446EBD /* AWSPerformMutationQueue.swift */,
 				CC96F8A821BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift */,
 				FA0C12C021CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift */,
@@ -625,6 +626,7 @@
 				11451D28565C3FB861CB5E53 /* Pods_AWSAppSyncIntegrationTests.framework */,
 				74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */,
 				F0FC364F581CF82AB0F22F9D /* Pods_AWSAppSyncUnitTests.framework */,
+				CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -692,6 +694,7 @@
 				178B31051FCDB34100EA4619 /* AWSAppSyncClientS3ObjectsExtensions.swift */,
 				17915B041F5F106600C4B73C /* AWSAppSyncHTTPNetworkTransport.swift */,
 				FAF5D78C21D3F04E00FC04D2 /* AWSAppSyncServiceConfig.swift */,
+				179E0A66215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift */,
 				FAAACC2521DD7BC300D24B37 /* AWSAppSyncMutations.swift */,
 				FA3E128421D5297500F2D19A /* AWSAppSyncServiceConfigError.swift */,
 				1729A0CF1FA1365900F88594 /* AWSAppSyncSubscriptionWatcher.swift */,
@@ -762,6 +765,8 @@
 				638B965BDCAD9E3264A1C722 /* Pods-AWSAppSyncTestCommon.release.xcconfig */,
 				8623D545D4837963CF2FFF02 /* Pods-AWSAppSyncUnitTests.debug.xcconfig */,
 				FE287B16EB3226D1790DEC1D /* Pods-AWSAppSyncUnitTests.release.xcconfig */,
+				82E714A3E9BFB80BD9E5EF90 /* Pods-ApolloTests.debug.xcconfig */,
+				41C7F099AA45E55D08A8BA68 /* Pods-ApolloTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -871,9 +876,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1700504021543E41008B16B6 /* Build configuration list for PBXNativeTarget "ApolloTests" */;
 			buildPhases = (
+				795CA4A3AFFE5D07DA5CCF41 /* [CP] Check Pods Manifest.lock */,
 				1700503221543E41008B16B6 /* Sources */,
 				1700503321543E41008B16B6 /* Frameworks */,
 				1700503421543E41008B16B6 /* Resources */,
+				1BA7EDAD5D3564F4333D0DE2 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1137,6 +1144,32 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		1BA7EDAD5D3564F4333D0DE2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-ApolloTests/Pods-ApolloTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AWSCore/AWSCore.framework",
+				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift/Reachability.framework",
+				"${BUILT_PRODUCTS_DIR}/SQLite.swift/SQLite.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Reachability.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SQLite.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ApolloTests/Pods-ApolloTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		47B79F6E35845AD6E9224BE9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1199,6 +1232,28 @@
 			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-AWSAppSyncUnitTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		795CA4A3AFFE5D07DA5CCF41 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ApolloTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1366,7 +1421,6 @@
 				17E009CE1FCAB234005031DB /* GraphQLError.swift in Sources */,
 				17D2C2071F6F44A3006C6818 /* AWSOfflineMutation.swift in Sources */,
 				17E009BB1FCAB234005031DB /* GraphQLDependencyTracker.swift in Sources */,
-				CC96F8AD21BBC6E800446EBD /* AWSPerformMutationPriority.swift in Sources */,
 				1729A0D21FA149A000F88594 /* AppSyncMQTTClient.swift in Sources */,
 				17E009C71FCAB234005031DB /* JSONSerializationFormat.swift in Sources */,
 				17E009CD1FCAB234005031DB /* Collections.swift in Sources */,
@@ -1556,6 +1610,7 @@
 /* Begin XCBuildConfiguration section */
 		1700503E21543E41008B16B6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 82E714A3E9BFB80BD9E5EF90 /* Pods-ApolloTests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -1580,6 +1635,7 @@
 		};
 		1700503F21543E41008B16B6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 41C7F099AA45E55D08A8BA68 /* Pods-ApolloTests.release.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;

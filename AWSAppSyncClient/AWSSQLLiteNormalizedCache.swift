@@ -44,8 +44,7 @@ public final class AWSMutationCache {
     private let s3LocalUri = Expression<String?>("s3LocalUri")
     private let s3MimeType = Expression<String?>("s3MimeType")
     private let operationString = Expression<String>("operationString")
-    private let priority = Expression<Int?>("priority")
-    
+
     public init(fileURL: URL) throws {
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
         db.busyTimeout = sqlBusyTimeoutConstant
@@ -68,10 +67,6 @@ public final class AWSMutationCache {
             table.column(operationString)
         })
 
-        do {
-            try db.run(mutationRecords.addColumn(priority))
-        } catch {}
-
         try db.run(mutationRecords.createIndex(recordIdentifier, unique: true, ifNotExists: true))
     }
     
@@ -83,7 +78,6 @@ public final class AWSMutationCache {
                 contentMap <- record.contentMap!.description,
                 recordState <- record.recordState.rawValue,
                 timestamp <- record.timestamp,
-                priority <- record.priority?.rawValue,
                 s3Bucket <- s3Object.bucket,
                 s3Key <- s3Object.key,
                 s3Region <- s3Object.region,
@@ -98,7 +92,6 @@ public final class AWSMutationCache {
                 contentMap <- record.contentMap!.description,
                 recordState <- record.recordState.rawValue,
                 timestamp <- record.timestamp,
-                priority <- record.priority?.rawValue,
                 operationString <- record.operationString!)
             try db.run(insert)
         }
@@ -129,8 +122,6 @@ public final class AWSMutationCache {
                     recordIdentifier: try record.get(recordIdentifier),
                     timestamp: try record.get(timestamp))
                 mutationRecord.data = try record.get(data)
-                mutationRecord.priority = try record.get(priority)
-                    .flatMap { AWSPerformMutationPriority(rawValue: $0) }
                 mutationRecord.recordState = .inQueue
                 mutationRecord.operationString = try record.get(operationString)
 

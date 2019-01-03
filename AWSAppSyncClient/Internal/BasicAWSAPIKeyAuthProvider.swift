@@ -16,7 +16,7 @@
 class BasicAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
     var apiKey: String
 
-    public init(key: String) {
+    init(key: String) {
         apiKey = key
     }
 

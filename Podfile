@@ -19,3 +19,7 @@ end
 
 target 'AWSAppSyncIntegrationTests' do
 end
+
+target 'ApolloTests' do
+  pod 'AWSCore', '~> 2.8.0'
+end
