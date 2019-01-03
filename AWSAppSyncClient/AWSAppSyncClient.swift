@@ -15,16 +15,6 @@
 
 import Foundation
 import AWSCore
-import Reachability
-
-public enum ClientNetworkAccessState {
-    case Online
-    case Offline
-}
-
-public protocol ConnectionStateChangeHandler {
-    func stateChanged(networkState: ClientNetworkAccessState)
-}
 
 public typealias SubscriptionResultHandler<Operation: GraphQLSubscription> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
 
@@ -59,69 +49,8 @@ public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
     }
 }
 
-protocol NetworkConnectionNotification {
-    func onNetworkAvailabilityStatusChanged(isEndpointReachable: Bool)
-}
-
 public protocol AWSAppSyncOfflineMutationDelegate {
     func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?)
-}
-
-public struct AppSyncConnectionInfo {
-    public let isConnectionAvailable: Bool
-    public let isInitialConnection: Bool
-}
-
-internal extension Notification.Name {
-    internal static let appSyncReachabilityChanged = Notification.Name("AppSyncNetworkAvailabilityChangedNotification")
-}
-
-class AWSAppSyncNetworkStatusChangeNotifier {
-    var reachability: Reachability?
-    var allowsCellularAccess: Bool = true
-    var isInitialConnection: Bool = true
-
-    static func setupSharedInstance(host: String, allowsCellular: Bool) {
-        sharedInstance = AWSAppSyncNetworkStatusChangeNotifier(host: host, allowsCellular: allowsCellular)
-    }
-
-    static var sharedInstance: AWSAppSyncNetworkStatusChangeNotifier?
-
-    private init(host: String, allowsCellular: Bool) {
-        reachability = Reachability(hostname: host)
-        allowsCellularAccess = allowsCellular
-        NotificationCenter.default.addObserver(self, selector: #selector(checkForReachability(note:)), name: .reachabilityChanged, object: reachability)
-        do {
-            try reachability?.startNotifier()
-        } catch {
-
-        }
-    }
-
-    @objc func checkForReachability(note: Notification) {
-        let reachability = note.object as! Reachability
-        var isReachable = false
-
-        switch reachability.connection {
-        case .wifi:
-            isReachable = true
-        case .cellular:
-            if self.allowsCellularAccess {
-                isReachable = true
-            }
-        case .none:
-            isReachable = false
-        }
-
-        let info = AppSyncConnectionInfo.init(isConnectionAvailable: isReachable, isInitialConnection: isInitialConnection)
-
-        guard isInitialConnection == false else {
-            isInitialConnection = false
-            return
-        }
-
-        NotificationCenter.default.post(name: .appSyncReachabilityChanged, object: info)
-    }
 }
 
 // The client for making `Mutation`, `Query` and `Subscription` requests.
@@ -132,27 +61,28 @@ public class AWSAppSyncClient {
     public let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
     public let s3ObjectManager: AWSS3ObjectManager?
 
-    internal var reachability: Reachability?
     internal var httpTransport: AWSNetworkTransport?
-    internal var connectionStateChangeHandler: ConnectionStateChangeHandler?
 
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
     private var mutationQueue: AWSPerformMutationQueue!
 
-    private var networkStatusWatchers: [NetworkConnectionNotification] = []
+    private var connectionStateChangeHandler: ConnectionStateChangeHandler?
     private var autoSubmitOfflineMutations: Bool = false
     private var appSyncMQTTClient = AppSyncMQTTClient()
     private var subscriptionsQueue = DispatchQueue(label: "SubscriptionsQueue", qos: .userInitiated)
 
     fileprivate var subscriptionMetadataCache: AWSSubscriptionMetaDataCache?
-    fileprivate var accessState: ClientNetworkAccessState = .Offline
 
     /// Creates a client with the specified `AWSAppSyncClientConfiguration`.
     ///
     /// - Parameters:
     ///   - appSyncConfig: The `AWSAppSyncClientConfiguration` object.
-    public init(appSyncConfig: AWSAppSyncClientConfiguration) throws {
-        self.reachability = Reachability(hostname: appSyncConfig.url.host!)
+    public convenience init(appSyncConfig: AWSAppSyncClientConfiguration) throws {
+        try self.init(appSyncConfig: appSyncConfig, reachabilityFactory: nil)
+    }
+
+    init(appSyncConfig: AWSAppSyncClientConfiguration,
+         reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil) throws {
         self.autoSubmitOfflineMutations = appSyncConfig.autoSubmitOfflineMutations
         self.store = appSyncConfig.store
         self.appSyncMQTTClient.allowCellularAccess = appSyncConfig.allowsCellularAccess
@@ -165,45 +95,38 @@ public class AWSAppSyncClient {
 
         self.apolloClient = ApolloClient(networkTransport: self.httpTransport!, store: appSyncConfig.store)
 
+        NetworkReachabilityNotifier.setupShared(
+            host: appSyncConfig.url.host!,
+            allowsCellularAccess: appSyncConfig.allowsCellularAccess,
+            reachabilityFactory: reachabilityFactory)
+
         self.mutationQueue = AWSPerformMutationQueue(
             appSyncClient: self,
             networkClient: httpTransport!,
             handlerQueue: .main,
-            snapshotProcessController: SnapshotProcessController(endpointURL: appSyncConfig.url),
-            fileURL: appSyncConfig.databaseURL)
-        networkStatusWatchers.append(mutationQueue)
-
-        if AWSAppSyncNetworkStatusChangeNotifier.sharedInstance == nil {
-            AWSAppSyncNetworkStatusChangeNotifier.setupSharedInstance(host: appSyncConfig.url.host!, allowsCellular: appSyncConfig.allowsCellularAccess)
-        }
+            reachabiltyChangeNotifier: NetworkReachabilityNotifier.shared,
+            cacheFileURL: appSyncConfig.databaseURL)
 
         NotificationCenter.default.addObserver(
-            self, selector: #selector(appsyncReachabilityChanged(note:)), name: .appSyncReachabilityChanged, object: nil)
+            self,
+            selector: #selector(appsyncReachabilityChanged(note:)),
+            name: .appSyncReachabilityChanged,
+            object: nil)
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self, name: .appSyncReachabilityChanged, object: nil)
+        NetworkReachabilityNotifier.clearShared()
     }
 
     @objc func appsyncReachabilityChanged(note: Notification) {
-
         let connectionInfo = note.object as! AppSyncConnectionInfo
         let isReachable = connectionInfo.isConnectionAvailable
-        for watchers in networkStatusWatchers {
-            watchers.onNetworkAvailabilityStatusChanged(isEndpointReachable: isReachable)
-        }
-
-        var accessState: ClientNetworkAccessState = .Offline
-        if isReachable {
-            accessState = .Online
-            self.accessState = .Online
-        } else {
-            self.accessState = .Offline
-        }
+        let accessState = isReachable ? ClientNetworkAccessState.Online : .Offline
         self.connectionStateChangeHandler?.stateChanged(networkState: accessState)
     }
 
-    /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the specified cache policy.
+    /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the
+    /// specified cache policy.
     ///
     /// - Parameters:
     ///   - query: The query to fetch.

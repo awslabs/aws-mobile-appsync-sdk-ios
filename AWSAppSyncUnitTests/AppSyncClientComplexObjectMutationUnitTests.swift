@@ -39,7 +39,7 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
         let addPostWithFile = CreatePostWithFileUsingInputTypeMutation(input: input)
 
         // Use a mock transport so we don't send any network traffic during this test
-        let mockHTTPTransport = MockNetworkTransport()
+        let mockHTTPTransport = MockAWSNetworkTransport()
 
         let s3ObjectManagerUploadWasInvoked = expectation(description: "s3ObjectManager.upload() was invoked")
 
@@ -59,7 +59,8 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
             with: .apiKey,
             testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
             httpTransport: mockHTTPTransport,
-            s3ObjectManager: mockS3ObjectManager
+            s3ObjectManager: mockS3ObjectManager,
+            reachabilityFactory: MockReachabilityProvidingFactory.self
         )
 
         let appSyncClient = helper.appSyncClient
@@ -86,7 +87,7 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
             file: fileInput)
 
         // Use a mock transport so we don't send any network traffic during this test
-        let mockHTTPTransport = MockNetworkTransport()
+        let mockHTTPTransport = MockAWSNetworkTransport()
 
         let s3ObjectManagerUploadWasInvoked = expectation(description: "s3ObjectManager.upload() was invoked")
 
@@ -106,7 +107,8 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
             with: .apiKey,
             testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
             httpTransport: mockHTTPTransport,
-            s3ObjectManager: mockS3ObjectManager
+            s3ObjectManager: mockS3ObjectManager,
+            reachabilityFactory: MockReachabilityProvidingFactory.self
         )
 
         let appSyncClient = helper.appSyncClient
@@ -118,7 +120,7 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
 
     func test_s3UploaderIsNotInvoked_WhenNoS3ObjectIsPresent() throws {
         // Use a mock transport so we don't send any network traffic during this test
-        let mockHTTPTransport = MockNetworkTransport()
+        let mockHTTPTransport = MockAWSNetworkTransport()
 
         let s3ObjectManagerUploadWasNotInvoked = expectation(description: "s3ObjectManager.upload() was not invoked")
         s3ObjectManagerUploadWasNotInvoked.isInverted = true
@@ -133,7 +135,8 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
             with: .apiKey,
             testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
             httpTransport: mockHTTPTransport,
-            s3ObjectManager: mockS3ObjectManager
+            s3ObjectManager: mockS3ObjectManager,
+            reachabilityFactory: MockReachabilityProvidingFactory.self
         )
 
         let appSyncClient = helper.appSyncClient

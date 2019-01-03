@@ -4,13 +4,18 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ## 2.9.0
 
-### Misc. Updates
+### Bug Fixes
 
 * Mutation queue handling is rewritten to use `OperationQueue`, to fix cases where mutations would either deadlock (#81), or not execute (#106). Thanks @larryonoff! 🎉
+* S3Objects now correctly upload whether they are included as part of a mutation's parameters or an input type (#122)
+
+### Misc. Updates
 
 * **Breaking API Changes**
   * `AWSPerformMutationOperation` was `public`, now it's `internal`
   * `AWSAppSyncClient.perform` now returns `Cancellable` instead of `AWSPerformMutationOperation`
+
+* Refactored internal network change notifications
 
 * Refactored structure & tests to make future maintenance easier. As part of this, we deprecated the `AWSAppSyncClientInfo` class in favor of the `AWSAppSyncServiceConfigProvider` protocol. We provide a default implementation `AWSAppSyncServiceConfig`. `AWSAppSyncClientInfo` will be removed in a future minor version.
   - Thanks to @larryonoff for contributing code and PR feedback to this refactor! 🎉

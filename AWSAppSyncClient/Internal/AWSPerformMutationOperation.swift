@@ -16,8 +16,7 @@
 import Foundation
 
 final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: AsynchronousOperation, Cancellable {
-
-    private let appSyncClient: AWSAppSyncClient
+    private weak var appSyncClient: AWSAppSyncClient?
     private let handlerQueue: DispatchQueue
     private let mutation: Mutation
     private let mutationConflictHandler: MutationConflictHandler<Mutation>?
@@ -27,7 +26,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
     var operationCompletionBlock: ((AWSPerformMutationOperation, Error?) -> Void)?
 
     init(
-        appSyncClient: AWSAppSyncClient,
+        appSyncClient: AWSAppSyncClient?,
         handlerQueue: DispatchQueue,
         mutation: Mutation,
         mutationConflictHandler: MutationConflictHandler<Mutation>?,
@@ -41,8 +40,11 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
 
     private var networkTask: Cancellable?
 
-    private func _send(
-        _ resultHandler: OperationResultHandler<Mutation>?) -> Cancellable? {
+    private func send(_ resultHandler: OperationResultHandler<Mutation>?) -> Cancellable? {
+        guard let appSyncClient = appSyncClient else {
+            return nil
+        }
+
         if let s3Object = AWSRequestBuilder.s3Object(from: mutation.variables) {
             appSyncClient.performMutationWithS3Object(
                 operation: mutation,
@@ -64,7 +66,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         }
     }
 
-    private func _notifyCompletion(_ result: GraphQLResult<Mutation.Data>?, error: Error?) {
+    private func notifyCompletion(_ result: GraphQLResult<Mutation.Data>?, error: Error?) {
         operationCompletionBlock?(self, error)
 
         if let mutationResultHandler = mutationResultHandler {
@@ -84,9 +86,9 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
 
         state = .executing
 
-        networkTask = _send { (result, error) in
+        networkTask = send { (result, error) in
             if error == nil {
-                self._notifyCompletion(result, error: nil)
+                self.notifyCompletion(result, error: nil)
                 self.state = .finished
 
                 return
@@ -97,7 +99,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
                 return
             }
 
-            self._notifyCompletion(result, error: error)
+            self.notifyCompletion(result, error: error)
             self.state = .finished
         }
     }
