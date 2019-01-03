@@ -70,8 +70,8 @@ extension RecordSet: CustomStringConvertible {
   }
 }
 
-extension RecordSet: CustomPlaygroundQuickLookable {
-  public var customPlaygroundQuickLook: PlaygroundQuickLook {
-    return .text(description)
+extension RecordSet: CustomPlaygroundDisplayConvertible {
+  public var playgroundDescription: Any {
+    return description
   }
 }
