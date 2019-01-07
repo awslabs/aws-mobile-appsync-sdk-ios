@@ -14,6 +14,8 @@
 //
 
 import Foundation
+import XCTest
+@testable import AWSAppSync
 
 class AppSyncApolloCustomizationTests: XCTestCase {
 
