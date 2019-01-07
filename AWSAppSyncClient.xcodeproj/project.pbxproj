@@ -112,6 +112,7 @@
 		CC96F8A921BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A821BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift */; };
 		CC96F8AB21BAF68300446EBD /* AWSRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8AA21BAF68300446EBD /* AWSRequestBuilder.swift */; };
 		CCEF79D921DAD167004AD64D /* SnapshotProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79D821DAD167004AD64D /* SnapshotProcessController.swift */; };
+		CCEF79DB21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */; };
 		CCEF79DD21DE7EED004AD64D /* AWSAppSyncClientError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79DC21DE7EED004AD64D /* AWSAppSyncClientError.swift */; };
 		CCEF79E121DE7FF7004AD64D /* Deprecations+Removals.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79E021DE7FF7004AD64D /* Deprecations+Removals.swift */; };
 		DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */; };
@@ -395,6 +396,7 @@
 		CC96F8A821BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSPerformOfflineMutationOperation.swift; sourceTree = "<group>"; };
 		CC96F8AA21BAF68300446EBD /* AWSRequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSRequestBuilder.swift; sourceTree = "<group>"; };
 		CCEF79D821DAD167004AD64D /* SnapshotProcessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotProcessController.swift; sourceTree = "<group>"; };
+		CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncApolloCustomizationTests.swift; sourceTree = "<group>"; };
 		CCEF79DC21DE7EED004AD64D /* AWSAppSyncClientError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientError.swift; sourceTree = "<group>"; };
 		CCEF79E021DE7FF7004AD64D /* Deprecations+Removals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Deprecations+Removals.swift"; sourceTree = "<group>"; };
 		CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -780,6 +782,7 @@
 		FA8C62B221D6E3AA00FF9924 /* AWSAppSyncUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */,
 				FAEC08E021CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift */,
 				FA0C12C721CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift */,
 				FA72049E21CD9B9800938B81 /* AWSAppSyncClientInfoTests.swift */,
@@ -1495,6 +1498,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FAFD409221D7039C0063D894 /* SubscriptionMessagesQueueTests.swift in Sources */,
+				CCEF79DB21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift in Sources */,
 				FAE7948721D6EB290032D37F /* AWSAppSyncClientConfigurationTests.swift in Sources */,
 				FA4F0D9621D6EDA00099D165 /* AWSAppSyncClientInfoTests.swift in Sources */,
 				FAE7948621D6EAE70032D37F /* Foundation+UtilsTests.swift in Sources */,
