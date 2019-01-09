@@ -1,5 +1,5 @@
 //
-// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License").
 // You may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
 
 import Foundation
 
-// Conform String to error module so we can easily use bare strings in Result failures
-extension String: Error, LocalizedError {
-    public var errorDescription: String? {
-        return self
-    }
+public struct AppSyncConnectionInfo {
+    public let isConnectionAvailable: Bool
+    public let isInitialConnection: Bool
+}
 
-    public var localizedDescription: String {
-        return self
-    }
+public enum ClientNetworkAccessState {
+    case Online
+    case Offline
+}
+
+public protocol ConnectionStateChangeHandler {
+    func stateChanged(networkState: ClientNetworkAccessState)
 }

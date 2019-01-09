@@ -23,7 +23,7 @@ final class AWSSubscriptionMetaDataCache {
     private let operationHash = Expression<String>("operationHash")
     private let lastSyncDate = Expression<Date?>("lastSyncDate")
     
-    public init(fileURL: URL) throws {
+    init(fileURL: URL) throws {
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
         db.busyTimeout = sqlBusyTimeoutConstant
         try createTableIfNeeded()
