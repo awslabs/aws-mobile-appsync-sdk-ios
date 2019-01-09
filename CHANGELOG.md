@@ -15,7 +15,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
   * `AWSPerformMutationOperation` was `public`, now it's `internal`
   * `AWSAppSyncClient.perform` now returns `Cancellable` instead of `AWSPerformMutationOperation`
 
-* Refactored internal network change notifications
+* Refactored internal network change notifications (#139)
 
 * Refactored structure & tests to make future maintenance easier. As part of this, we deprecated the `AWSAppSyncClientInfo` class in favor of the `AWSAppSyncServiceConfigProvider` protocol. We provide a default implementation `AWSAppSyncServiceConfig`. `AWSAppSyncClientInfo` will be removed in a future minor version.
   - Thanks to @larryonoff for contributing code and PR feedback to this refactor! 🎉

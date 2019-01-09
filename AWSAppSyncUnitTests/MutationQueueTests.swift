@@ -278,7 +278,7 @@ class MutationQueueTests: XCTestCase {
              timeout: 1.0)
     }
 
-    func testMutationIsSentWhenNetworkIsReconnected() throws {
+    func testQueueResumesWhenNetworkStarts() throws {
         // Queue a mutation that will not be performed because network is not available
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
@@ -329,6 +329,98 @@ class MutationQueueTests: XCTestCase {
         wait(for: [queuedMutationInvokedPrematurely, queuedMutationInvokedAtCorrectTime], timeout: 1.0)
     }
 
+    func testQueueResumesWhenNetworkResumes() throws {
+        let reachability = MockReachabilityProvidingFactory.instance
+        try reachability.startNotifier()
+        reachability.connection = .wifi
+
+        NetworkReachabilityNotifier.setupShared(
+            host: "http://www.amazon.com",
+            allowsCellularAccess: true,
+            reachabilityFactory: MockReachabilityProvidingFactory.self)
+
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+        let mockHTTPTransport = MockAWSNetworkTransport()
+
+        // Now set up a response block that asserts it wasn't invoked until after the network state was changed
+        enum TestNetworkState {
+            case initiallyOn
+            case disabledByTest
+            case reenabledByTest
+        }
+
+        var networkState = TestNetworkState.initiallyOn
+
+        let delayingResponseBody = makeAddPostResponseBody(withId: "DelayingTestPostID", forMutation: addPost)
+        let delayingResponseHandlerInvoked = expectation(description: "Delaying response handler invoked")
+        let delayingResponseDispatched = expectation(description: "Delaying response dispatched")
+
+        let delayingResponseBlock: SendOperationResponseBlock<CreatePostWithoutFileUsingParametersMutation> = {
+            operation, completionHandler in
+            delayingResponseHandlerInvoked.fulfill()
+            DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + .milliseconds(500)) {
+                delayingResponseDispatched.fulfill()
+                let response = GraphQLResponse(operation: operation, body: delayingResponseBody)
+                completionHandler(response, nil)
+            }
+        }
+
+        mockHTTPTransport.sendOperationResponseQueue.append(delayingResponseBlock)
+
+        let queuedResponseBody = makeAddPostResponseBody(withId: "QueuedTestPostID", forMutation: addPost)
+
+        let queuedMutationShouldNotBeInvokedBeforeNetworkStateHasChanged = expectation(description: "Queued mutation incorrectly invoked before network status was changed")
+        queuedMutationShouldNotBeInvokedBeforeNetworkStateHasChanged.isInverted = true
+
+        let queuedMutationShouldNotBeInvokedWhenNetworkIsDisabled = expectation(description: "Queued mutation incorrectly invoked network was disabled")
+        queuedMutationShouldNotBeInvokedWhenNetworkIsDisabled.isInverted = true
+
+        let queuedMutationInvokedAtCorrectTime = expectation(description: "Queued mutation invoked after network was reenabled")
+
+        let queuedResponseBlock: SendOperationResponseBlock<CreatePostWithoutFileUsingParametersMutation> = {
+            operation, completionHandler in
+
+            switch networkState {
+            case .initiallyOn:
+                queuedMutationShouldNotBeInvokedBeforeNetworkStateHasChanged.fulfill()
+            case .disabledByTest:
+                queuedMutationShouldNotBeInvokedWhenNetworkIsDisabled.fulfill()
+            case .reenabledByTest:
+                queuedMutationInvokedAtCorrectTime.fulfill()
+            }
+
+            DispatchQueue.global().async {
+                let response = GraphQLResponse(operation: operation, body: queuedResponseBody)
+                completionHandler(response, nil)
+            }
+        }
+
+        mockHTTPTransport.sendOperationResponseQueue.append(queuedResponseBlock)
+
+        let appSyncClient = try makeAppSyncClient(using: mockHTTPTransport)
+
+        // Queue the delaying mutation
+        appSyncClient.perform(mutation: addPost) { _, _ in }
+
+        // Queue the asserting mutation
+        appSyncClient.perform(mutation: addPost) { _, _ in }
+
+        networkState = .disabledByTest
+        reachability.connection = .none
+
+        wait(for: [delayingResponseHandlerInvoked], timeout: 1.0)
+
+        networkState = .reenabledByTest
+        reachability.connection = .wifi
+
+        // We now expect send to be invoked, indicating that the queued mutation was read from persistent storage
+        wait(for: [delayingResponseDispatched,
+                   queuedMutationShouldNotBeInvokedWhenNetworkIsDisabled,
+                   queuedMutationShouldNotBeInvokedBeforeNetworkStateHasChanged,
+                   queuedMutationInvokedAtCorrectTime],
+             timeout: 1.0)
+    }
+
     // Because this tests the offline mutation queue, it will use `AWSNetworkTransport.send(data:completionHandler:)` rather
     // than `AWSNetworkTransport.send(operation:completionHandler:)`
     func testMutationQueueResumesWhenNewClientIsCreated_WithBackingDatabase() throws {
@@ -372,6 +464,59 @@ class MutationQueueTests: XCTestCase {
 
         // We now expect send to be invoked, indicating that the queued mutation was read from persistent storage
         wait(for: [sendWasInvoked], timeout: 0.5)
+    }
+
+    func testCancelingMutationAllowsQueueToProceed() throws {
+        // Set up a queue of mutations: delay the first one, cancel the second one, assert the third one still gets invoked
+
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+        let mockHTTPTransport = MockAWSNetworkTransport()
+
+        let delayedResponseBody = makeAddPostResponseBody(withId: "DelayedTestPostID", forMutation: addPost)
+        let delayedMutationInvoked = expectation(description: "Delayed mutation invoked")
+        let delayedMutationResponseDispatched = expectation(description: "Delayed mutation response dispatched")
+
+        let delayedResponseBlock: SendOperationResponseBlock<CreatePostWithoutFileUsingParametersMutation> = {
+            operation, completionHandler in
+            delayedMutationInvoked.fulfill()
+            DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + .milliseconds(500)) {
+                delayedMutationResponseDispatched.fulfill()
+                let response = GraphQLResponse(operation: operation, body: delayedResponseBody)
+                completionHandler(response, nil)
+            }
+        }
+
+        mockHTTPTransport.sendOperationResponseQueue.append(delayedResponseBlock)
+
+        let cancelledResponseBody = makeAddPostResponseBody(withId: "CancelledTestPostID", forMutation: addPost)
+        mockHTTPTransport.sendOperationResponseQueue.append(cancelledResponseBody)
+
+        let queuedResponseBody = makeAddPostResponseBody(withId: "QueuedTestPostID", forMutation: addPost)
+        mockHTTPTransport.sendOperationResponseQueue.append(queuedResponseBody)
+
+        let appSyncClient = try makeAppSyncClient(using: mockHTTPTransport)
+
+        // Queue mutation that has a delay built in
+        appSyncClient.perform(mutation: addPost) { _, _ in }
+
+        // Queue mutation that will be cancelled after the delayed mutation is invoked but before it is fulfilled
+        let cancelledMutationShouldNotBePerformed = expectation(description: "Cancelled mutation should not be performed")
+        cancelledMutationShouldNotBePerformed.isInverted = true
+        let cancelTrigger = appSyncClient.perform(mutation: addPost) { _, _ in
+            cancelledMutationShouldNotBePerformed.fulfill()
+        }
+
+        // Queue mutation to be performed after the cancelled one returns
+        let queuedMutationShouldBePerformed = expectation(description: "Queued mutation should be performed")
+        appSyncClient.perform(mutation: addPost) { _, _ in
+            queuedMutationShouldBePerformed.fulfill()
+        }
+
+        wait(for: [delayedMutationInvoked], timeout: 0.5)
+
+        cancelTrigger.cancel()
+
+        wait(for: [delayedMutationResponseDispatched, cancelledMutationShouldNotBePerformed, queuedMutationShouldBePerformed], timeout: 1)
     }
 
     // MARK: - Utility methods
