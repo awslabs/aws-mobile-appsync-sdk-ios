@@ -1,6 +1,4 @@
-Pods/
 AWSAppSyncClient.xcworkspace/
-Podfile.lock
 docs/_site/
 xcuserdata
 */appsync_test_credentials.json

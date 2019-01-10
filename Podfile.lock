@@ -1,0 +1,31 @@
+PODS:
+  - AWSCore (2.8.2)
+  - AWSS3 (2.8.2):
+    - AWSCore (= 2.8.2)
+  - ReachabilitySwift (4.3.0)
+  - SQLite.swift (0.11.5):
+    - SQLite.swift/standard (= 0.11.5)
+  - SQLite.swift/standard (0.11.5)
+
+DEPENDENCIES:
+  - AWSCore (~> 2.8.0)
+  - AWSS3 (~> 2.8.0)
+  - ReachabilitySwift (~> 4.3.0)
+  - SQLite.swift (= 0.11.5)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AWSCore
+    - AWSS3
+    - ReachabilitySwift
+    - SQLite.swift
+
+SPEC CHECKSUMS:
+  AWSCore: b6448752e992345082d7bad29d86e4839b72b4ba
+  AWSS3: e364e6c60d972da4110f2c379def6b716e6f1262
+  ReachabilitySwift: 408477d1b6ed9779dba301953171e017c31241f3
+  SQLite.swift: 6e5356850bb1791459f8c16d6ee9195b28714a2e
+
+PODFILE CHECKSUM: 2e3b243e951db8cfb61f3abd865c74fb8bddd435
+
+COCOAPODS: 1.5.3
