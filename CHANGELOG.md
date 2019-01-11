@@ -2,6 +2,13 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.9.1
+
+### Bug Fixes
+
+* Updated the Cartfile to depend on the correct version of the AWS iOS SDK. (Note, this is advisory only; we do not retrieve dependencies via Carthage.)
+* Added Pods to source control so Carthage users (or anyone else who builds from source) will no longer need to issue a `pod update` before building (#150)
+
 ## 2.9.0
 
 ### Bug Fixes
