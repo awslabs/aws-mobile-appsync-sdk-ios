@@ -6,6 +6,12 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Bug Fixes
 
+* Updated the Cartfile to depend on the correct version of the AWS iOS SDK
+
+## 2.9.0
+
+### Bug Fixes
+
 * Mutation queue handling is rewritten to use `OperationQueue`, to fix cases where mutations would either deadlock (#81), or not execute (#106). Thanks @larryonoff! 🎉
 * S3Objects now correctly upload whether they are included as part of a mutation's parameters or an input type (#122)
 
