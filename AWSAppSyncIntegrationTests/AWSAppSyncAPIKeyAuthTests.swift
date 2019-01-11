@@ -20,6 +20,9 @@ import XCTest
 
 /// Uses API_KEY for auth
 class AWSAppSyncAPIKeyAuthTests: XCTestCase {
+    private static let mutationQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncAPIKeyAuthTests.mutationQueue")
+    private static let subscriptionAndFetchQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue")
+
     /// This will be automatically instantiated in `performDefaultSetUpSteps`
     var appSyncClient: AWSAppSyncClient?
 
@@ -61,7 +64,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(
@@ -79,7 +82,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(
@@ -89,20 +92,20 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             postCreated.fulfill()
         }
 
-        wait(for: [postCreated], timeout: 5.0)
+        wait(for: [postCreated], timeout: 10.0)
 
         let query = ListPostsQuery()
 
         let listPostsCompleted = expectation(description: "Query done successfully.")
 
-        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { result, error in
+        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData, queue: AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue) { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.listPosts)
             XCTAssertGreaterThan(result!.data!.listPosts!.count, 0, "Expected service to return at least 1 post.")
             listPostsCompleted.fulfill()
         }
 
-        wait(for: [listPostsCompleted], timeout: 5.0)
+        wait(for: [listPostsCompleted], timeout: 10.0)
     }
 
     func testClearCache() {
@@ -167,7 +170,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         var idHolder: GraphQLID?
-        appSyncClient?.perform(mutation: addPost) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
             print("CreatePost result handler invoked")
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
@@ -189,19 +192,19 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             subscription?.cancel()
         }
 
-        subscription = try self.appSyncClient?.subscribe(subscription: OnUpvotePostSubscription(id: id)) {
-            result, _, error in
-            print("Subscription result handler invoked")
-            guard error == nil else {
-                XCTAssertNil(error)
-                return
-            }
+        subscription = try self.appSyncClient?.subscribe(subscription: OnUpvotePostSubscription(id: id),
+                                                         queue: AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue) { result, _, error in
+                                                            print("Subscription result handler invoked")
+                                                            guard error == nil else {
+                                                                XCTAssertNil(error)
+                                                                return
+                                                            }
 
-            guard result != nil else {
-                XCTFail("Result was unexpectedly nil")
-                return
-            }
-            subscriptionResultHandlerInvoked.fulfill()
+                                                            guard result != nil else {
+                                                                XCTFail("Result was unexpectedly nil")
+                                                                return
+                                                            }
+                                                            subscriptionResultHandlerInvoked.fulfill()
         }
         XCTAssertNotNil(subscription, "Subscription expected to be non nil.")
 
@@ -230,7 +233,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         let upvotePerformed = expectation(description: "Upvote mutation performed")
         let upvoteMutation = UpvotePostMutation(id: id)
-        self.appSyncClient?.perform(mutation: upvoteMutation) {
+        self.appSyncClient?.perform(mutation: upvoteMutation, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) {
             result, error in
             print("Received upvote mutation response.")
             XCTAssertNil(error)
@@ -250,7 +253,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
             print("CreatePost result handler invoked")
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
@@ -263,43 +266,50 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         var cacheCount = 0
 
-        appSyncClient?.fetch(query: fetchQuery, cachePolicy: .fetchIgnoringCacheData) { result, error in
-            XCTAssertNil(error)
-            XCTAssertNotNil(result?.data?.listPosts)
-            XCTAssertGreaterThan(result?.data?.listPosts?.count ?? 0, 0, "Expected service to return at least 1 event.")
-            cacheCount = result?.data?.listPosts?.count ?? 0
-            successfulQueryFetchExpectation.fulfill()
+        appSyncClient?.fetch(query: fetchQuery,
+                             cachePolicy: .fetchIgnoringCacheData,
+                             queue: AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue) { result, error in
+                                XCTAssertNil(error)
+                                XCTAssertNotNil(result?.data?.listPosts)
+                                XCTAssertGreaterThan(result?.data?.listPosts?.count ?? 0, 0, "Expected service to return at least 1 event.")
+                                cacheCount = result?.data?.listPosts?.count ?? 0
+                                successfulQueryFetchExpectation.fulfill()
         }
 
-        wait(for: [successfulQueryFetchExpectation], timeout: 5.0)
+        wait(for: [successfulQueryFetchExpectation], timeout: 10.0)
 
-        appSyncClient?.perform(mutation: addPost, optimisticUpdate: { transaction in
-            do {
-                try transaction?.update(query: fetchQuery) { data in
-                    let item = ListPostsQuery.Data.ListPost(
-                        id: "TestItemId",
-                        author: DefaultTestPostData.author,
-                        title: DefaultTestPostData.title,
-                        content: DefaultTestPostData.content,
-                        ups: 0,
-                        downs: 0
-                    )
-                    data.listPosts?.append(item)
-                }
-                successfulOptimisticWriteExpectation.fulfill()
-            } catch {
-                XCTFail("Failed to perform optimistic update")
-            }
-        }, resultHandler: { result, error in
-            XCTAssertNil(error)
-            XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
-            XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.author, DefaultTestPostData.author)
-            successfulMutationEvent2Expectation.fulfill()
+        appSyncClient?.perform(mutation: addPost,
+                               queue: AWSAppSyncAPIKeyAuthTests.mutationQueue,
+                               optimisticUpdate: { transaction in
+                                do {
+                                    try transaction?.update(query: fetchQuery) { data in
+                                        let item = ListPostsQuery.Data.ListPost(
+                                            id: "TestItemId",
+                                            author: DefaultTestPostData.author,
+                                            title: DefaultTestPostData.title,
+                                            content: DefaultTestPostData.content,
+                                            ups: 0,
+                                            downs: 0
+                                        )
+                                        data.listPosts?.append(item)
+                                    }
+                                    successfulOptimisticWriteExpectation.fulfill()
+                                } catch {
+                                    XCTFail("Failed to perform optimistic update: \(error)")
+                                }
+        },
+                               resultHandler: { result, error in
+                                XCTAssertNil(error)
+                                XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
+                                XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.author, DefaultTestPostData.author)
+                                successfulMutationEvent2Expectation.fulfill()
         })
 
         wait(for: [successfulOptimisticWriteExpectation, successfulMutationEvent2Expectation], timeout: 5.0)
 
-        appSyncClient?.fetch(query: fetchQuery, cachePolicy: .returnCacheDataDontFetch) { (result, error) in
+        appSyncClient?.fetch(query: fetchQuery,
+                             cachePolicy: .returnCacheDataDontFetch,
+                             queue: AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue) { (result, error) in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.listPosts)
             XCTAssertGreaterThan(result?.data?.listPosts?.count ?? 0, 0, "Expected cache to return at least 1 event.")
@@ -307,7 +317,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             successfulLocalQueryFetchExpectation.fulfill()
         }
 
-        wait(for: [successfulLocalQueryFetchExpectation], timeout: 5.0)
+        wait(for: [successfulLocalQueryFetchExpectation], timeout: 10.0)
     }
 
     // Validates that queries are invoked and returned as expected during initial setup and
@@ -469,8 +479,8 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         // Wait 3 seconds to ensure sync/subscription is active, then trigger the mutation
         DispatchQueue.global().async {
             sleep(3)
-            self.appSyncClient?.perform(mutation: firstUpvoteMutation) {
-                (result, error) in
+            self.appSyncClient?.perform(mutation: firstUpvoteMutation,
+                                        queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
                 print("Received first upvote mutation response")
                 XCTAssertNil(error)
                 XCTAssertNotNil(result?.data?.upvotePost?.id)
@@ -600,8 +610,8 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         // Wait 3 seconds to ensure sync/subscription is active, then trigger the mutation
         DispatchQueue.global().async {
             sleep(3)
-            self.appSyncClient?.perform(mutation: secondUpvoteMutation) {
-                (result, error) in
+            self.appSyncClient?.perform(mutation: secondUpvoteMutation,
+                                        queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
                 print("Received second upvote mutation response")
                 XCTAssertNil(error)
                 XCTAssertNotNil(result?.data?.upvotePost?.id)

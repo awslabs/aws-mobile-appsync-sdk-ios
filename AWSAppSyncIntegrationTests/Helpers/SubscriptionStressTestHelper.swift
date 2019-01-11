@@ -19,6 +19,8 @@ import XCTest
 
 class SubscriptionStressTestHelper: XCTestCase {
     private static let numberOfPostsToTest = 40
+    private static let mutationQueue = DispatchQueue(label: "com.amazonaws.appsync.SubscriptionStressTestHelper.mutationQueue")
+    private static let subscriptionQueue = DispatchQueue(label: "com.amazonaws.appsync.SubscriptionStressTestHelper.subscriptionQueue")
 
     private var appSyncClient: AWSAppSyncClient!
     private var testPostIDs = [GraphQLID](repeating: "", count: SubscriptionStressTestHelper.numberOfPostsToTest)
@@ -31,6 +33,7 @@ class SubscriptionStressTestHelper: XCTestCase {
     func stressTestSubscriptions(with appSyncClient: AWSAppSyncClient) {
         defer {
             subscriptionWatchers.forEach { $0.cancel() }
+            cleanUp()
         }
 
         self.appSyncClient = appSyncClient
@@ -62,8 +65,8 @@ class SubscriptionStressTestHelper: XCTestCase {
         for i in 0 ..< SubscriptionStressTestHelper.numberOfPostsToTest {
             let addPostExpectation = XCTestExpectation(description: "Added post \(i)")
             addPostsExpectations.append(addPostExpectation)
-            appSyncClient.perform(mutation: DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation) {
-                (result: GraphQLResult<CreatePostWithoutFileUsingParametersMutation.Data>?, error: Error?) in
+            appSyncClient.perform(mutation: DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation,
+                                  queue: SubscriptionStressTestHelper.mutationQueue) { result, error in
                 XCTAssertNil(error, "Error should be nil")
 
                 guard
@@ -94,8 +97,8 @@ class SubscriptionStressTestHelper: XCTestCase {
             subscriptionsTriggeredExpectations.append(subscriptionTriggeredExpectation)
 
             let subscription: OnUpvotePostSubscription = OnUpvotePostSubscription(id: id)
-            let optionalSubscriptionWatcher = try! appSyncClient.subscribe(subscription: subscription) {
-                (result, _, error) in
+            let optionalSubscriptionWatcher = try! appSyncClient.subscribe(subscription: subscription,
+                                                                           queue: SubscriptionStressTestHelper.subscriptionQueue) { result, _, error in
                 XCTAssertNil(error, "Error should be nil")
 
                 guard let payload = result?.data?.onUpvotePost else {
@@ -179,7 +182,7 @@ class SubscriptionStressTestHelper: XCTestCase {
 
             let mutation = UpvotePostMutation(id: id)
 
-            appSyncClient.perform(mutation: mutation) { result, error in
+            appSyncClient.perform(mutation: mutation, queue: SubscriptionStressTestHelper.mutationQueue) { result, error in
                 XCTAssertNil(error, "Error should be nil")
 
                 guard
@@ -198,4 +201,8 @@ class SubscriptionStressTestHelper: XCTestCase {
         return mutationExpectations
     }
 
+    // Removes test records from DB
+    private func cleanUp() {
+
+    }
 }

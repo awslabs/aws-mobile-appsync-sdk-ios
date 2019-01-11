@@ -92,7 +92,8 @@ public class AppSyncClientTestHelper: NSObject {
          databaseURL: URL? = nil,
          httpTransport: AWSNetworkTransport? = nil,
          s3ObjectManager: AWSS3ObjectManager? = nil,
-         testBundle: Bundle = Bundle(for: AppSyncClientTestHelper.self)) throws {
+         testBundle: Bundle = Bundle(for: AppSyncClientTestHelper.self),
+         reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil) throws {
 
         // Read credentials from appsync_test_credentials.json or hardcoded values
         let resolvedTestConfiguration = testConfiguration ?? AppSyncClientTestConfiguration(with: testBundle) ?? AppSyncClientTestConfiguration()
@@ -111,7 +112,7 @@ public class AppSyncClientTestHelper: NSObject {
             s3ObjectManager: s3ObjectManager
         )
 
-        appSyncClient = try DeinitNotifiableAppSyncClient(appSyncConfig: appSyncConfig)
+        appSyncClient = try DeinitNotifiableAppSyncClient(appSyncConfig: appSyncConfig, reachabilityFactory: reachabilityFactory)
 
         // Set id as the cache key for objects
         guard let apolloClient = appSyncClient.apolloClient else {
@@ -128,6 +129,15 @@ public class AppSyncClientTestHelper: NSObject {
         httpTransport: AWSNetworkTransport?,
         s3ObjectManager: AWSS3ObjectManager?
     ) throws -> AWSAppSyncClientConfiguration {
+
+        if let httpTransport = httpTransport {
+            let config = MockAWSAppSyncServiceConfigProvider(with: testConfiguration)
+            let appSyncConfig = AWSAppSyncClientConfiguration(appSyncServiceConfig: config,
+                                                              networkTransport: httpTransport,
+                                                              databaseURL: databaseURL,
+                                                              s3ObjectManager: s3ObjectManager)
+            return appSyncConfig
+        }
 
         var appSyncConfig: AWSAppSyncClientConfiguration
         switch authenticationType {

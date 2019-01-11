@@ -107,7 +107,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("aws-sdk-ios/2.8.0 AppSyncClient", forHTTPHeaderField: "User-Agent")
+        request.setValue("aws-sdk-ios/2.9.1 AppSyncClient", forHTTPHeaderField: "User-Agent")
         addDeviceId(request: &request)
     }
     
@@ -142,13 +142,9 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         }
     }
     
-    func executeAfter(milliseconds interval: Int, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
+    func executeAfter(interval: DispatchTimeInterval, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
-        #if swift(>=4)
-            timer.schedule(deadline: .now() + .milliseconds(interval))
-        #else
-            timer.scheduleOneshot(deadline: .now() + .milliseconds(interval))
-        #endif
+        timer.schedule(deadline: .now() + interval)
         timer.setEventHandler(handler: block)
         timer.resume()
         return timer
@@ -167,14 +163,17 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                         completionHandler(jsonBody, nil)
                     case .failure(let error):
                         let taskUUID = UUID().uuidString
-                        let (shouldRetry, backoffTime) = retryHandler.shouldRetryRequest(for: error)
-                        if shouldRetry, let backoffTime = backoffTime {
-                            let timer = self?.executeAfter(milliseconds: backoffTime, queue: DispatchQueue.global(qos: .userInitiated), block: {
+                        let retryAdvice = retryHandler.shouldRetryRequest(for: error)
+                        if retryAdvice.shouldRetry,
+                            let retryInterval = retryAdvice.retryInterval {
+                            let timer = self?.executeAfter(interval: retryInterval,
+                                                           queue: DispatchQueue.global(qos: .userInitiated)) {
                                 self?.sendGraphQLRequest(mutableRequest: mutableRequest,
                                                          retryHandler: retryHandler,
-                                                         networkTransportOperation: networkTransportOperation, completionHandler: completionHandler)
+                                                         networkTransportOperation: networkTransportOperation,
+                                                         completionHandler: completionHandler)
                                 self?.activeTimers.removeValue(forKey: taskUUID)
-                            })
+                            }
                             self?.activeTimers[taskUUID] = timer
                         } else {
                             completionHandler(nil, error)
@@ -261,7 +260,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             completionHandler(.success(()))
         case .oidcToken:
             if let provider = self.oidcAuthProvider as? AWSOIDCAuthProviderAsync {
-            
+
                 provider.getLatestAuthToken { (token, error) in
                     if let error = error {
                         completionHandler(.failure(error))
@@ -273,8 +272,8 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                     }
                 }
             } else if let provider = self.oidcAuthProvider {
-                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
-                 completionHandler(.success(()))
+                mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+                completionHandler(.success(()))
             } else {
                 fatalError("Authentication provider not set")
             }

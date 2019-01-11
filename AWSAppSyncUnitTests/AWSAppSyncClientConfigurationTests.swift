@@ -31,7 +31,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
             apiKey: "THE_API_KEY"
         )
 
-        let networkTransport = MockNetworkTransport()
+        let networkTransport = MockAWSNetworkTransport()
 
         let _ = AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig, networkTransport: networkTransport)
     }

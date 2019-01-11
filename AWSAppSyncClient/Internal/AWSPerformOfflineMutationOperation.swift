@@ -16,17 +16,16 @@
 import Foundation
 
 final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellable {
-
-    private let appSyncClient: AWSAppSyncClient
-    private let networkClient: AWSNetworkTransport
+    private weak var appSyncClient: AWSAppSyncClient?
+    private weak var networkClient: AWSNetworkTransport?
     private let handlerQueue: DispatchQueue
     let mutation: AWSAppSyncMutationRecord
 
     var operationCompletionBlock: ((AWSPerformOfflineMutationOperation, Error?) -> Void)?
 
     init(
-        appSyncClient: AWSAppSyncClient,
-        networkClient: AWSNetworkTransport,
+        appSyncClient: AWSAppSyncClient?,
+        networkClient: AWSNetworkTransport?,
         handlerQueue: DispatchQueue,
         mutation: AWSAppSyncMutationRecord) {
         self.appSyncClient = appSyncClient
@@ -35,14 +34,14 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         self.mutation = mutation
     }
 
-    private var networkTask: Cancellable?
-
-    private func _send(
-        _ mutation: AWSAppSyncMutationRecord,
-        completion: @escaping ((JSONObject?, Error?) -> Void)) {
-        guard let data = mutation.data else {
-            completion(nil, nil)
-            return
+    private func send(_ mutation: AWSAppSyncMutationRecord,
+                      completion: @escaping ((JSONObject?, Error?) -> Void)) {
+        guard
+            let data = mutation.data,
+            let networkClient = networkClient
+            else {
+                completion(nil, nil)
+                return
         }
 
         networkClient.send(data: data) { result, error in
@@ -50,37 +49,40 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         }
     }
 
-    private func send(
-        completion: @escaping ((JSONObject?, Error?) -> Void)) -> Cancellable? {
+    private func send(completion: @escaping ((JSONObject?, Error?) -> Void)) {
+        guard let appSyncClient = appSyncClient else {
+            return
+        }
 
         if let s3Object = mutation.s3ObjectInput {
-            appSyncClient.s3ObjectManager?.upload(
-                s3Object: s3Object,
-                completion: { [weak self, mutation] success, error in
-                    if success {
-                        self?._send(mutation, completion: completion)
-                    } else {
-                        completion(nil, error)
-                    }
-                })
-
-            return nil
+            appSyncClient.s3ObjectManager?.upload(s3Object: s3Object) { [weak self, mutation] success, error in
+                if success {
+                    self?.send(mutation, completion: completion)
+                } else {
+                    completion(nil, error)
+                }
+            }
         } else {
-            _send(mutation, completion: completion)
-
-            return nil
+            send(mutation, completion: completion)
         }
     }
 
-    private func notifyCompletion(
-        _ result: JSONObject?, error: Error?) {
+    private func notifyCompletion(_ result: JSONObject?, error: Error?) {
         operationCompletionBlock?(self, error)
 
-        handlerQueue.async { [appSyncClient, mutation] in
+        handlerQueue.async { [weak self] in
+            guard
+                let self = self,
+                let appSyncClient = self.appSyncClient,
+                let offlineMutationDelegate = appSyncClient.offlineMutationDelegate
+                else {
+                    return
+            }
+
             // call master delegate
-            appSyncClient.offlineMutationDelegate?.mutationCallback(
-                recordIdentifier: mutation.recordIdentitifer,
-                operationString: mutation.operationString!,
+            offlineMutationDelegate.mutationCallback(
+                recordIdentifier: self.mutation.recordIdentitifer,
+                operationString: self.mutation.operationString!,
                 snapshot: result,
                 error: error)
         }
@@ -96,11 +98,10 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
 
         state = .executing
 
-        networkTask = send { result, error in
+        send { result, error in
             if error == nil {
                 self.notifyCompletion(result, error: nil)
                 self.state = .finished
-
                 return
             }
 
@@ -112,13 +113,6 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
             self.notifyCompletion(result, error: error)
             self.state = .finished
         }
-    }
-
-    // MARK: Cancellable
-
-    override func cancel() {
-        super.cancel()
-        networkTask?.cancel()
     }
 
     // MARK: CustomStringConvertible
