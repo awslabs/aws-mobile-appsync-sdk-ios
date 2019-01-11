@@ -2,6 +2,12 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.9.2
+
+### New Features
+
+* Added an `AWSAppSyncClient.clearCache()` method to clear the local Apollo cache. (#36, PR #141) Thanks @larryonoff! 🎉
+
 ## 2.9.1
 
 ### Bug Fixes
