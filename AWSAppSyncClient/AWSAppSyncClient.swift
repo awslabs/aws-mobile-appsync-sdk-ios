@@ -145,6 +145,7 @@ public class AWSAppSyncClient {
     ///   - error: An error that indicates why the fetch failed, or `nil` if the fetch was succesful.
     /// - Returns: An object that can be used to cancel an in progress fetch.
     @discardableResult public func fetch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: OperationResultHandler<Query>? = nil) -> Cancellable {
+        AppSyncLog.verbose("fetch: \(query)")
         return apolloClient!.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
 
@@ -211,7 +212,7 @@ public class AWSAppSyncClient {
                     optimisticUpdate(transaction)
                 }.await()
             } catch {
-                debugPrint("optimisticUpdate error: \(error)")
+                AppSyncLog.error("optimisticUpdate error: \(error)")
             }
         }
 

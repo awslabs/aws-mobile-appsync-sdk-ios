@@ -52,7 +52,7 @@ final class AWSPerformMutationQueue {
                 }
             } catch {
                 persistentCache = nil
-                debugPrint("persistentCache initialization error: \(error)")
+                AppSyncLog.error("persistentCache initialization error: \(error)")
             }
         } else {
             persistentCache = nil
@@ -74,7 +74,7 @@ final class AWSPerformMutationQueue {
             offlineMutation = try save(mutation)
         } catch {
             offlineMutation = nil
-            debugPrint("\(#function) error: \(error)")
+            AppSyncLog.error("error saving offline mutation: \(error)")
         }
 
         let operation = AWSPerformMutationOperation(
@@ -92,7 +92,7 @@ final class AWSPerformMutationQueue {
             do {
                 try self?.deleteOfflineMutation(withIdentifier: identifier)
             } catch {
-                debugPrint("deleteOfflineMutation error: \(error)")
+                AppSyncLog.error("error deleting offline mutation: \(error)")
             }
         }
 
@@ -138,14 +138,14 @@ final class AWSPerformMutationQueue {
                     do {
                         try self?.deleteOfflineMutation(withIdentifier: identifier)
                     } catch {
-                        debugPrint("deleteOfflineMutation error: \(error)")
+                        AppSyncLog.error("error deleting offline mutation: \(error)")
                     }
                 }
 
                 operationQueue.addOperation(operation)
             }
         } catch {
-            debugPrint("\(#function) error: \(error)")
+            AppSyncLog.error("error retrieving offline mutation from storage: \(error)")
         }
     }
 
