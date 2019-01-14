@@ -49,15 +49,36 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     }
 
     func testClientDeinit() throws {
-        let e = expectation(description: "AWSAppSyncClient deinitialized")
+        let deinitCalled = expectation(description: "AWSAppSyncClient deinitialized")
         var deinitNotifiableAppSyncClient: DeinitNotifiableAppSyncClient? =
             try AWSAppSyncAPIKeyAuthTests.makeAppSyncClient(authType: .apiKey)
 
-        deinitNotifiableAppSyncClient!.deinitCalled = { e.fulfill() }
+        deinitNotifiableAppSyncClient!.deinitCalled = { deinitCalled.fulfill() }
 
         DispatchQueue.global(qos: .background).async { deinitNotifiableAppSyncClient = nil }
 
         waitForExpectations(timeout: 5)
+    }
+
+    func testClientDeinitAfterMutation() throws {
+        let deinitCalled = expectation(description: "AWSAppSyncClient deinitialized")
+        var deinitNotifiableAppSyncClient: DeinitNotifiableAppSyncClient? =
+            try AWSAppSyncAPIKeyAuthTests.makeAppSyncClient(authType: .apiKey)
+
+        deinitNotifiableAppSyncClient!.deinitCalled = { deinitCalled.fulfill() }
+
+        let postCreated = expectation(description: "Post created successfully.")
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+
+        deinitNotifiableAppSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+            postCreated.fulfill()
+        }
+
+        // Wait for mutation to return before releasing client
+        wait(for: [postCreated], timeout: 15.0)
+
+        deinitNotifiableAppSyncClient = nil
+        wait(for: [deinitCalled], timeout: 5.0)
     }
 
     func testMutation() {
