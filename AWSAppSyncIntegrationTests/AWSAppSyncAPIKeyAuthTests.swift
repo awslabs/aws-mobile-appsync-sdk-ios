@@ -122,7 +122,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             postCreated.fulfill()
         }
 
-        wait(for: [postCreated], timeout: 5.0)
+        wait(for: [postCreated], timeout: 15.0)
 
         let query = ListPostsQuery()
 
@@ -136,7 +136,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTAssertGreaterThan(result!.data!.listPosts!.count, 0, "Expected service to return at least 1 post.")
         }
 
-        wait(for: [listPostsCompleted], timeout: 5.0)
+        wait(for: [listPostsCompleted], timeout: 15.0)
 
         do {
             try appSyncClient?.clearCache().await()
@@ -153,7 +153,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTAssertNil(error, "Expected no error")
         }
 
-        wait(for: [emptyCacheCompleted], timeout: 5.0)
+        wait(for: [emptyCacheCompleted], timeout: 15.0)
     }
 
     func testSubscription_Stress() {
