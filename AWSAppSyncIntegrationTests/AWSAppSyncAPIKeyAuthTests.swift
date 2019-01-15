@@ -20,6 +20,10 @@ import XCTest
 
 /// Uses API_KEY for auth
 class AWSAppSyncAPIKeyAuthTests: XCTestCase {
+    /// Uset this as our timeout value for any operation that hits the network. Note that this may need to be higher
+    /// than you think, to account for CI systems running in shared environments
+    private static let networkOperationTimeout = 30.0
+
     private static let mutationQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncAPIKeyAuthTests.mutationQueue")
     private static let subscriptionAndFetchQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue")
 
@@ -57,7 +61,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         DispatchQueue.global(qos: .background).async { deinitNotifiableAppSyncClient = nil }
 
-        waitForExpectations(timeout: 5)
+        waitForExpectations(timeout: 1)
     }
 
     func testClientDeinitAfterMutation() throws {
@@ -75,10 +79,10 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
 
         // Wait for mutation to return before releasing client
-        wait(for: [postCreated], timeout: 15.0)
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         deinitNotifiableAppSyncClient = nil
-        wait(for: [deinitCalled], timeout: 5.0)
+        wait(for: [deinitCalled], timeout: 1.0)
     }
 
     func testMutation() {
@@ -96,7 +100,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             postCreated.fulfill()
         }
 
-        wait(for: [postCreated], timeout: 5.0)
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
     }
 
     func testQuery() {
@@ -113,7 +117,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             postCreated.fulfill()
         }
 
-        wait(for: [postCreated], timeout: 10.0)
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         let query = ListPostsQuery()
 
@@ -126,14 +130,14 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             listPostsCompleted.fulfill()
         }
 
-        wait(for: [listPostsCompleted], timeout: 10.0)
+        wait(for: [listPostsCompleted], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
     }
 
     func testClearCache() {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(
@@ -143,13 +147,15 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             postCreated.fulfill()
         }
 
-        wait(for: [postCreated], timeout: 15.0)
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         let query = ListPostsQuery()
 
         let listPostsCompleted = expectation(description: "Fetch query ignoring cache")
 
-        appSyncClient?.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { result, error in
+        appSyncClient?.fetch(query: query,
+                             cachePolicy: .fetchIgnoringCacheData,
+                             queue: AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue) { result, error in
             defer { listPostsCompleted.fulfill() }
 
             XCTAssertNil(error)
@@ -157,7 +163,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTAssertGreaterThan(result!.data!.listPosts!.count, 0, "Expected service to return at least 1 post.")
         }
 
-        wait(for: [listPostsCompleted], timeout: 15.0)
+        wait(for: [listPostsCompleted], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         do {
             try appSyncClient?.clearCache().await()
@@ -167,14 +173,16 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         let emptyCacheCompleted = expectation(description: "Fetch query from empty cache")
 
-        appSyncClient?.fetch(query: query, cachePolicy: .returnCacheDataDontFetch) { (result, error) in
+        appSyncClient?.fetch(query: query,
+                             cachePolicy: .returnCacheDataDontFetch,
+                             queue: AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue) { (result, error) in
             defer { emptyCacheCompleted.fulfill() }
 
             XCTAssertNil(result, "Expected empty cache")
             XCTAssertNil(error, "Expected no error")
         }
 
-        wait(for: [emptyCacheCompleted], timeout: 15.0)
+        wait(for: [emptyCacheCompleted], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
     }
 
     func testSubscription_Stress() {
@@ -199,7 +207,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             idHolder = result?.data?.createPostWithoutFileUsingParameters?.id
             postCreated.fulfill()
         }
-        wait(for: [postCreated], timeout: 10.0)
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         guard let id = idHolder else {
             XCTFail("Expected ID from addPost mutation")
@@ -246,7 +254,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
             subscriptionIsRegisteredExpectation.fulfill()
         }
-        wait(for: [subscriptionIsRegisteredExpectation], timeout: 10.0)
+        wait(for: [subscriptionIsRegisteredExpectation], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
         subscriptionGetTopicsTimer.invalidate()
 
         print("Sleeping a few seconds to wait for server to begin delivering subscriptions")
@@ -262,7 +270,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             upvotePerformed.fulfill()
         }
 
-        wait(for: [upvotePerformed, subscriptionResultHandlerInvoked], timeout: 10.0)
+        wait(for: [upvotePerformed, subscriptionResultHandlerInvoked], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
     }
 
     func testOptimisticWriteWithQueryParameter() {
@@ -281,7 +289,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTAssertEqual(result!.data!.createPostWithoutFileUsingParameters?.author, DefaultTestPostData.author)
             postCreated.fulfill()
         }
-        wait(for: [postCreated], timeout: 10.0)
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         let fetchQuery = ListPostsQuery()
 
@@ -297,7 +305,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                                 successfulQueryFetchExpectation.fulfill()
         }
 
-        wait(for: [successfulQueryFetchExpectation], timeout: 10.0)
+        wait(for: [successfulQueryFetchExpectation], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         appSyncClient?.perform(mutation: addPost,
                                queue: AWSAppSyncAPIKeyAuthTests.mutationQueue,
@@ -326,7 +334,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                                 successfulMutationEvent2Expectation.fulfill()
         })
 
-        wait(for: [successfulOptimisticWriteExpectation, successfulMutationEvent2Expectation], timeout: 5.0)
+        wait(for: [successfulOptimisticWriteExpectation, successfulMutationEvent2Expectation], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         appSyncClient?.fetch(query: fetchQuery,
                              cachePolicy: .returnCacheDataDontFetch,
@@ -338,7 +346,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             successfulLocalQueryFetchExpectation.fulfill()
         }
 
-        wait(for: [successfulLocalQueryFetchExpectation], timeout: 10.0)
+        wait(for: [successfulLocalQueryFetchExpectation], timeout: 1.0)
     }
 
     // Validates that queries are invoked and returned as expected during initial setup and
@@ -371,7 +379,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         var idHolder: GraphQLID?
-        appSyncClient.perform(mutation: addPost) { result, error in
+        appSyncClient.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
             print("CreatePost result handler invoked")
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
@@ -379,7 +387,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             idHolder = result?.data?.createPostWithoutFileUsingParameters?.id
             postCreated.fulfill()
         }
-        wait(for: [postCreated], timeout: 10.0)
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         guard let id = idHolder else {
             XCTFail("Expected ID from addPost mutation")
@@ -489,7 +497,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 initialSubscriptionHandlerShouldNotBeInvokedDuringSetup,
                 initialDeltaHandlerShouldNotBeInvokedDuringSetup
             ],
-            timeout: 10.0
+            timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
         )
 
         // Now that we've subscribed, mutate the post to trigger the subscription
@@ -516,7 +524,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 initialSubscriptionHandlerShouldBeInvokedDuringMonitoring,
                 initialDeltaHandlerShouldNotBeInvokedDuringMonitoring
             ],
-            timeout: 10.0
+            timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
         )
 
         // Cancel the syncWatcher to simulate an app restart
@@ -620,7 +628,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 restartedSubscriptionHandlerShouldNotBeInvokedDuringSetup,
                 restartedDeltaHandlerShouldBeInvokedDuringSetup
             ],
-            timeout: 10.0
+            timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
         )
 
         // Trigger the restarted watcher's subscription
@@ -647,7 +655,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 restartedSubscriptionHandlerShouldBeInvokedDuringMonitoring,
                 restartedDeltaHandlerShouldNotBeInvokedDuringMonitoring
             ],
-            timeout: 10.0
+            timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
         )
 
     }
