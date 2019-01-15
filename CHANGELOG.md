@@ -8,6 +8,10 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 * Added an `AWSAppSyncClient.clearCache()` method to clear the local Apollo cache. (#36, PR #141) Thanks @larryonoff! 🎉
 
+### Misc. Updates
+
+* AWSAppSync now uses Xcode 10.1 to build its Carthage binaries. This will make the binaries compatible with **Swift 4.2.1**. Projects that have not yet upgraded to use Swift 4.2.1 will fall back to building from source.
+
 ## 2.9.1
 
 ### Bug Fixes
