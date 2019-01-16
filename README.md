@@ -14,19 +14,21 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ## Setup
 
-> Note: AWS AppSync uses Swift 4.2. Use Xcode 10.0 or greater to build.
+> Note: AWS AppSync uses Swift 4.2.1. Use Xcode 10.1 or greater to build.
 
-- Consuming through cocoapods:
+### Installing the SDK
+
+#### Via CocoaPods
 
 1. Add the following line to your Podfile:
 
-    ```
-    pod 'AWSAppSync', '~> 2.6.24'
+    ```ruby
+    pod 'AWSAppSync', '~> 2.9.0'
     ```
 
     Example:
 
-    ```
+    ```ruby
     # Uncomment the next line to define a global platform for your project
     # platform :ios, '9.0'
 
@@ -35,22 +37,61 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
       use_frameworks!
 
       # Pods for EventsApp
-      pod 'AWSAppSync', '~> 2.6.24'
+      pod 'AWSAppSync', '~> 2.9.0'
     end
     ```
 
-2. Run `pod install` to install the AppSync SDK
+1. Run `pod install` to install the AppSync SDK, then open the **`.xcworkspace`** file (not the `.xcodeproj` file) in Xcode.
 
-3. Now, open the `.xcworkspace` file and import the SDK using `import AWSAppSync`.
+1. Now **Build** your project to start using the SDK. Whenever a new version of the SDK is released you can update by running `pod update` and rebuilding your project to use the new features.
 
-- Codegen
+1. In your source file, import the SDK using `import AWSAppSync`.
+
+#### Via Carthage
+
+1. Add the following to your Cartfile:
+
+    ```
+    github "awslabs/aws-mobile-appsync-sdk-ios"
+    ```
+
+1. Once complete, run `carthage update` and open the `*.xcworkspace` with Xcode and chose your `Target`. In the `General` tab, find `Embedded Binaries`, then choose the `+` button.
+
+1. Choose the `Add Other` button, navigate to the `AWS<#ServiceName#>.framework` files under `Carthage > Build > iOS` and select `AWSAppSync.framework` and its required dependencies:
+
+    * AWSAppSync.framework
+    * AWSCore.framework
+    * Reachability.framework
+    * SQLite.framework
+
+    Do not select the `Destination: Copy items` if needed check box when prompted.
+
+1. Under the `Build Phases` tab in your `Target`, choose the `+` button on the top left and then select `New Run Script Phase`. Setup the build phase as follows. Make sure this phase is below the Embed Frameworks phase.
+
+    ```bash
+    bash "${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCore.framework/strip-frameworks.sh"
+    ```
+
+    Options:
+    * **Shell**: /bin/sh
+    * **Show environment variables in build log**: Checked
+    * **Run script only when installing**: Not checked
+    * **Input Files**: Empty
+    * **Output Files**: Empty
+
+1. Now **Build** your project to start using the SDK. Whenever a new version of the SDK is released you can update by running `carthage update` and rebuilding your project to use the new features.
+
+    > Note: Currently, the AWSAppSync SDK for iOS builds the Carthage binaries using Xcode 10.1. To consume the pre-built binaries your Xcode version needs to be the same. Otherwise you will have to build the frameworks on your machine by passing `--no-use-binaries` flag to `carthage update` command.
+
+1. In your source file, import the SDK using `import AWSAppSync`.
+
+### Codegen
 
     To use the AppSync SDK, you will need to use `amplify codegen` from the [AWS Amplify CLI](https://aws-amplify.github.io/docs/cli/codegen?sdk=ios) which helps generate a strongly typed API for your schema. You can find the instructions to use the codegen here: https://aws-amplify.github.io/docs/ios/api
 
-
 ## Sample
 
-You can find a sample app which uses the AppSync SDK here: https://github.com/aws-samples/aws-mobile-appsync-events-starter-ios 
+You can find a sample app which uses the AppSync SDK here: https://github.com/aws-samples/aws-mobile-appsync-events-starter-ios
 
 ## Documentation
 
