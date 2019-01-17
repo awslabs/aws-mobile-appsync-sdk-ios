@@ -2,6 +2,12 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.9.3
+
+### Misc. Updates
+
+* The AWSAppSync target no longer specifies values for `VALID_ARCH` in its build settings but instead uses defaults. [See PR#156](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/156) Thanks @larryonoff! 🎉
+
 ## 2.9.2
 
 ### New Features
