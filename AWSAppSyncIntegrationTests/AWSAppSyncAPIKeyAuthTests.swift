@@ -551,7 +551,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             expectation(description: "Restarted subscription query result handler should be invoked during monitoring")
 
         let restartedDeltaHandlerShouldBeInvokedDuringSetup =
-            expectation(description: "Restarted delta query result handler should not be invoked during setup")
+            expectation(description: "Restarted delta query result handler should be invoked during setup")
 
         let restartedDeltaHandlerShouldNotBeInvokedDuringMonitoring =
             expectation(description: "Restarted delta query result handler should not be invoked during monitoring")
