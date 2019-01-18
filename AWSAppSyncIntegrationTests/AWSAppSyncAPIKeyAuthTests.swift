@@ -61,7 +61,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         DispatchQueue.global(qos: .background).async { deinitNotifiableAppSyncClient = nil }
 
-        waitForExpectations(timeout: 1)
+        waitForExpectations(timeout: 5.0)
     }
 
     func testClientDeinitAfterMutation() throws {
@@ -82,7 +82,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         deinitNotifiableAppSyncClient = nil
-        wait(for: [deinitCalled], timeout: 1.0)
+        wait(for: [deinitCalled], timeout: 5.0)
     }
 
     func testMutation() {
@@ -346,7 +346,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             successfulLocalQueryFetchExpectation.fulfill()
         }
 
-        wait(for: [successfulLocalQueryFetchExpectation], timeout: 1.0)
+        wait(for: [successfulLocalQueryFetchExpectation], timeout: 5.0)
     }
 
     // Validates that queries are invoked and returned as expected during initial setup and
