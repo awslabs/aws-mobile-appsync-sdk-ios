@@ -2,21 +2,20 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
-## 2.9.3
-
-### Misc. Updates
-
-* The AWSAppSync target no longer specifies values for `VALID_ARCH` in its build settings but instead uses defaults. [See PR#156](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/156) Thanks @larryonoff! 🎉
-
 ## 2.9.2
 
 ### New Features
 
-* Added an `AWSAppSyncClient.clearCache()` method to clear the local Apollo cache. (#36, PR #141) Thanks @larryonoff! 🎉
+* Added an `AWSAppSyncClient.clearCache()` method to clear the local Apollo cache. See [Issue #36](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/36), [PR #141](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/141) Thanks @larryonoff! 🎉
+
+### Bug fixes
+
+* AppSyncClient.sync() now properly invokes its subscription callbacks on the supplied `handlerQueue` instead of always using `DispatchQueue.main`
 
 ### Misc. Updates
 
 * AWSAppSync now uses Xcode 10.1 to build its Carthage binaries. This will make the binaries compatible with **Swift 4.2.1**. Projects that have not yet upgraded to use Swift 4.2.1 will fall back to building from source.
+* The AWSAppSync target no longer specifies values for `VALID_ARCH` in its build settings but instead uses defaults. [See PR#156](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/156) Thanks @larryonoff! 🎉
 
 ## 2.9.1
 

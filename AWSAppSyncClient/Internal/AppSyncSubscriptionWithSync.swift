@@ -159,7 +159,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
         let semaphore = DispatchSemaphore(value: 0)
 
         AppSyncLog.info("Initializing base query results from cache")
-        appSyncClient.fetch(query: baseQuery, cachePolicy: CachePolicy.returnCacheDataDontFetch) { [weak self] (result, error) in
+        appSyncClient.fetch(query: baseQuery, cachePolicy: .returnCacheDataDontFetch) { [weak self] (result, error) in
             self?.baseQueryHandler(result, error)
             semaphore.signal()
         }
@@ -249,6 +249,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
         do {
             subscriptionWatcher = try appSyncClient.subscribeWithConnectCallback(
                 subscription: subscription,
+                queue: handlerQueue ?? DispatchQueue.main,
                 connectCallback: connectCallback,
                 resultHandler: resultHandler
             )

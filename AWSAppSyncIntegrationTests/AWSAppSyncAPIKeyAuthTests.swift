@@ -34,6 +34,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
     static func makeAppSyncClient(authType: AppSyncClientTestHelper.AuthenticationType,
                                   databaseURL: URL? = nil) throws -> DeinitNotifiableAppSyncClient {
+
         let testBundle = Bundle(for: AWSAppSyncAPIKeyAuthTests.self)
         let helper = try AppSyncClientTestHelper(
             with: authType,
@@ -349,12 +350,85 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(for: [successfulLocalQueryFetchExpectation], timeout: 5.0)
     }
 
+    func testSubscriptionIsInvokedOnProvidedQueue() throws {
+        let label = "testSyncOperationAtSetupAndReconnect.syncWatcherCallbackQueue"
+        let syncWatcherCallbackQueue = DispatchQueue(label: label)
+        let queueIdentityKey = DispatchSpecificKey<String>()
+        let queueIdentityValue = label
+        syncWatcherCallbackQueue.setSpecific(key: queueIdentityKey, value: queueIdentityValue)
+
+        let appSyncClient = try AWSAppSyncAPIKeyAuthTests.makeAppSyncClient(authType: self.authType)
+
+        let postCreated = expectation(description: "Post created successfully.")
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+        var idHolder: GraphQLID?
+        appSyncClient.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+            print("CreatePost result handler invoked")
+            idHolder = result?.data?.createPostWithoutFileUsingParameters?.id
+            postCreated.fulfill()
+        }
+        wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
+
+        guard let id = idHolder else {
+            XCTFail("Expected ID from addPost mutation")
+            return
+        }
+
+        let baseQueryResultHandler: (GraphQLResult<ListPostsQuery.Data>?, Error?) -> Void = { _, _ in }
+        let deltaQueryResultHandler: (GraphQLResult<ListPostsQuery.Data>?, ApolloStore.ReadWriteTransaction?, Error?) -> Void = { _, _, _ in }
+
+        let subscriptionResultHandlerInvoked = expectation(description: "Subscription result handler invoked")
+        let subscriptionResultHandler: (GraphQLResult<OnUpvotePostSubscription.Data>?, ApolloStore.ReadWriteTransaction?, Error?) -> Void = { _, _, _ in
+            subscriptionResultHandlerInvoked.fulfill()
+            let dispatchQueueValue = DispatchQueue.getSpecific(key: queueIdentityKey)
+            XCTAssertEqual(dispatchQueueValue, queueIdentityValue, "Expected callback to be invoked on provided queue")
+        }
+
+        let listPostsQuery = ListPostsQuery()
+        let subscription = OnUpvotePostSubscription(id: id)
+
+        let syncWatcher = appSyncClient.sync(
+            baseQuery: listPostsQuery,
+            baseQueryResultHandler: baseQueryResultHandler,
+            subscription: subscription,
+            subscriptionResultHandler: subscriptionResultHandler,
+            deltaQuery: listPostsQuery,
+            deltaQueryResultHandler: deltaQueryResultHandler,
+            callbackQueue: syncWatcherCallbackQueue,
+            syncConfiguration: SyncConfiguration()
+        )
+
+        defer {
+            syncWatcher.cancel()
+        }
+
+        let upvote = UpvotePostMutation(id: id)
+        let upvoteComplete = expectation(description: "Upvote mutation completed")
+
+        // Wait 3 seconds to ensure sync/subscription is active, then trigger the mutation
+        DispatchQueue.global().async {
+            sleep(3)
+            self.appSyncClient?.perform(mutation: upvote,
+                                        queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { _, _ in
+                                            upvoteComplete.fulfill()
+            }
+        }
+
+        wait(
+            for: [
+                upvoteComplete,
+                subscriptionResultHandlerInvoked,
+                ],
+            timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
+        )
+    }
+
     // Validates that queries are invoked and returned as expected during initial setup and
     // reconnection flows
     func testSyncOperationAtSetupAndReconnect() throws {
         // Let result handlers inspect the current phase of the sync watcher's "lifecycle" so they can properly fulfill
         // expectations
-        var _currentSyncWatcherLifecyclePhase = SyncWatcherLifecyclePhase.setUp
+        var _currentSyncWatcherLifecyclePhase = SyncWatcherLifecyclePhase.baseQueryNotYetComplete
         func currentSyncWatcherLifecyclePhase() -> SyncWatcherLifecyclePhase {
             return _currentSyncWatcherLifecyclePhase
         }
@@ -401,6 +475,10 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let initialBaseQueryShouldBeInvokedToPopulateFromService =
             expectation(description: "Initial base query result handler should be invoked to populate subscription from service")
 
+        let initialBaseQueryShouldNotBeInvokedAgainAfterCompleted =
+            expectation(description: "Initial base query result handler should not be invoked after it has successfully completed")
+        initialBaseQueryShouldNotBeInvokedAgainAfterCompleted.isInverted = true
+
         let initialBaseQueryShouldNotBeInvokedDuringMonitoring =
             expectation(description: "Initial base query result handler should not be invoked during monitoring")
         initialBaseQueryShouldNotBeInvokedDuringMonitoring.isInverted = true
@@ -420,26 +498,34 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             expectation(description: "Initial delta query result handler should not be invoked during monitoring")
         initialDeltaHandlerShouldNotBeInvokedDuringMonitoring.isInverted = true
 
-        var initialBaseQueryResultHandlerInvocationCount = 0
-
         let initialBaseQueryResultHandler: (GraphQLResult<ListPostsQuery.Data>?, Error?) -> Void = {
             result, error in
             print("Initial base query result handler invoked during phase \(currentSyncWatcherLifecyclePhase())")
             XCTAssertNil(error)
-            initialBaseQueryResultHandlerInvocationCount += 1
 
             switch currentSyncWatcherLifecyclePhase() {
-            case .setUp:
-                if (initialBaseQueryResultHandlerInvocationCount == 1) {
+            case .baseQueryNotYetComplete:
+                switch result?.source {
+                case .none:
+                    // We get a .none source hydrating from an empty cache
                     initialBaseQueryHandlerShouldBeInvokedToHydrateFromCache.fulfill()
                     XCTAssertNil(result)
-                } else if initialBaseQueryResultHandlerInvocationCount == 2 {
-                    XCTAssertNotNil(result)
-                    initialBaseQueryShouldBeInvokedToPopulateFromService.fulfill()
-                } else {
-                    XCTFail("Expecting only 2 invocations of base query result operation, but got \(initialBaseQueryResultHandlerInvocationCount).")
+                case .some(let source):
+                    switch source {
+                    case .cache:
+                        // This would be unexpected for an empty cache, but we will include the case here in case
+                        // we change that behavior in future
+                        initialBaseQueryHandlerShouldBeInvokedToHydrateFromCache.fulfill()
+                        XCTAssertNotNil(result)
+                    case .server:
+                        initialBaseQueryShouldBeInvokedToPopulateFromService.fulfill()
+                        _currentSyncWatcherLifecyclePhase = .baseQueryComplete
+                        XCTAssertNotNil(result)
+                    }
                 }
-            case .monitoring:
+            case .baseQueryComplete:
+                initialBaseQueryShouldNotBeInvokedAgainAfterCompleted.fulfill()
+            case .monitoringSubscriptions:
                 initialBaseQueryShouldNotBeInvokedDuringMonitoring.fulfill()
             }
         }
@@ -451,9 +537,11 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTAssertNotNil(transaction)
             XCTAssertNil(error)
             switch currentSyncWatcherLifecyclePhase() {
-            case .setUp:
+            case .baseQueryNotYetComplete:
                 initialSubscriptionHandlerShouldNotBeInvokedDuringSetup.fulfill()
-            case .monitoring:
+            case .baseQueryComplete:
+                initialSubscriptionHandlerShouldNotBeInvokedDuringSetup.fulfill()
+            case .monitoringSubscriptions:
                 initialSubscriptionHandlerShouldBeInvokedDuringMonitoring.fulfill()
             }
         }
@@ -462,9 +550,15 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             _, _, _ in
             print("Initial delta query result handler invoked unexpectedly")
             switch currentSyncWatcherLifecyclePhase() {
-            case .setUp:
+            case .baseQueryNotYetComplete:
                 initialDeltaHandlerShouldNotBeInvokedDuringSetup.fulfill()
-            case .monitoring:
+            case .baseQueryComplete:
+                // This case is allowable--if the test environment fails and retries the base query (e.g., due to a
+                // transient network error), the delta query would be invoked. We will leave the
+                // "baseQueryNotYetComplete" case above though, since we want to ensure that the delta query always
+                // returns after the base query
+                break
+            case .monitoringSubscriptions:
                 initialDeltaHandlerShouldNotBeInvokedDuringMonitoring.fulfill()
             }
         }
@@ -493,15 +587,26 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(
             for: [
                 initialBaseQueryHandlerShouldBeInvokedToHydrateFromCache,
-                initialBaseQueryShouldBeInvokedToPopulateFromService,
-                initialSubscriptionHandlerShouldNotBeInvokedDuringSetup,
-                initialDeltaHandlerShouldNotBeInvokedDuringSetup
+                initialBaseQueryShouldBeInvokedToPopulateFromService
             ],
             timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
         )
 
+        // We aren't going to sit and wait for the other handlers *not* to be invoked. As long as they aren't invoked
+        // before the initial base queries are done, we're comfortable that the correct order of operations is being
+        // preserved. Use this to simply assert that they weren't invoked while waiting for the initial setup to
+        // complete
+        wait(
+            for: [
+                initialBaseQueryShouldNotBeInvokedAgainAfterCompleted,
+                initialSubscriptionHandlerShouldNotBeInvokedDuringSetup,
+                initialDeltaHandlerShouldNotBeInvokedDuringSetup
+            ],
+            timeout: 0.1
+        )
+
         // Now that we've subscribed, mutate the post to trigger the subscription
-        _currentSyncWatcherLifecyclePhase = .monitoring
+        _currentSyncWatcherLifecyclePhase = .monitoringSubscriptions
         let firstUpvoteMutation = UpvotePostMutation(id: id)
         let firstUpvoteComplete = expectation(description: "First upvote should be completed on service")
 
@@ -520,16 +625,21 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(
             for: [
                 firstUpvoteComplete,
-                initialBaseQueryShouldNotBeInvokedDuringMonitoring,
                 initialSubscriptionHandlerShouldBeInvokedDuringMonitoring,
-                initialDeltaHandlerShouldNotBeInvokedDuringMonitoring
             ],
             timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
+        )
+        wait(
+            for: [
+                initialBaseQueryShouldNotBeInvokedDuringMonitoring,
+                initialDeltaHandlerShouldNotBeInvokedDuringMonitoring
+            ],
+            timeout: 0.1
         )
 
         // Cancel the syncWatcher to simulate an app restart
         syncWatcher?.cancel()
-        _currentSyncWatcherLifecyclePhase = .setUp
+        _currentSyncWatcherLifecyclePhase = .baseQueryNotYetComplete
 
         // Now set up the expectations for the "restarted" app
         let restartedBaseQueryHandlerShouldBeInvokedToHydrateFromCache =
@@ -557,25 +667,26 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             expectation(description: "Restarted delta query result handler should not be invoked during monitoring")
         restartedDeltaHandlerShouldNotBeInvokedDuringMonitoring.isInverted = true
 
-        var restartedBaseQueryResultHandlerInvocationCount = 0
-
         let restartedBaseQueryResultHandler: (GraphQLResult<ListPostsQuery.Data>?, Error?) -> Void = {
             result, error in
             print("Restarted base query result handler invoked")
-            XCTAssertNotNil(result)
+            guard let result = result else {
+                XCTFail("result unexpectedly nil in restartedBaseQueryResultHandler")
+                return
+            }
             XCTAssertNil(error)
 
             switch currentSyncWatcherLifecyclePhase() {
-            case .setUp:
-                restartedBaseQueryResultHandlerInvocationCount += 1
-                if (restartedBaseQueryResultHandlerInvocationCount == 1) {
+            case .baseQueryNotYetComplete:
+                switch result.source {
+                case .cache:
                     restartedBaseQueryHandlerShouldBeInvokedToHydrateFromCache.fulfill()
-                } else if restartedBaseQueryResultHandlerInvocationCount == 2 {
+                case .server:
                     restartedBaseQueryShouldNotBeInvokedToPopulateFromService.fulfill()
-                } else {
-                    XCTFail("Expecting only 2 invocations of base query result operation, but got \(restartedBaseQueryResultHandlerInvocationCount).")
                 }
-            case .monitoring:
+            case .baseQueryComplete:
+                restartedBaseQueryShouldNotBeInvokedToPopulateFromService.fulfill()
+            case .monitoringSubscriptions:
                 restartedBaseQueryShouldNotBeInvokedDuringMonitoring.fulfill()
             }
         }
@@ -587,9 +698,11 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTAssertNotNil(transaction)
             XCTAssertNil(error)
             switch currentSyncWatcherLifecyclePhase() {
-            case .setUp:
+            case .baseQueryNotYetComplete:
                 restartedSubscriptionHandlerShouldNotBeInvokedDuringSetup.fulfill()
-            case .monitoring:
+            case .baseQueryComplete:
+                restartedSubscriptionHandlerShouldNotBeInvokedDuringSetup.fulfill()
+            case .monitoringSubscriptions:
                 restartedSubscriptionHandlerShouldBeInvokedDuringMonitoring.fulfill()
             }
         }
@@ -601,9 +714,11 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTAssertNotNil(transaction)
             XCTAssertNil(error)
             switch currentSyncWatcherLifecyclePhase() {
-            case .setUp:
+            case .baseQueryNotYetComplete:
                 restartedDeltaHandlerShouldBeInvokedDuringSetup.fulfill()
-            case .monitoring:
+            case .baseQueryComplete:
+                restartedDeltaHandlerShouldBeInvokedDuringSetup.fulfill()
+            case .monitoringSubscriptions:
                 restartedDeltaHandlerShouldNotBeInvokedDuringMonitoring.fulfill()
             }
         }
@@ -624,15 +739,20 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(
             for: [
                 restartedBaseQueryHandlerShouldBeInvokedToHydrateFromCache,
-                restartedBaseQueryShouldNotBeInvokedToPopulateFromService,
-                restartedSubscriptionHandlerShouldNotBeInvokedDuringSetup,
                 restartedDeltaHandlerShouldBeInvokedDuringSetup
             ],
             timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
         )
+        wait(
+            for: [
+                restartedBaseQueryShouldNotBeInvokedToPopulateFromService,
+                restartedSubscriptionHandlerShouldNotBeInvokedDuringSetup
+            ],
+            timeout: 0.1
+        )
 
         // Trigger the restarted watcher's subscription
-        _currentSyncWatcherLifecyclePhase = .monitoring
+        _currentSyncWatcherLifecyclePhase = .monitoringSubscriptions
         let secondUpvoteMutation = UpvotePostMutation(id: id)
         let secondUpvoteComplete = expectation(description: "Second upvote should be completed on service")
 
@@ -651,11 +771,16 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(
             for: [
                 secondUpvoteComplete,
-                restartedBaseQueryShouldNotBeInvokedDuringMonitoring,
-                restartedSubscriptionHandlerShouldBeInvokedDuringMonitoring,
-                restartedDeltaHandlerShouldNotBeInvokedDuringMonitoring
+                restartedSubscriptionHandlerShouldBeInvokedDuringMonitoring
             ],
             timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout
+        )
+        wait(
+            for: [
+                restartedBaseQueryShouldNotBeInvokedDuringMonitoring,
+                restartedDeltaHandlerShouldNotBeInvokedDuringMonitoring
+            ],
+            timeout: 0.1
         )
 
     }
@@ -663,6 +788,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 }
 
 private enum SyncWatcherLifecyclePhase {
-    case setUp
-    case monitoring
+    case baseQueryNotYetComplete
+    case baseQueryComplete
+    case monitoringSubscriptions
 }
