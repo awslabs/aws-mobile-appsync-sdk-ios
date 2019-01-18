@@ -22,7 +22,7 @@ import XCTest
 class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     /// Uset this as our timeout value for any operation that hits the network. Note that this may need to be higher
     /// than you think, to account for CI systems running in shared environments
-    private static let networkOperationTimeout = 30.0
+    private static let networkOperationTimeout = 60.0
 
     private static let mutationQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncAPIKeyAuthTests.mutationQueue")
     private static let subscriptionAndFetchQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue")
