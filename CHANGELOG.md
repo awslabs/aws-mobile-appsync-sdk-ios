@@ -2,6 +2,12 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.9.3
+
+### Misc. Updates
+
+* Removed dependencies from the Cartfile to eliminate unnecessary dependency downloads and reduce build times, as well as reduce confusion about which version of a dependency is actually in use. The canonical source of downloaded dependencies is the Podfile.lock, checked into source. See [Issues #76](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/76), [PR #158](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/158)
+
 ## 2.9.2
 
 ### New Features
