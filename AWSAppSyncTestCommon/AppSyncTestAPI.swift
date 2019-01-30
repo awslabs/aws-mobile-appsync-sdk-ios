@@ -5,7 +5,7 @@ import AWSAppSync
 public struct CreatePostWithFileInput: GraphQLMapConvertible {
   public var graphQLMap: GraphQLMap
 
-  public init(author: String, title: String, content: String, url: Optional<String?> = nil, ups: Optional<Int?> = nil, downs: Optional<Int?> = nil, file: S3ObjectInput) {
+  public init(author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: S3ObjectInput) {
     graphQLMap = ["author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file]
   }
 
@@ -36,27 +36,27 @@ public struct CreatePostWithFileInput: GraphQLMapConvertible {
     }
   }
 
-  public var url: Optional<String?> {
+  public var url: String? {
     get {
-      return graphQLMap["url"] as! Optional<String?>
+      return graphQLMap["url"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "url")
     }
   }
 
-  public var ups: Optional<Int?> {
+  public var ups: Int? {
     get {
-      return graphQLMap["ups"] as! Optional<Int?>
+      return graphQLMap["ups"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "ups")
     }
   }
 
-  public var downs: Optional<Int?> {
+  public var downs: Int? {
     get {
-      return graphQLMap["downs"] as! Optional<Int?>
+      return graphQLMap["downs"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "downs")
@@ -158,7 +158,7 @@ public enum DeltaAction: RawRepresentable, Equatable, JSONDecodable, JSONEncodab
 public struct CreatePostWithoutFileInput: GraphQLMapConvertible {
   public var graphQLMap: GraphQLMap
 
-  public init(author: String, title: String, content: String, url: Optional<String?> = nil, ups: Optional<Int?> = nil, downs: Optional<Int?> = nil) {
+  public init(author: String, title: String, content: String, url: String? = nil, ups: Int? = nil, downs: Int? = nil) {
     graphQLMap = ["author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs]
   }
 
@@ -189,27 +189,27 @@ public struct CreatePostWithoutFileInput: GraphQLMapConvertible {
     }
   }
 
-  public var url: Optional<String?> {
+  public var url: String? {
     get {
-      return graphQLMap["url"] as! Optional<String?>
+      return graphQLMap["url"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "url")
     }
   }
 
-  public var ups: Optional<Int?> {
+  public var ups: Int? {
     get {
-      return graphQLMap["ups"] as! Optional<Int?>
+      return graphQLMap["ups"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "ups")
     }
   }
 
-  public var downs: Optional<Int?> {
+  public var downs: Int? {
     get {
-      return graphQLMap["downs"] as! Optional<Int?>
+      return graphQLMap["downs"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "downs")
@@ -220,7 +220,7 @@ public struct CreatePostWithoutFileInput: GraphQLMapConvertible {
 public struct UpdatePostWithFileInput: GraphQLMapConvertible {
   public var graphQLMap: GraphQLMap
 
-  public init(id: GraphQLID, author: Optional<String?> = nil, title: Optional<String?> = nil, content: Optional<String?> = nil, url: Optional<String?> = nil, ups: Optional<Int?> = nil, downs: Optional<Int?> = nil, file: S3ObjectInput) {
+  public init(id: GraphQLID, author: String? = nil, title: String? = nil, content: String? = nil, url: String? = nil, ups: Int? = nil, downs: Int? = nil, file: S3ObjectInput) {
     graphQLMap = ["id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs, "file": file]
   }
 
@@ -233,54 +233,54 @@ public struct UpdatePostWithFileInput: GraphQLMapConvertible {
     }
   }
 
-  public var author: Optional<String?> {
+  public var author: String? {
     get {
-      return graphQLMap["author"] as! Optional<String?>
+      return graphQLMap["author"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "author")
     }
   }
 
-  public var title: Optional<String?> {
+  public var title: String? {
     get {
-      return graphQLMap["title"] as! Optional<String?>
+      return graphQLMap["title"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "title")
     }
   }
 
-  public var content: Optional<String?> {
+  public var content: String? {
     get {
-      return graphQLMap["content"] as! Optional<String?>
+      return graphQLMap["content"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "content")
     }
   }
 
-  public var url: Optional<String?> {
+  public var url: String? {
     get {
-      return graphQLMap["url"] as! Optional<String?>
+      return graphQLMap["url"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "url")
     }
   }
 
-  public var ups: Optional<Int?> {
+  public var ups: Int? {
     get {
-      return graphQLMap["ups"] as! Optional<Int?>
+      return graphQLMap["ups"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "ups")
     }
   }
 
-  public var downs: Optional<Int?> {
+  public var downs: Int? {
     get {
-      return graphQLMap["downs"] as! Optional<Int?>
+      return graphQLMap["downs"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "downs")
@@ -300,7 +300,7 @@ public struct UpdatePostWithFileInput: GraphQLMapConvertible {
 public struct UpdatePostWithoutFileInput: GraphQLMapConvertible {
   public var graphQLMap: GraphQLMap
 
-  public init(id: GraphQLID, author: Optional<String?> = nil, title: Optional<String?> = nil, content: Optional<String?> = nil, url: Optional<String?> = nil, ups: Optional<Int?> = nil, downs: Optional<Int?> = nil) {
+  public init(id: GraphQLID, author: String? = nil, title: String? = nil, content: String? = nil, url: String? = nil, ups: Int? = nil, downs: Int? = nil) {
     graphQLMap = ["id": id, "author": author, "title": title, "content": content, "url": url, "ups": ups, "downs": downs]
   }
 
@@ -313,54 +313,54 @@ public struct UpdatePostWithoutFileInput: GraphQLMapConvertible {
     }
   }
 
-  public var author: Optional<String?> {
+  public var author: String? {
     get {
-      return graphQLMap["author"] as! Optional<String?>
+      return graphQLMap["author"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "author")
     }
   }
 
-  public var title: Optional<String?> {
+  public var title: String? {
     get {
-      return graphQLMap["title"] as! Optional<String?>
+      return graphQLMap["title"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "title")
     }
   }
 
-  public var content: Optional<String?> {
+  public var content: String? {
     get {
-      return graphQLMap["content"] as! Optional<String?>
+      return graphQLMap["content"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "content")
     }
   }
 
-  public var url: Optional<String?> {
+  public var url: String? {
     get {
-      return graphQLMap["url"] as! Optional<String?>
+      return graphQLMap["url"] as! String?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "url")
     }
   }
 
-  public var ups: Optional<Int?> {
+  public var ups: Int? {
     get {
-      return graphQLMap["ups"] as! Optional<Int?>
+      return graphQLMap["ups"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "ups")
     }
   }
 
-  public var downs: Optional<Int?> {
+  public var downs: Int? {
     get {
-      return graphQLMap["downs"] as! Optional<Int?>
+      return graphQLMap["downs"] as! Int?
     }
     set {
       graphQLMap.updateValue(newValue, forKey: "downs")
@@ -3140,6 +3140,41 @@ public final class DeletePostUsingParametersMutation: GraphQLMutation {
             snapshot.updateValue(newValue, forKey: "region")
           }
         }
+      }
+    }
+  }
+}
+
+public final class TestMutationWithoutParametersMutation: GraphQLMutation {
+  public static let operationString =
+    "mutation TestMutationWithoutParameters {\n  testMutationWithoutParameters\n}"
+
+  public init() {
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes = ["Mutation"]
+
+    public static let selections: [GraphQLSelection] = [
+      GraphQLField("testMutationWithoutParameters", type: .scalar(Bool.self)),
+    ]
+
+    public var snapshot: Snapshot
+
+    public init(snapshot: Snapshot) {
+      self.snapshot = snapshot
+    }
+
+    public init(testMutationWithoutParameters: Bool? = nil) {
+      self.init(snapshot: ["__typename": "Mutation", "testMutationWithoutParameters": testMutationWithoutParameters])
+    }
+
+    public var testMutationWithoutParameters: Bool? {
+      get {
+        return snapshot["testMutationWithoutParameters"] as? Bool
+      }
+      set {
+        snapshot.updateValue(newValue, forKey: "testMutationWithoutParameters")
       }
     }
   }

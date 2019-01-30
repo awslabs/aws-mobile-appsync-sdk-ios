@@ -7,6 +7,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 ### Bug fixes
 
 * Merged Apollo iOS [PR #427](https://github.com/apollographql/apollo-ios/pull/427) to fix incompatibility with EnumeratedIterator in latest Xcode 10.2 beta.
+* Fixed an issue where performing a mutation with no parameters would crash clients using a backing database. [Issue #33](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/33)
 
 ## 2.9.2
 

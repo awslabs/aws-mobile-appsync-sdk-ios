@@ -35,7 +35,6 @@ public final class AWSMutationCache {
     private let id = Expression<Int64>("_id")
     private let recordIdentifier = Expression<CacheKey>("recordIdentifier")
     private let data = Expression<Data>("data")
-    private let contentMap = Expression<String>("contentMap")
     private let recordState = Expression<String>("recordState")
     private let timestamp = Expression<Date>("timestamp")
     private let s3Bucket = Expression<String?>("s3Bucket")
@@ -56,7 +55,6 @@ public final class AWSMutationCache {
             table.column(id, primaryKey: .autoincrement)
             table.column(recordIdentifier, unique: true)
             table.column(data)
-            table.column(contentMap)
             table.column(recordState)
             table.column(timestamp)
             table.column(s3Bucket)
@@ -75,7 +73,6 @@ public final class AWSMutationCache {
             let insert = mutationRecords.insert(
                 recordIdentifier <- record.recordIdentitifer,
                 data <- record.data!,
-                contentMap <- record.contentMap!.description,
                 recordState <- record.recordState.rawValue,
                 timestamp <- record.timestamp,
                 s3Bucket <- s3Object.bucket,
@@ -89,7 +86,6 @@ public final class AWSMutationCache {
             let insert = mutationRecords.insert(
                 recordIdentifier <- record.recordIdentitifer,
                 data <- record.data!,
-                contentMap <- record.contentMap!.description,
                 recordState <- record.recordState.rawValue,
                 timestamp <- record.timestamp,
                 operationString <- record.operationString!)

@@ -519,6 +519,64 @@ class MutationQueueTests: XCTestCase {
         wait(for: [delayedMutationResponseDispatched, cancelledMutationShouldNotBePerformed, queuedMutationShouldBePerformed], timeout: 1)
     }
 
+    func testMutationWithoutParametersWithoutBackingDatabase() throws {
+        let mutationWithoutParameters = TestMutationWithoutParametersMutation()
+        let mockHTTPTransport = MockAWSNetworkTransport()
+        mockHTTPTransport.sendOperationHandlerResponseBody = makeTestMutationWithoutParametersResponseBody(withValue: true)
+
+        let appSyncClient = try makeAppSyncClient(using: mockHTTPTransport, withBackingDatabase: false)
+
+        let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
+        appSyncClient.perform(mutation: mutationWithoutParameters) { response, error in
+            defer {
+                mutationWasPerformed.fulfill()
+            }
+
+            guard error == nil else {
+                XCTFail("Error is not nil: \(error.debugDescription)")
+                return
+            }
+
+            guard let response = response, let resultValue = response.data?.testMutationWithoutParameters else {
+                XCTFail("Response unexpectedly nil")
+                return
+            }
+
+            XCTAssert(resultValue)
+        }
+
+        wait(for: [mutationWasPerformed], timeout: 1.0)
+    }
+
+    func testMutationWithoutParametersWithBackingDatabase() throws {
+        let mutationWithoutParameters = TestMutationWithoutParametersMutation()
+        let mockHTTPTransport = MockAWSNetworkTransport()
+        mockHTTPTransport.sendOperationHandlerResponseBody = makeTestMutationWithoutParametersResponseBody(withValue: true)
+
+        let appSyncClient = try makeAppSyncClient(using: mockHTTPTransport, withBackingDatabase: true)
+
+        let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
+        appSyncClient.perform(mutation: mutationWithoutParameters) { response, error in
+            defer {
+                mutationWasPerformed.fulfill()
+            }
+
+            guard error == nil else {
+                XCTFail("Error is not nil: \(error.debugDescription)")
+                return
+            }
+
+            guard let response = response, let resultValue = response.data?.testMutationWithoutParameters else {
+                XCTFail("Response unexpectedly nil")
+                return
+            }
+
+            XCTAssert(resultValue)
+        }
+
+        wait(for: [mutationWasPerformed], timeout: 1.0)
+    }
+
     // MARK: - Utility methods
 
     func makeAddPostResponseBody(withId id: GraphQLID,
@@ -551,6 +609,16 @@ class MutationQueueTests: XCTestCase {
             reachabilityFactory: MockReachabilityProvidingFactory.self
         )
 
+        if let url = databaseURL {
+            print("AppSync client created with database at \(url.path)")
+        } else {
+            print("AppSync client created with no backing database")
+        }
         return helper.appSyncClient
     }
+
+    func makeTestMutationWithoutParametersResponseBody(withValue value: Bool) -> JSONObject {
+        return ["data": ["testMutationWithoutParameters": value]]
+    }
+
 }
