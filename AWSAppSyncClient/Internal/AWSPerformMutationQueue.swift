@@ -88,12 +88,7 @@ final class AWSPerformMutationQueue {
 
         operation.operationCompletionBlock = { [weak self] operation, error in
             guard let identifier = operation.identifier else { return }
-
-            do {
-                try self?.deleteOfflineMutation(withIdentifier: identifier)
-            } catch {
-                AppSyncLog.error("error deleting offline mutation: \(error)")
-            }
+            self?.deleteOfflineMutation(withIdentifier: identifier)
         }
 
         operationQueue.addOperation(operation)
@@ -121,7 +116,7 @@ final class AWSPerformMutationQueue {
 
     private func loadMutations() throws {
         do {
-            guard let mutations = try persistentCache?.getStoredMutationRecordsInQueue() else {
+            guard let mutations = try persistentCache?.getStoredMutationRecordsInQueue().await() else {
                 return
             }
 
@@ -134,12 +129,7 @@ final class AWSPerformMutationQueue {
 
                 operation.operationCompletionBlock = { [weak self] operation, error in
                     let identifier = operation.mutation.recordIdentitifer
-
-                    do {
-                        try self?.deleteOfflineMutation(withIdentifier: identifier)
-                    } catch {
-                        AppSyncLog.error("error deleting offline mutation: \(error)")
-                    }
+                    self?.deleteOfflineMutation(withIdentifier: identifier)
                 }
 
                 operationQueue.addOperation(operation)
@@ -170,15 +160,18 @@ final class AWSPerformMutationQueue {
         offlineMutation.recordState = .inQueue
         offlineMutation.operationString = Mutation.operationString
 
-        try persistentCache.saveMutationRecord(record: offlineMutation)
+        persistentCache
+            .saveMutationRecord(record: offlineMutation)
+            .catch { error in AppSyncLog.error("\(#function) failure: \(error)") }
 
         return offlineMutation
     }
 
-    private func deleteOfflineMutation(withIdentifier identifier: String) throws {
-        try persistentCache?.deleteMutationRecord(withIdentifier: identifier)
+    private func deleteOfflineMutation(withIdentifier identifier: String) {
+        persistentCache?
+            .deleteMutationRecord(withIdentifier: identifier)
+            .catch { error in AppSyncLog.error("\(#function) failure: \(error)") }
     }
-
 }
 
 // MARK: - NetworkConnectionNotification

@@ -114,6 +114,7 @@
 		CCEF79DB21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */; };
 		CCEF79DD21DE7EED004AD64D /* AWSAppSyncClientError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79DC21DE7EED004AD64D /* AWSAppSyncClientError.swift */; };
 		CCEF79E121DE7FF7004AD64D /* Deprecations+Removals.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCEF79E021DE7FF7004AD64D /* Deprecations+Removals.swift */; };
+		CCF4E04E21F0AB660069329F /* AWSMutationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCF4E04D21F0AB660069329F /* AWSMutationCache.swift */; };
 		DF9468DB20E1CA4A00E40482 /* AWSNetworkTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9468DA20E1CA4A00E40482 /* AWSNetworkTransport.swift */; };
 		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
 		F4DE2BE323727AA52DA01C3E /* Pods_AWSAppSyncUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0FC364F581CF82AB0F22F9D /* Pods_AWSAppSyncUnitTests.framework */; };
@@ -404,6 +405,7 @@
 		CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncApolloCustomizationTests.swift; sourceTree = "<group>"; };
 		CCEF79DC21DE7EED004AD64D /* AWSAppSyncClientError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientError.swift; sourceTree = "<group>"; };
 		CCEF79E021DE7FF7004AD64D /* Deprecations+Removals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Deprecations+Removals.swift"; sourceTree = "<group>"; };
+		CCF4E04D21F0AB660069329F /* AWSMutationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSMutationCache.swift; sourceTree = "<group>"; };
 		CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D30DD5B10C8BBEF67A3F276F /* Pods_AWSAppSync_ApolloTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_ApolloTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D40466195913ADF51E9ABDE3 /* Pods-AWSAppSync-AWSAppSyncIntegrationTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncIntegrationTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncIntegrationTests/Pods-AWSAppSync-AWSAppSyncIntegrationTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -617,6 +619,7 @@
 				179577982149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift */,
 				179E0A66215C3F7000E1F877 /* AWSAppSyncSubscriptionMetadataCache.swift */,
 				FAF5D78E21D3F0C100FC04D2 /* AWSConfigurationFile.swift */,
+				CCF4E04D21F0AB660069329F /* AWSMutationCache.swift */,
 				17D2C2061F6F44A3006C6818 /* AWSOfflineMutation.swift */,
 				CC96F8A621BACA1C00446EBD /* AWSPerformMutationOperation.swift */,
 				CC96F8A421BABE5600446EBD /* AWSPerformMutationQueue.swift */,
@@ -1441,6 +1444,7 @@
 				FA0C12BD21CD319B00B438CB /* AWSAppSyncClientInfo.swift in Sources */,
 				17E009C91FCAB234005031DB /* Record.swift in Sources */,
 				17E009D41FCAB234005031DB /* GraphQLResultNormalizer.swift in Sources */,
+				CCF4E04E21F0AB660069329F /* AWSMutationCache.swift in Sources */,
 				FAF5D78D21D3F04E00FC04D2 /* AWSAppSyncServiceConfig.swift in Sources */,
 				17E009C01FCAB234005031DB /* InMemoryNormalizedCache.swift in Sources */,
 				CC96F8AB21BAF68300446EBD /* AWSRequestBuilder.swift in Sources */,
