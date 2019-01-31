@@ -128,6 +128,7 @@ Resources:
 
           deletePostUsingParameters(id: ID!): Post
 
+          testMutationWithoutParameters: Boolean
         }
 
         type Post {
@@ -363,6 +364,16 @@ Resources:
           Ref: AWS::Region
         UseCallerCredentials: FALSE
 
+  NoneDatasource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: NONE
+      Name: none
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
 
   #########################################################
   # AWS AppSync Resolvers
@@ -433,6 +444,31 @@ Resources:
           $util.error($ctx.error.message, $ctx.error.type)
         #end
         $util.toJson($ctx.result.items)
+
+  TestMutationWithoutParametersResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "testMutationWithoutParameters"
+      DataSourceName: !GetAtt NoneDatasource.Name
+      RequestMappingTemplate: |
+        #**
+          Resolvers with None data sources can locally publish events
+          that fire subscriptions without hitting a backend data source.
+          The value of 'payload' after the template has been evaluated
+          will be directly forwarded to the response.
+        *#
+        {
+          "version": "2017-02-28",
+          "payload": {
+            "body": "${context.arguments.body}",
+            "from": "${context.identity.username}",
+            "to":  "${context.arguments.to}",
+            "sentAt": "$util.time.nowISO8601()"
+          }
+        }
+      ResponseMappingTemplate: "$util.toJson(true)"
 
   ListPostsDeltaResolver:
     Type: "AWS::AppSync::Resolver"
