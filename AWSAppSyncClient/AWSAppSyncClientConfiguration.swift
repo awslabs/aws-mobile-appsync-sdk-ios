@@ -582,7 +582,7 @@ public class AWSAppSyncClientConfiguration {
     /// - Returns: The ApolloStore
     private static func makeApolloStore(for databaseURL: URL?) -> ApolloStore {
         let store: ApolloStore
-        if let databaseURL = databaseURL, let cache = try? AWSSQLLiteNormalizedCache(fileURL: databaseURL) {
+        if let databaseURL = databaseURL, let cache = try? AWSSQLiteNormalizedCache(fileURL: databaseURL) {
             store = ApolloStore(cache: cache)
         } else {
             store = ApolloStore(cache: InMemoryNormalizedCache())

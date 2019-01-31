@@ -2,12 +2,18 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
-## 2.9.3
+## 2.10.0
 
 ### Bug fixes
 
 * Merged Apollo iOS [PR #427](https://github.com/apollographql/apollo-ios/pull/427) to fix incompatibility with EnumeratedIterator in latest Xcode 10.2 beta.
 * Fixed an issue where performing a mutation with no parameters would crash clients using a backing database. [Issue #33](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/33)
+* Reduced database contention to fix crash resuming from background (See [Issue #160](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/160)). Thanks @larryonoff for contributing to this fix! 🎉
+
+### Misc. Updates
+
+* **Breaking API Changes**
+  * AWSSQLLiteNormalizedCache is renamed to AWSSQLiteNormalizedCache, and now has `internal` rather than `public` access
 
 ## 2.9.2
 
