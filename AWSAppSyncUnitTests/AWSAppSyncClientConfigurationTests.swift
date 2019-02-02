@@ -367,7 +367,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
 
     // MARK: - Test other derived properties
 
-    func testStoreAndSubscriptionCacheWithValidDatabaseURL() {
+    func testStoreAndSubscriptionCacheWithValidRootDirectory() throws {
         let serviceConfig = MockAWSAppSyncServiceConfig(
             endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
             region: .USEast1,
@@ -376,51 +376,53 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
         )
 
         let uuid = UUID().uuidString
-        let databaseURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(uuid).db")
+        let rootDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("\(uuid)")
 
         do {
-            try FileManager.default.removeItem(at: databaseURL)
+            try FileManager.default.removeItem(at: rootDirectory)
         } catch {
             // Expected error -- we don't actually expect a random DB name to exist
         }
 
+        let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
         let configuration: AWSAppSyncClientConfiguration
         do {
             configuration = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
-                                                              databaseURL: databaseURL)
+                                                              cacheConfiguration: cacheConfiguration)
         } catch {
             XCTFail("Unexpected error initializing client config: \(error)")
             return
         }
 
+        var isDirectory: ObjCBool = false
+        XCTAssert(FileManager.default.fileExists(atPath: rootDirectory.path, isDirectory: &isDirectory))
+        XCTAssert(isDirectory.boolValue)
+
+        isDirectory = true
         XCTAssertNotNil(configuration.store)
+        XCTAssert(FileManager.default.fileExists(atPath: cacheConfiguration.queries!.path, isDirectory: &isDirectory))
+        XCTAssertFalse(isDirectory.boolValue)
+
+        isDirectory = true
         XCTAssertNotNil(configuration.subscriptionMetadataCache)
-        XCTAssert(FileManager.default.fileExists(atPath: databaseURL.path))
+        XCTAssert(FileManager.default.fileExists(atPath: cacheConfiguration.subscriptionMetadataCache!.path, isDirectory: &isDirectory))
+        XCTAssertFalse(isDirectory.boolValue)
 
         do {
-            try FileManager.default.removeItem(at: databaseURL)
+            try FileManager.default.removeItem(at: rootDirectory)
         } catch {
             XCTFail("Unexpected error removing database during cleanup: \(error)")
             return
         }
     }
 
-    func testStoreAndSubscriptionCacheWithEmptyDatabaseURL() {
+    func testStoreAndSubscriptionCacheWithEmptyCacheConfiguration() {
         let serviceConfig = MockAWSAppSyncServiceConfig(
             endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
             region: .USEast1,
             authType: .apiKey,
             apiKey: "THE_API_KEY"
         )
-
-        let uuid = UUID().uuidString
-        let databaseURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(uuid).db")
-
-        do {
-            try FileManager.default.removeItem(at: databaseURL)
-        } catch {
-            // Expected error -- we don't actually expect a random DB name to exist
-        }
 
         let configuration: AWSAppSyncClientConfiguration
         do {
@@ -430,11 +432,12 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
             return
         }
 
+        // Assert that the setup has created cache objects even without a URL
         XCTAssertNotNil(configuration.store)
         XCTAssertNil(configuration.subscriptionMetadataCache)
     }
 
-    func testStoreAndSubscriptionCacheWithInvalidDatabaseURL() {
+    func testStoreAndSubscriptionCacheWithInvalidDatabaseURLs() throws {
         let serviceConfig = MockAWSAppSyncServiceConfig(
             endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
             region: .USEast1,
@@ -443,10 +446,15 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
         )
 
         let uuid = UUID().uuidString
-        let databaseURL = URL(fileURLWithPath: "/This/Path/Definitely/Does/Not/Exist/\(uuid)/failure.db")
+        let nonexistentDBPath = URL(fileURLWithPath: "/This/Path/Definitely/Does/Not/Exist/\(uuid)/failure.db")
+
+        let cacheConfiguration = AWSAppSyncCacheConfiguration(
+            offlineMutations: nonexistentDBPath,
+            queries: nonexistentDBPath,
+            subscriptionMetadataCache: nonexistentDBPath)
 
         do {
-            try FileManager.default.removeItem(at: databaseURL)
+            try FileManager.default.removeItem(at: nonexistentDBPath)
         } catch {
             // Expected error -- we don't actually expect a random DB name to exist
         }
@@ -454,7 +462,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
         let configuration: AWSAppSyncClientConfiguration
         do {
             configuration = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
-                                                              databaseURL: databaseURL)
+                                                              cacheConfiguration: cacheConfiguration)
         } catch {
             XCTFail("Unexpected error initializing client config: \(error)")
             return
@@ -462,7 +470,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
 
         XCTAssertNotNil(configuration.store)
         XCTAssertNil(configuration.subscriptionMetadataCache)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: databaseURL.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: nonexistentDBPath.path))
     }
 }
 

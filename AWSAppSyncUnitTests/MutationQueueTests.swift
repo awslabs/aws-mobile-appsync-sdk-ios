@@ -20,11 +20,11 @@ import XCTest
 
 class MutationQueueTests: XCTestCase {
 
-    var databaseURL: URL!
+    var workingDirectory: URL!
 
     override func setUp() {
         let tempDir = FileManager.default.temporaryDirectory
-        databaseURL = tempDir.appendingPathComponent("MutationQueueTests-\(UUID().uuidString).db")
+        workingDirectory = tempDir.appendingPathComponent("MutationQueueTests-\(UUID().uuidString)")
     }
 
     override func tearDown() {
@@ -600,19 +600,21 @@ class MutationQueueTests: XCTestCase {
 
     func makeAppSyncClient(using httpTransport: AWSNetworkTransport,
                            withBackingDatabase useBackingDatabase: Bool = false) throws -> DeinitNotifiableAppSyncClient {
-        let databaseURL = useBackingDatabase ? self.databaseURL : nil
+        let cacheConfiguration = useBackingDatabase ?
+            try AWSAppSyncCacheConfiguration(withRootDirectory: workingDirectory) :
+            nil
         let helper = try AppSyncClientTestHelper(
             with: .apiKey,
-            testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
-            databaseURL: databaseURL,
+            testConfiguration: AppSyncClientTestConfiguration.forUnitTests,
+            cacheConfiguration: cacheConfiguration,
             httpTransport: httpTransport,
             reachabilityFactory: MockReachabilityProvidingFactory.self
         )
 
-        if let url = databaseURL {
-            print("AppSync client created with database at \(url.path)")
+        if let workingDirectory = workingDirectory, useBackingDatabase {
+            print("AppSync client created with databases at \(workingDirectory.path)")
         } else {
-            print("AppSync client created with no backing database")
+            print("AppSync client created with no backing databases")
         }
         return helper.appSyncClient
     }

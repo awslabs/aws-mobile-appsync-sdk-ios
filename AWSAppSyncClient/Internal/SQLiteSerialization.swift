@@ -41,7 +41,7 @@ final class SQLiteSerialization {
     static func deserialize(data: Data) throws -> Record.Fields {
         let object = try JSONSerialization.jsonObject(with: data, options: [])
         guard let jsonObject = object as? JSONObject else {
-            throw AWSSQLLiteNormalizedCacheError.invalidRecordShape(object: object)
+            throw AWSAppSyncQueriesCacheError.invalidRecordShape(object: object)
         }
         var fields = Record.Fields()
         for (key, value) in jsonObject {
@@ -54,7 +54,7 @@ final class SQLiteSerialization {
         switch fieldJSONValue {
         case let dictionary as JSONObject:
             guard let reference = dictionary[serializedReferenceKey] as? String else {
-                throw AWSSQLLiteNormalizedCacheError.invalidRecordValue(value: fieldJSONValue)
+                throw AWSAppSyncQueriesCacheError.invalidRecordValue(value: fieldJSONValue)
             }
             return Reference(key: reference)
         case let array as [JSONValue]:

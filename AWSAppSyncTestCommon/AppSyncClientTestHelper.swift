@@ -80,7 +80,7 @@ public class AppSyncClientTestHelper: NSObject {
     ///     create a configuration using the `appsync_test_credentials.json` file in the `testBundle`. If that file is not
     ///     present, it will use the values stored in `AppSyncClientTestConfigurationDefaults`, which must be updated to have
     ///     valid values.
-    ///   - databaseURL: a URL to store the cache database, nor `nil` if the database should be in memory
+    ///   - cacheConfiguration: Configuration for local queries, mutations, and subscriptions caches.
     ///   - httpTransport: an override for the default AWSNetworkTransport, e.g., `MockNetworkTransport` to allow
     ///     inspection of network calls
     /// - Throws:
@@ -89,7 +89,7 @@ public class AppSyncClientTestHelper: NSObject {
     ///    - Any errors received during configuration setup
     init(with authenticationType: AuthenticationType,
          testConfiguration: AppSyncClientTestConfiguration? = nil,
-         databaseURL: URL? = nil,
+         cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
          httpTransport: AWSNetworkTransport? = nil,
          s3ObjectManager: AWSS3ObjectManager? = nil,
          testBundle: Bundle = Bundle(for: AppSyncClientTestHelper.self),
@@ -107,7 +107,7 @@ public class AppSyncClientTestHelper: NSObject {
         let appSyncConfig = try AppSyncClientTestHelper.makeAppSyncConfiguration(
             for: authenticationType,
             testConfiguration: resolvedTestConfiguration,
-            databaseURL: databaseURL,
+            cacheConfiguration: cacheConfiguration,
             httpTransport: httpTransport,
             s3ObjectManager: s3ObjectManager
         )
@@ -120,12 +120,18 @@ public class AppSyncClientTestHelper: NSObject {
         }
 
         apolloClient.cacheKeyForObject = { $0["id"] }
+
+        if let cacheConfiguration = cacheConfiguration {
+            print("Created AWSAppSyncClient with cacheConfiguration: \(cacheConfiguration)")
+        } else {
+            print("Created AWSAppSyncClient with nil in-memory caches")
+        }
     }
 
     static func makeAppSyncConfiguration(
         for authenticationType: AuthenticationType,
         testConfiguration: AppSyncClientTestConfiguration,
-        databaseURL: URL?,
+        cacheConfiguration: AWSAppSyncCacheConfiguration?,
         httpTransport: AWSNetworkTransport?,
         s3ObjectManager: AWSS3ObjectManager?
     ) throws -> AWSAppSyncClientConfiguration {
@@ -134,7 +140,7 @@ public class AppSyncClientTestHelper: NSObject {
             let config = MockAWSAppSyncServiceConfigProvider(with: testConfiguration)
             let appSyncConfig = AWSAppSyncClientConfiguration(appSyncServiceConfig: config,
                                                               networkTransport: httpTransport,
-                                                              databaseURL: databaseURL,
+                                                              cacheConfiguration: cacheConfiguration,
                                                               s3ObjectManager: s3ObjectManager)
             return appSyncConfig
         }
@@ -147,7 +153,7 @@ public class AppSyncClientTestHelper: NSObject {
                 url: testConfiguration.apiKeyEndpointURL,
                 serviceRegion: testConfiguration.apiKeyEndpointRegion,
                 apiKeyAuthProvider: apiKeyAuthProvider,
-                databaseURL: databaseURL,
+                cacheConfiguration: cacheConfiguration,
                 s3ObjectManager: s3ObjectManager
             )
 
@@ -157,7 +163,7 @@ public class AppSyncClientTestHelper: NSObject {
                 url: testConfiguration.cognitoPoolEndpointURL,
                 serviceRegion: testConfiguration.cognitoPoolEndpointRegion,
                 credentialsProvider: credentialsProvider,
-                databaseURL: databaseURL,
+                cacheConfiguration: cacheConfiguration,
                 s3ObjectManager: s3ObjectManager
             )
 
@@ -167,7 +173,7 @@ public class AppSyncClientTestHelper: NSObject {
                 url: testConfiguration.apiKeyEndpointURL,
                 serviceRegion: testConfiguration.apiKeyEndpointRegion,
                 apiKeyAuthProvider: apiKeyAuthProvider,
-                databaseURL: databaseURL,
+                cacheConfiguration: cacheConfiguration,
                 s3ObjectManager: s3ObjectManager
             )
 
@@ -177,7 +183,7 @@ public class AppSyncClientTestHelper: NSObject {
                 url: testConfiguration.apiKeyEndpointURL,
                 serviceRegion: testConfiguration.apiKeyEndpointRegion,
                 oidcAuthProvider: oidcAuthProvider,
-                databaseURL: databaseURL,
+                cacheConfiguration: cacheConfiguration,
                 s3ObjectManager: s3ObjectManager
             )
 
@@ -187,7 +193,7 @@ public class AppSyncClientTestHelper: NSObject {
                 url: testConfiguration.apiKeyEndpointURL,
                 serviceRegion: testConfiguration.apiKeyEndpointRegion,
                 credentialsProvider: credentialsProvider,
-                databaseURL: databaseURL,
+                cacheConfiguration: cacheConfiguration,
                 s3ObjectManager: s3ObjectManager
             )
 

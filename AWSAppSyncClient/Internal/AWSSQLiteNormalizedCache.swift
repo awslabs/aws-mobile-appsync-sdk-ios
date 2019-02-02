@@ -104,7 +104,7 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
         let record = row[self.record]
 
         guard let recordData = record.data(using: .utf8) else {
-            throw AWSSQLLiteNormalizedCacheError.invalidRecordEncoding(record: record)
+            throw AWSAppSyncQueriesCacheError.invalidRecordEncoding(record: record)
         }
 
         let fields = try SQLiteSerialization.deserialize(data: recordData)

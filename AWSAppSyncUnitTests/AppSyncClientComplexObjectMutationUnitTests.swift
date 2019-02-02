@@ -57,7 +57,7 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
 
         let helper = try AppSyncClientTestHelper(
             with: .apiKey,
-            testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
+            testConfiguration: AppSyncClientTestConfiguration.forUnitTests,
             httpTransport: mockHTTPTransport,
             s3ObjectManager: mockS3ObjectManager,
             reachabilityFactory: MockReachabilityProvidingFactory.self
@@ -105,7 +105,7 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
 
         let helper = try AppSyncClientTestHelper(
             with: .apiKey,
-            testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
+            testConfiguration: AppSyncClientTestConfiguration.forUnitTests,
             httpTransport: mockHTTPTransport,
             s3ObjectManager: mockS3ObjectManager,
             reachabilityFactory: MockReachabilityProvidingFactory.self
@@ -133,7 +133,7 @@ class AppSyncClientComplexObjectMutationUnitTests: XCTestCase {
 
         let helper = try AppSyncClientTestHelper(
             with: .apiKey,
-            testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
+            testConfiguration: AppSyncClientTestConfiguration.forUnitTests,
             httpTransport: mockHTTPTransport,
             s3ObjectManager: mockS3ObjectManager,
             reachabilityFactory: MockReachabilityProvidingFactory.self

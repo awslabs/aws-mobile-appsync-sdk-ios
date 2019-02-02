@@ -12,8 +12,69 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Misc. Updates
 
+**AWSAppSyncCacheConfiguration**
+
+AppSync persistent caches for queries (used by the Apollo store), mutations,
+and subscription metadata are now stored in separate files. A new
+`AWSAppSyncCacheConfiguration` API has been added that allows clients to
+specify persistent caches for all, some, or none of these caches:
+
+```swift
+// Specify persistent caches that live in the app's Cache directory
+let cacheConfiguration = try AWSAppSyncCacheConfiguration()
+
+// ... or specify persistent caches that live in `rootDirectory`
+let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
+
+// ... or specify a rootDirectory for the query cache and the subscriptionMetadata cache, but an in-memory cache for mutation queue
+let cacheConfiguration = AWSAppSyncCacheConfiguration(offlineMutations: nil,
+                                                      queries: rootDirectory,
+                                                      subscriptionMetadataCache: rootDirectory)
+
+// ... or specify all caches to be in-memory
+let cacheConfiguration = AWSAppSyncCacheConfiguration.inMemory
+
+// ... then use the cache config in the AWSAppSyncClientConfiguration constructor
+let appSyncConfig = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig, cacheConfiguration: cacheConfiguration)
+let appSyncClient = AWSAppSyncClient(appSyncConfig: appSyncConfig)
+
+// Alternately, specify all in-memory caches by passing no `cacheConfiguration`
+let appSyncConfig = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig)
+let appSyncClient = AWSAppSyncClient(appSyncConfig: appSyncConfig)
+```
+
+**Migration**
+
+Clients can migrate to the new AWSAppSyncCacheConfiguration with a utility
+method that performs a one-time move of data from the previous databaseURL to
+the new cache configuration directory:
+
+```swift
+// Specify persistent caches that live in the app's Cache directory
+let cacheConfiguration = try AWSAppSyncCacheConfiguration()
+
+let databaseURL = // whatever your old databaseURL was
+
+// Upon successful completion, this method sets a flag in UserDefaults, making it safe
+// to call at startup for as long as this method exists.
+AWSAppSyncCacheConfigurationMigration.migrate(from: databaseURL, to: cacheConfiguration)
+```
+
+
 * **Breaking API Changes**
-  * AWSSQLLiteNormalizedCache is renamed to AWSSQLiteNormalizedCache, and now has `internal` rather than `public` access
+  - `AWSSQLLiteNormalizedCacheError` has been renamed to
+    `AWSAppSyncQueriesCacheError`. Error conditions during manipulations of the
+    Apollo store will now throw this type.
+
+* **Deprecations**
+  - `AWSSQLLiteNormalizedCache` is deprecated and will be removed in an
+    upcoming minor version of AWSAppSync, as that implementation is an internal
+    detail. Clients that wish to do cleanup of database files can use
+    `AWSAppSyncCacheConfiguration` to get the path of the appropriate database
+    file.
+  - The `databaseURL` option to `AWSAppSyncClientConfiguration` is deprecated.
+    Please use the `cacheConfiguration` option (See above)
+  - The `MutationCache` protocol is deprecated because it is unused.
 
 ## 2.9.2
 

@@ -31,7 +31,7 @@ struct AppSyncClientTestConfiguration {
 
     /// Returns a configuration with bogus values to be used for unit testing. This will validate, but not contain valid
     /// information for network or service connections.
-    static let UnitTestingConfiguration: AppSyncClientTestConfiguration = {
+    static let forUnitTests: AppSyncClientTestConfiguration = {
         return AppSyncClientTestConfiguration(apiKey: "FOR_UNIT_TESTING",
                                               apiKeyEndpointURL: URL(string: "http://www.amazon.com/for_unit_testing")!,
                                               apiKeyEndpointRegion: .USEast1,

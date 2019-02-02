@@ -33,12 +33,12 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     let authType = AppSyncClientTestHelper.AuthenticationType.apiKey
 
     static func makeAppSyncClient(authType: AppSyncClientTestHelper.AuthenticationType,
-                                  databaseURL: URL? = nil) throws -> DeinitNotifiableAppSyncClient {
+                                  cacheConfiguration: AWSAppSyncCacheConfiguration? = nil) throws -> DeinitNotifiableAppSyncClient {
 
         let testBundle = Bundle(for: AWSAppSyncAPIKeyAuthTests.self)
         let helper = try AppSyncClientTestHelper(
             with: authType,
-            databaseURL: databaseURL,
+            cacheConfiguration: cacheConfiguration,
             testBundle: testBundle
         )
         return helper.appSyncClient
@@ -434,12 +434,17 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
 
         // This tests needs a physical DB for the SubscriptionMetadataCache to properly return a "lastSynced" value.
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("testSyncOperationAtSetupAndReconnect-appsync-local-db")
-        try? FileManager.default.removeItem(at: databaseURL)
+        let cacheConfiguration = AWSAppSyncCacheConfiguration(
+            offlineMutations: URL(fileURLWithPath: "/Users/schmelte/Desktop/cacheConfigUnitTests.db"),
+            queries: URL(fileURLWithPath: "/Users/schmelte/Desktop/cacheConfigUnitTests.db"),
+            subscriptionMetadataCache: URL(fileURLWithPath: "/Users/schmelte/Desktop/cacheConfigUnitTests.db"))
+        try? FileManager.default.removeItem(at: cacheConfiguration.offlineMutations!)
+        try? FileManager.default.removeItem(at: cacheConfiguration.queries!)
+        try? FileManager.default.removeItem(at: cacheConfiguration.subscriptionMetadataCache!)
 
         let appSyncClient = try AWSAppSyncAPIKeyAuthTests.makeAppSyncClient(
             authType: self.authType,
-            databaseURL: databaseURL
+            cacheConfiguration: cacheConfiguration
         )
 
         var syncWatcher: Cancellable?

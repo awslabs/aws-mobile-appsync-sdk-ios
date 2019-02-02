@@ -49,11 +49,14 @@ public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
     }
 }
 
+/// Delegates will be notified when a mutation is performed from the `mutationCallback`. This pattern is necessary
+/// in order to provide notifications of mutations which are performed after an app restart and the initial callback
+/// context has been lost.
 public protocol AWSAppSyncOfflineMutationDelegate {
     func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?)
 }
 
-// The client for making `Mutation`, `Query` and `Subscription` requests.
+/// The client for making `Mutation`, `Query` and `Subscription` requests.
 public class AWSAppSyncClient {
 
     public let apolloClient: ApolloClient?
@@ -105,7 +108,7 @@ public class AWSAppSyncClient {
             networkClient: httpTransport!,
             handlerQueue: .main,
             reachabiltyChangeNotifier: NetworkReachabilityNotifier.shared,
-            cacheFileURL: appSyncConfig.databaseURL)
+            cacheFileURL: appSyncConfig.cacheConfiguration?.offlineMutations)
 
         NotificationCenter.default.addObserver(
             self,
