@@ -15,6 +15,50 @@
 
 import Foundation
 
+extension AWSAppSyncClientError {
+
+    @available(*, deprecated, message: "use the enum pattern matching instead")
+    public var body: Data? {
+        switch self {
+        case .parseError(let data, _, _):
+            return data
+        case .requestFailed(let data, _, _):
+            return data
+        case .noData, .authenticationError:
+            return nil
+        }
+    }
+
+    @available(*, deprecated, message: "use the enum pattern matching instead")
+    public var response: HTTPURLResponse? {
+        switch self {
+        case .parseError(_, let response, _):
+            return response
+        case .requestFailed(_, let response, _):
+            return response
+        case .noData, .authenticationError:
+            return nil
+        }
+    }
+
+    @available(*, deprecated)
+    var isInternalError: Bool {
+        return false
+    }
+
+    @available(*, deprecated, message: "use errorDescription instead")
+    var additionalInfo: String? {
+        switch self {
+        case .parseError:
+            return "Could not parse response data."
+        case .requestFailed:
+            return "Did not receive a successful HTTP code."
+        case .noData, .authenticationError:
+            return "No Data received in response."
+        }
+    }
+}
+
 @available(*, deprecated, renamed: "AWSAppSyncQueriesCacheError", message: "This error is no longer being thrown and will be removed in an upcoming release.")
 public enum AWSSQLLiteNormalizedCacheError: Error {
     case invalidRecordEncoding(record: String)
