@@ -4,14 +4,14 @@ platform :ios, '9.0'
 use_frameworks!
 
 target 'AWSAppSync' do
-  pod 'AWSCore', '~> 2.8.0'
+  pod 'AWSCore', '~> 2.9.0'
   pod 'SQLite.swift', '0.11.5'
   pod 'ReachabilitySwift', '~> 4.3.0'
 end
 
 target 'AWSAppSyncTestCommon' do
-  pod 'AWSCore', '~> 2.8.0'
-  pod 'AWSS3', '~> 2.8.0'
+  pod 'AWSCore', '~> 2.9.0'
+  pod 'AWSS3', '~> 2.9.0'
   pod 'ReachabilitySwift', '~> 4.3.0'
 end
 
@@ -22,5 +22,5 @@ target 'AWSAppSyncIntegrationTests' do
 end
 
 target 'ApolloTests' do
-  pod 'AWSCore', '~> 2.8.0'
+  pod 'AWSCore', '~> 2.9.0'
 end

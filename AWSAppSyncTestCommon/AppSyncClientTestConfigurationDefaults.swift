@@ -41,4 +41,10 @@ struct AppSyncClientTestConfigurationDefaults {
 
     // Equivalent to the JSON key "AppSyncRegion"
     static let cognitoPoolEndpointRegion = AWSRegionType.USEast1
+
+    // Equivalent to the JSON key "BucketName"
+    static let bucketName = "YOUR_BUCKET_NAME"
+
+    // Equivalent to the JSON key "BucketRegion"
+    static let bucketRegion = AWSRegionType.USEast1
 }

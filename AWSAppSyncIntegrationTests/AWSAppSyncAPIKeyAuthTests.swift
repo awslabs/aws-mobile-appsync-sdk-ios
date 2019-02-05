@@ -11,7 +11,7 @@ import XCTest
 
 /// Uses API_KEY for auth
 class AWSAppSyncAPIKeyAuthTests: XCTestCase {
-    /// Uset this as our timeout value for any operation that hits the network. Note that this may need to be higher
+    /// Use this as our timeout value for any operation that hits the network. Note that this may need to be higher
     /// than you think, to account for CI systems running in shared environments
     private static let networkOperationTimeout = 60.0
 

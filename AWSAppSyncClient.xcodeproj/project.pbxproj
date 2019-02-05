@@ -129,6 +129,7 @@
 		FA4F0D9721D6EDA20099D165 /* AWSAppSyncServiceConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF5D78A21D3EFA600FC04D2 /* AWSAppSyncServiceConfigTests.swift */; };
 		FA4F0D9821D6EDA50099D165 /* SyncStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */; };
 		FA7204A121CDA06600938B81 /* awsconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = FA7204A021CDA06600938B81 /* awsconfiguration.json */; };
+		FA7A9BF5220D010E004D613D /* AppSyncTestAPI+S3Object.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7A9BF4220D010E004D613D /* AppSyncTestAPI+S3Object.swift */; };
 		FA88833C21DE824100DEBCB3 /* MockAWSAppSyncServiceConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88833B21DE824100DEBCB3 /* MockAWSAppSyncServiceConfigProvider.swift */; };
 		FA88834321E3B8BF00DEBCB3 /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88834221E3B8BF00DEBCB3 /* NetworkReachability.swift */; };
 		FA88834521E3C2D300DEBCB3 /* AWSAppSyncConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88834421E3C2D300DEBCB3 /* AWSAppSyncConnection.swift */; };
@@ -143,6 +144,7 @@
 		FA902D1A21D9CC6700C4052F /* appsync_test_credentials.json in Resources */ = {isa = PBXBuildFile; fileRef = 1795777E2148531800C834E1 /* appsync_test_credentials.json */; };
 		FA902D1B21D9DFC800C4052F /* DefaultTestPostData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA902D1421D97F2700C4052F /* DefaultTestPostData.swift */; };
 		FA902D1C21D9DFF200C4052F /* MockS3ObjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12B721CC33F300B438CB /* MockS3ObjectManager.swift */; };
+		FAA83BF8220A6AB40029FF7B /* testS3Object.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FAA83BF7220A6AB40029FF7B /* testS3Object.jpg */; };
 		FAAACC2421DD7AC600D24B37 /* InternalS3ObjectDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAACC2321DD7AC600D24B37 /* InternalS3ObjectDetails.swift */; };
 		FAAACC2621DD7BC300D24B37 /* AWSAppSyncMutations.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAAACC2521DD7BC300D24B37 /* AWSAppSyncMutations.swift */; };
 		FABD70692203C17A00C99B47 /* AWSAppSyncCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FABD70682203C17900C99B47 /* AWSAppSyncCache.swift */; };
@@ -441,6 +443,7 @@
 		FA51833221B867C900F9752A /* AppSyncClientTestConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncClientTestConfiguration.swift; sourceTree = "<group>"; };
 		FA7204A021CDA06600938B81 /* awsconfiguration.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = awsconfiguration.json; sourceTree = "<group>"; };
 		FA7204A221CDC04B00938B81 /* MockAuthProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthProviders.swift; sourceTree = "<group>"; };
+		FA7A9BF4220D010E004D613D /* AppSyncTestAPI+S3Object.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppSyncTestAPI+S3Object.swift"; sourceTree = "<group>"; };
 		FA88833B21DE824100DEBCB3 /* MockAWSAppSyncServiceConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAWSAppSyncServiceConfigProvider.swift; sourceTree = "<group>"; };
 		FA88834221E3B8BF00DEBCB3 /* NetworkReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkReachability.swift; sourceTree = "<group>"; };
 		FA88834421E3C2D300DEBCB3 /* AWSAppSyncConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncConnection.swift; sourceTree = "<group>"; };
@@ -457,6 +460,7 @@
 		FA8C62D721D6E59700FF9924 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FA902D1421D97F2700C4052F /* DefaultTestPostData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultTestPostData.swift; sourceTree = "<group>"; };
 		FA902D1821D9BEF200C4052F /* Foundation+TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Foundation+TestUtils.swift"; sourceTree = "<group>"; };
+		FAA83BF7220A6AB40029FF7B /* testS3Object.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = testS3Object.jpg; sourceTree = "<group>"; };
 		FAAACC2321DD7AC600D24B37 /* InternalS3ObjectDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalS3ObjectDetails.swift; sourceTree = "<group>"; };
 		FAAACC2521DD7BC300D24B37 /* AWSAppSyncMutations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncMutations.swift; sourceTree = "<group>"; };
 		FABD70682203C17900C99B47 /* AWSAppSyncCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSAppSyncCache.swift; sourceTree = "<group>"; };
@@ -857,6 +861,7 @@
 				17664128214F6732003AE269 /* AWSAppSyncAPIKeyAuthTests.swift */,
 				174F80AE2109229C00775D0D /* AWSAppSyncCognitoAuthTests.swift */,
 				FA8C62C421D6E41600FF9924 /* Info.plist */,
+				FAA83BF7220A6AB40029FF7B /* testS3Object.jpg */,
 			);
 			path = AWSAppSyncIntegrationTests;
 			sourceTree = "<group>";
@@ -868,6 +873,7 @@
 				FAE3558521C03B5900513FAE /* AppSyncClientTestConfigurationDefaults.swift */,
 				FA51833021B849F900F9752A /* AppSyncClientTestHelper.swift */,
 				FA8C62A921D6E1F200FF9924 /* AppSyncTestAPI.swift */,
+				FA7A9BF4220D010E004D613D /* AppSyncTestAPI+S3Object.swift */,
 				FA8C62D621D6E59700FF9924 /* AWSAppSyncTestCommon.h */,
 				FA902D1421D97F2700C4052F /* DefaultTestPostData.swift */,
 				FA902D1821D9BEF200C4052F /* Foundation+TestUtils.swift */,
@@ -876,8 +882,8 @@
 				FA88833B21DE824100DEBCB3 /* MockAWSAppSyncServiceConfigProvider.swift */,
 				FA0C12B321CBEE7B00B438CB /* MockAWSNetworkTransport.swift */,
 				FA0C12B521CC2C9B00B438CB /* MockCancellable.swift */,
-				FA0C12B721CC33F300B438CB /* MockS3ObjectManager.swift */,
 				FA88834821E3D1DF00DEBCB3 /* MockReachability.swift */,
+				FA0C12B721CC33F300B438CB /* MockS3ObjectManager.swift */,
 				AC48F9832142949C001C7D35 /* Object+Swizzling.swift */,
 				FA8C62AB21D6E22400FF9924 /* S3ObjectWrapper.swift */,
 			);
@@ -1199,6 +1205,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA902D1A21D9CC6700C4052F /* appsync_test_credentials.json in Resources */,
+				FAA83BF8220A6AB40029FF7B /* testS3Object.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1608,6 +1615,7 @@
 				FA902D1B21D9DFC800C4052F /* DefaultTestPostData.swift in Sources */,
 				FAE7948D21D6EBAE0032D37F /* AppSyncClientTestHelper.swift in Sources */,
 				FAE7948821D6EB380032D37F /* MockAWSNetworkTransport.swift in Sources */,
+				FA7A9BF5220D010E004D613D /* AppSyncTestAPI+S3Object.swift in Sources */,
 				FAE7948C21D6EBAB0032D37F /* AppSyncClientTestConfigurationDefaults.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
