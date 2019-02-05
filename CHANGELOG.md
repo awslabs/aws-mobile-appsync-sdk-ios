@@ -60,7 +60,6 @@ let databaseURL = // whatever your old databaseURL was
 AWSAppSyncCacheConfigurationMigration.migrate(from: databaseURL, to: cacheConfiguration)
 ```
 
-
 * **Breaking API Changes**
   - `AWSSQLLiteNormalizedCacheError` has been renamed to
     `AWSAppSyncQueriesCacheError`. Error conditions during manipulations of the

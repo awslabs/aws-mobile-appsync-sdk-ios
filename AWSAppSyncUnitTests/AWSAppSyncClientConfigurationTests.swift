@@ -377,12 +377,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
 
         let uuid = UUID().uuidString
         let rootDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("\(uuid)")
-
-        do {
-            try FileManager.default.removeItem(at: rootDirectory)
-        } catch {
-            // Expected error -- we don't actually expect a random DB name to exist
-        }
+        try? FileManager.default.removeItem(at: rootDirectory)
 
         let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
         let configuration: AWSAppSyncClientConfiguration
@@ -453,11 +448,7 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
             queries: nonexistentDBPath,
             subscriptionMetadataCache: nonexistentDBPath)
 
-        do {
-            try FileManager.default.removeItem(at: nonexistentDBPath)
-        } catch {
-            // Expected error -- we don't actually expect a random DB name to exist
-        }
+        try? FileManager.default.removeItem(at: nonexistentDBPath)
 
         let configuration: AWSAppSyncClientConfiguration
         do {

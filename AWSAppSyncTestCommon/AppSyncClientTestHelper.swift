@@ -122,9 +122,9 @@ public class AppSyncClientTestHelper: NSObject {
         apolloClient.cacheKeyForObject = { $0["id"] }
 
         if let cacheConfiguration = cacheConfiguration {
-            print("Created AWSAppSyncClient with cacheConfiguration: \(cacheConfiguration)")
+            AppSyncLog.debug("Created AWSAppSyncClient with cacheConfiguration: \(cacheConfiguration)")
         } else {
-            print("Created AWSAppSyncClient with nil in-memory caches")
+            AppSyncLog.debug("Created AWSAppSyncClient with nil in-memory caches")
         }
     }
 

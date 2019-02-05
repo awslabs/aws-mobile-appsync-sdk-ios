@@ -30,12 +30,7 @@ class AWSAppSyncClientConfigurationTestsWithDatabaseURL: XCTestCase {
 
         let uuid = UUID().uuidString
         let databaseURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(uuid).db")
-
-        do {
-            try FileManager.default.removeItem(at: databaseURL)
-        } catch {
-            // Expected error -- we don't actually expect a random DB name to exist
-        }
+        try? FileManager.default.removeItem(at: databaseURL)
 
         let configuration: AWSAppSyncClientConfiguration
         do {
@@ -89,12 +84,7 @@ class AWSAppSyncClientConfigurationTestsWithDatabaseURL: XCTestCase {
 
         let uuid = UUID().uuidString
         let databaseURL = URL(fileURLWithPath: "/This/Path/Definitely/Does/Not/Exist/\(uuid)/failure.db")
-
-        do {
-            try FileManager.default.removeItem(at: databaseURL)
-        } catch {
-            // Expected error -- we don't actually expect a random DB name to exist
-        }
+        try? FileManager.default.removeItem(at: databaseURL)
 
         let configuration: AWSAppSyncClientConfiguration
         do {
