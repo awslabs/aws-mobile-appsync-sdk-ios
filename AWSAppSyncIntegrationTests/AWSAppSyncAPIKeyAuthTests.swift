@@ -434,13 +434,8 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
 
         // This tests needs a physical DB for the SubscriptionMetadataCache to properly return a "lastSynced" value.
-        let cacheConfiguration = AWSAppSyncCacheConfiguration(
-            offlineMutations: URL(fileURLWithPath: "/Users/schmelte/Desktop/cacheConfigUnitTests.db"),
-            queries: URL(fileURLWithPath: "/Users/schmelte/Desktop/cacheConfigUnitTests.db"),
-            subscriptionMetadataCache: URL(fileURLWithPath: "/Users/schmelte/Desktop/cacheConfigUnitTests.db"))
-        try? FileManager.default.removeItem(at: cacheConfiguration.offlineMutations!)
-        try? FileManager.default.removeItem(at: cacheConfiguration.queries!)
-        try? FileManager.default.removeItem(at: cacheConfiguration.subscriptionMetadataCache!)
+        let rootDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("testSyncOperationAtSetupAndReconnect")
+        let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
 
         let appSyncClient = try AWSAppSyncAPIKeyAuthTests.makeAppSyncClient(
             authType: self.authType,
