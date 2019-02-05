@@ -235,8 +235,18 @@ class AWSAppSyncCacheConfigurationMigrationTests: XCTestCase {
         XCTAssertFalse(flagAfterMigration)
     }
 
-    func throwsIfDatabaseFileAlreadyExists() throws {
-        XCTFail("not yet implemented")
+    func testThrowsIfDatabaseFileAlreadyExists() throws {
+        let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
+        let databaseURL = TestDatabaseFiles.allTables.databaseURL
+        try FileManager.default.copyItem(at: databaseURL, to: cacheConfiguration.offlineMutations!)
+
+        do {
+            try AWSAppSyncCacheConfigurationMigration.migrate(from: databaseURL, using: cacheConfiguration)
+        } catch {
+            XCTAssertNotNil(error)
+            return
+        }
+        XCTFail("Expected migration to throw when attempting to copy a non-existent file")
     }
 
 }
