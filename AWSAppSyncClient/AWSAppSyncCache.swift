@@ -53,7 +53,7 @@ public struct AWSAppSyncCacheConfiguration {
     ///   - offlineMutations: The file path to create or connect to the cache for the offline mutation queue.
     ///   - queries: The file path to create or connect to the cache for the local query cache.
     ///   - subscriptionMetadataCache: The file path to create or connect to the cache for subscription metadata.
-    init(offlineMutations: URL?, queries: URL?, subscriptionMetadataCache: URL?) {
+    public init(offlineMutations: URL?, queries: URL?, subscriptionMetadataCache: URL?) {
         self.offlineMutations = offlineMutations
         self.queries = queries
         self.subscriptionMetadataCache = subscriptionMetadataCache
@@ -64,7 +64,7 @@ public struct AWSAppSyncCacheConfiguration {
     ///
     /// - Parameter url: The directory path at which to store persistent caches. Defaults to `<appCacheDirectory>/appsync`
     /// - Throws: Throws an error if `workingDirectory` is not a directory, or if it cannot be created.
-    init(withRootDirectory url: URL? = nil) throws {
+    public init(withRootDirectory url: URL? = nil) throws {
         let resolvedRootDirectory: URL
         if let rootDirectory = url {
             resolvedRootDirectory = rootDirectory
