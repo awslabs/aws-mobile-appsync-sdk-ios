@@ -1,16 +1,7 @@
 //
-// Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License").
-// You may not use this file except in compliance with the License.
-// A copy of the License is located at
-//
-// http://aws.amazon.com/apache2.0
-//
-// or in the "license" file accompanying this file. This file is distributed
-// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-// express or implied. See the License for the specific language governing
-// permissions and limitations under the License.
+// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Licensed under the Amazon Software License
+// http://aws.amazon.com/asl/
 //
 
 import XCTest
@@ -20,11 +11,11 @@ import XCTest
 
 class MutationQueueTests: XCTestCase {
 
-    var databaseURL: URL!
+    var workingDirectory: URL!
 
     override func setUp() {
         let tempDir = FileManager.default.temporaryDirectory
-        databaseURL = tempDir.appendingPathComponent("MutationQueueTests-\(UUID().uuidString).db")
+        workingDirectory = tempDir.appendingPathComponent("MutationQueueTests-\(UUID().uuidString)")
     }
 
     override func tearDown() {
@@ -600,19 +591,21 @@ class MutationQueueTests: XCTestCase {
 
     func makeAppSyncClient(using httpTransport: AWSNetworkTransport,
                            withBackingDatabase useBackingDatabase: Bool = false) throws -> DeinitNotifiableAppSyncClient {
-        let databaseURL = useBackingDatabase ? self.databaseURL : nil
+        let cacheConfiguration = useBackingDatabase ?
+            try AWSAppSyncCacheConfiguration(withRootDirectory: workingDirectory) :
+            nil
         let helper = try AppSyncClientTestHelper(
             with: .apiKey,
-            testConfiguration: AppSyncClientTestConfiguration.UnitTestingConfiguration,
-            databaseURL: databaseURL,
+            testConfiguration: AppSyncClientTestConfiguration.forUnitTests,
+            cacheConfiguration: cacheConfiguration,
             httpTransport: httpTransport,
             reachabilityFactory: MockReachabilityProvidingFactory.self
         )
 
-        if let url = databaseURL {
-            print("AppSync client created with database at \(url.path)")
+        if let workingDirectory = workingDirectory, useBackingDatabase {
+            print("AppSync client created with databases at \(workingDirectory.path)")
         } else {
-            print("AppSync client created with no backing database")
+            print("AppSync client created with no backing databases")
         }
         return helper.appSyncClient
     }

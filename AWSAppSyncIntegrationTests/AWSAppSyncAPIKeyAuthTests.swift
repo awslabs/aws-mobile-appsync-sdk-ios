@@ -1,16 +1,7 @@
 //
-// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License").
-// You may not use this file except in compliance with the License.
-// A copy of the License is located at
-//
-// http://aws.amazon.com/apache2.0
-//
-// or in the "license" file accompanying this file. This file is distributed
-// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-// express or implied. See the License for the specific language governing
-// permissions and limitations under the License.
+// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Licensed under the Amazon Software License
+// http://aws.amazon.com/asl/
 //
 
 import XCTest
@@ -33,12 +24,12 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
     let authType = AppSyncClientTestHelper.AuthenticationType.apiKey
 
     static func makeAppSyncClient(authType: AppSyncClientTestHelper.AuthenticationType,
-                                  databaseURL: URL? = nil) throws -> DeinitNotifiableAppSyncClient {
+                                  cacheConfiguration: AWSAppSyncCacheConfiguration? = nil) throws -> DeinitNotifiableAppSyncClient {
 
         let testBundle = Bundle(for: AWSAppSyncAPIKeyAuthTests.self)
         let helper = try AppSyncClientTestHelper(
             with: authType,
-            databaseURL: databaseURL,
+            cacheConfiguration: cacheConfiguration,
             testBundle: testBundle
         )
         return helper.appSyncClient
@@ -434,12 +425,13 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         }
 
         // This tests needs a physical DB for the SubscriptionMetadataCache to properly return a "lastSynced" value.
-        let databaseURL = URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("testSyncOperationAtSetupAndReconnect-appsync-local-db")
-        try? FileManager.default.removeItem(at: databaseURL)
+        let rootDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("testSyncOperationAtSetupAndReconnect")
+        try? FileManager.default.removeItem(at: rootDirectory)
+        let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
 
         let appSyncClient = try AWSAppSyncAPIKeyAuthTests.makeAppSyncClient(
             authType: self.authType,
-            databaseURL: databaseURL
+            cacheConfiguration: cacheConfiguration
         )
 
         var syncWatcher: Cancellable?

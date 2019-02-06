@@ -1,16 +1,7 @@
 //
-// Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License").
-// You may not use this file except in compliance with the License.
-// A copy of the License is located at
-//
-// http://aws.amazon.com/apache2.0
-//
-// or in the "license" file accompanying this file. This file is distributed
-// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-// express or implied. See the License for the specific language governing
-// permissions and limitations under the License.
+// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Licensed under the Amazon Software License
+// http://aws.amazon.com/asl/
 //
 
 import Foundation
@@ -49,11 +40,14 @@ public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
     }
 }
 
+/// Delegates will be notified when a mutation is performed from the `mutationCallback`. This pattern is necessary
+/// in order to provide notifications of mutations which are performed after an app restart and the initial callback
+/// context has been lost.
 public protocol AWSAppSyncOfflineMutationDelegate {
     func mutationCallback(recordIdentifier: String, operationString: String, snapshot: Snapshot?, error: Error?)
 }
 
-// The client for making `Mutation`, `Query` and `Subscription` requests.
+/// The client for making `Mutation`, `Query` and `Subscription` requests.
 public class AWSAppSyncClient {
 
     public let apolloClient: ApolloClient?
@@ -105,7 +99,7 @@ public class AWSAppSyncClient {
             networkClient: httpTransport!,
             handlerQueue: .main,
             reachabiltyChangeNotifier: NetworkReachabilityNotifier.shared,
-            cacheFileURL: appSyncConfig.databaseURL)
+            cacheFileURL: appSyncConfig.cacheConfiguration?.offlineMutations)
 
         NotificationCenter.default.addObserver(
             self,
