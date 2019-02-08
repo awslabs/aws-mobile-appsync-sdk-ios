@@ -26,10 +26,10 @@ let cacheConfiguration = try AWSAppSyncCacheConfiguration()
 // ... or specify persistent caches that live in `rootDirectory`
 let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
 
-// ... or specify a rootDirectory for the query cache and the subscriptionMetadata cache, but an in-memory cache for mutation queue
+// ... or specify a database path for the query cache and the subscriptionMetadata cache, but an in-memory cache for mutation queue
 let cacheConfiguration = AWSAppSyncCacheConfiguration(offlineMutations: nil,
-                                                      queries: rootDirectory,
-                                                      subscriptionMetadataCache: rootDirectory)
+                                                      queries: queriesDatabasePath,
+                                                      subscriptionMetadataCache: subscriptionMetadataDatabasePath)
 
 // ... or specify all caches to be in-memory
 let cacheConfiguration = AWSAppSyncCacheConfiguration.inMemory
