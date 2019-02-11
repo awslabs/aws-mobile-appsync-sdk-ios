@@ -204,7 +204,7 @@ public class AppSyncClientTestHelper: NSObject {
 
 }
 
-private struct BasicAWSCognitoCredentialsProviderFactory {
+struct BasicAWSCognitoCredentialsProviderFactory {
     static func makeCredentialsProvider(with configuration: AppSyncClientTestConfiguration) -> AWSCognitoCredentialsProvider {
         let credentialsProvider = AWSCognitoCredentialsProvider(
             regionType: configuration.cognitoPoolEndpointRegion,

@@ -18,6 +18,9 @@ struct AppSyncClientTestConfiguration {
         static let cognitoPoolRegion = "CognitoIdentityPoolRegion"
         static let cognitoPoolEndpointURL = "AppSyncEndpoint"
         static let cognitoPoolEndpointRegion = "AppSyncRegion"
+
+        static let bucketName = "BucketName"
+        static let bucketRegion = "BucketRegion"
     }
 
     /// Returns a configuration with bogus values to be used for unit testing. This will validate, but not contain valid
@@ -29,7 +32,9 @@ struct AppSyncClientTestConfiguration {
                                               cognitoPoolId: "FOR_UNIT_TESTING",
                                               cognitoPoolRegion: .USEast1,
                                               cognitoPoolEndpointURL: URL(string: "http://www.amazon.com/for_unit_testing")!,
-                                              cognitoPoolEndpointRegion: .USEast1)
+                                              cognitoPoolEndpointRegion: .USEast1,
+                                              bucketName: "FOR_UNIT_TESTING",
+                                              bucketRegion: .USEast1)
     }()
 
     let apiKey: String
@@ -41,11 +46,15 @@ struct AppSyncClientTestConfiguration {
     let cognitoPoolEndpointURL: URL
     let cognitoPoolEndpointRegion: AWSRegionType
 
+    let bucketName: String
+    let bucketRegion: AWSRegionType
+    
     var isValid: Bool {
         return apiKey != "YOUR_API_KEY"
             && apiKeyEndpointURL.absoluteString != "https://localhost"
             && cognitoPoolId != "YOUR_POOL_ID"
             && cognitoPoolEndpointURL.absoluteString != "https://localhost"
+            && bucketName != "YOUR_BUCKET_NAME"
     }
 
     init() {
@@ -55,7 +64,9 @@ struct AppSyncClientTestConfiguration {
                   cognitoPoolId: AppSyncClientTestConfigurationDefaults.cognitoPoolId,
                   cognitoPoolRegion: AppSyncClientTestConfigurationDefaults.cognitoPoolRegion,
                   cognitoPoolEndpointURL: AppSyncClientTestConfigurationDefaults.cognitoPoolEndpointURL,
-                  cognitoPoolEndpointRegion: AppSyncClientTestConfigurationDefaults.cognitoPoolEndpointRegion)
+                  cognitoPoolEndpointRegion: AppSyncClientTestConfigurationDefaults.cognitoPoolEndpointRegion,
+                  bucketName: AppSyncClientTestConfigurationDefaults.bucketName,
+                  bucketRegion: AppSyncClientTestConfigurationDefaults.bucketRegion)
     }
 
     init?(with bundle: Bundle) {
@@ -111,6 +122,16 @@ struct AppSyncClientTestConfiguration {
             return nil
         }
         self.cognitoPoolEndpointRegion = cognitoPoolEndpointRegionString.aws_regionTypeValue()
+
+        guard let bucketName = jsonObject[JSONKeys.bucketName] as? String else {
+            return nil
+        }
+        self.bucketName = bucketName
+
+        guard let bucketRegionString = jsonObject[JSONKeys.bucketRegion] as? String else {
+            return nil
+        }
+        self.bucketRegion = bucketRegionString.aws_regionTypeValue()
     }
 
     private init(apiKey: String,
@@ -119,7 +140,9 @@ struct AppSyncClientTestConfiguration {
                  cognitoPoolId: String,
                  cognitoPoolRegion: AWSRegionType,
                  cognitoPoolEndpointURL: URL,
-                 cognitoPoolEndpointRegion: AWSRegionType) {
+                 cognitoPoolEndpointRegion: AWSRegionType,
+                 bucketName: String,
+                 bucketRegion: AWSRegionType) {
         self.apiKey = apiKey
         self.apiKeyEndpointURL = apiKeyEndpointURL
         self.apiKeyEndpointRegion = apiKeyEndpointRegion
@@ -127,6 +150,8 @@ struct AppSyncClientTestConfiguration {
         self.cognitoPoolRegion = cognitoPoolRegion
         self.cognitoPoolEndpointURL = cognitoPoolEndpointURL
         self.cognitoPoolEndpointRegion = cognitoPoolEndpointRegion
+        self.bucketName = bucketName
+        self.bucketRegion = bucketRegion
     }
 
 }

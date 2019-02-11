@@ -1096,6 +1096,116 @@ Resources:
         AttributeName: "expdate"
         Enabled: true
 
+  #########################################################
+  # S3 Bucket, Associated IAM Roles & Policies
+  # NOTE: This only applies to IAM auth types
+  # NOTE: This bucket expires objects after 1 day. Do not use
+  # this bucket in production.
+  #########################################################
+
+  S3Bucket:
+    Condition: AuthTypeIsIAM
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+          - "*"
+          AllowedMethods:
+          - GET
+          - HEAD
+          - PUT
+          - POST
+          - DELETE
+          AllowedOrigins:
+          - "*"
+          ExposedHeaders:
+          - x-amz-server-side-encryption
+          - x-amz-request-id
+          - x-amz-id-2
+          Id: S3CORSRuleId1
+          MaxAge: '3000'
+      LifecycleConfiguration:
+        Rules:
+        - Id: OneDayExpiryRule
+          Status: Enabled
+          ExpirationInDays: 1
+
+  S3ReadWritePolicy:
+    Condition: AuthTypeIsIAM
+    DependsOn:
+    - S3Bucket
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${ResourceNamePrefix}${AuthType}_S3Access
+      Roles:
+      - Ref: AppSyncUnauthenticatedRole
+      - Ref: AppSyncAuthenticatedRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:GetObject
+          - s3:PutObject
+          - s3:DeleteObject
+          Resource:
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: S3Bucket
+              - "/public/*"
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: S3Bucket
+              - "/protected/${cognito-identity.amazonaws.com:sub}/*"
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: S3Bucket
+              - "/private/${cognito-identity.amazonaws.com:sub}/*"
+        - Effect: Allow
+          Action:
+          - s3:PutObject
+          Resource:
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: S3Bucket
+              - "/uploads/*"
+        - Effect: Allow
+          Action:
+          - s3:GetObject
+          Resource:
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: S3Bucket
+              - "/protected/*"
+        - Effect: Allow
+          Action:
+          - s3:ListBucket
+          Resource:
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: S3Bucket
+          Condition:
+            StringLike:
+              s3:prefix:
+              - public/
+              - public/*
+              - protected/
+              - protected/*
+              - private/${cognito-identity.amazonaws.com:sub}/
+              - private/${cognito-identity.amazonaws.com:sub}/*
+
+#########################################################
+# Outputs
+#########################################################
+
 Outputs:
   # Output names are specified for easy inclusion in `appsync_test_credentials.json` file if needed
   # Names for API_KEY auth type
@@ -1128,6 +1238,13 @@ Outputs:
   CognitoIdentityPoolRegion:
     Condition: AuthTypeIsIAM
     Description: The AWS Region of CognitoIdentityPoolId. This value should be included in your appsync_test_credentials.json file.
+    Value: !Ref AWS::Region
+
+  BucketName:
+    Value: !Ref S3Bucket
+    Description: Bucket name for the S3 bucket.  This value should be included in your appsync_test_credentials.json file.
+  BucketRegion:
+    Description: The AWS Region of the S3 bucket. This value should be included in your appsync_test_credentials.json file.
     Value: !Ref AWS::Region
 
   AppSyncUnauthRole:
