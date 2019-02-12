@@ -2,6 +2,16 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.10.1
+
+### Bug fixes
+
+- Prepopulate the queries cache with an empty "QUERY_ROOT" record, to allow optimistic updates of the cache where no queries have been previously performed. ([Issue #92](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/92))
+
+### Misc. Updates
+
+- Updated CloudFormation template to include S3 buckets and associated configuration to support complex object integration tests, and added integration tests for S3 uploads and downloads.
+
 ## 2.10.0
 
 ### Bug fixes

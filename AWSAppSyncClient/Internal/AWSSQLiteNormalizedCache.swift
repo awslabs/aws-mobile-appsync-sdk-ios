@@ -17,8 +17,15 @@ import SQLite
 let sqlBusyTimeoutConstant = 100.0 // Fix a sqllite busy time out of 100ms
 
 final class AWSSQLiteNormalizedCache: NormalizedCache {
+    private static let tableName = "records"
+
+    // This should be the same as GraphQLQuery.rootCacheKey. Unfortunately, we can't access that static member without
+    // specializing the protocol. We're using `EmptyQuery` simply to access the `rootCacheKey` member defined by the
+    // GraphQLQuery protocol.
+    private static let queryRootKey = AWSAppSyncClient.EmptyQuery.rootCacheKey
+
     private let db: Connection
-    private let records = Table("records")
+    private let records = Table(tableName)
     private let id = Expression<Int64>("_id")
     private let key = Expression<CacheKey>("key")
     private let record = Expression<String>("record")
@@ -58,6 +65,18 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
             table.column(record)
         })
         try db.run(records.createIndex(key, unique: true, ifNotExists: true))
+
+        let queryRootRecords = records.filter(key == AWSSQLiteNormalizedCache.queryRootKey)
+        let recordCount = try db.scalar(queryRootRecords.count)
+        if recordCount == 0 {
+            // Prepopulate the cache with an empty QUERY_ROOT, to allow optimistic updates of query results that have
+            // not yet been retrieved from the service. This works around Apollo's behavior of throwing an error if
+            // readObject find no records. (#92)
+            try db.run(records.insert(
+                key <- AWSSQLiteNormalizedCache.queryRootKey,
+                record <- "{}"
+            ))
+        }
     }
 
     private func recordCacheKey(forFieldCacheKey fieldCacheKey: CacheKey) -> CacheKey {
