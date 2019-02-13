@@ -11,6 +11,9 @@ import XCTest
 
 /// Uses API_KEY for auth
 class AWSAppSyncAPIKeyAuthTests: XCTestCase {
+
+    // MARK: - Properties
+
     /// Use this as our timeout value for any operation that hits the network. Note that this may need to be higher
     /// than you think, to account for CI systems running in shared environments
     private static let networkOperationTimeout = 60.0
@@ -23,18 +26,6 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
     let authType = AppSyncClientTestHelper.AuthenticationType.apiKey
 
-    static func makeAppSyncClient(authType: AppSyncClientTestHelper.AuthenticationType,
-                                  cacheConfiguration: AWSAppSyncCacheConfiguration? = nil) throws -> DeinitNotifiableAppSyncClient {
-
-        let testBundle = Bundle(for: AWSAppSyncAPIKeyAuthTests.self)
-        let helper = try AppSyncClientTestHelper(
-            with: authType,
-            cacheConfiguration: cacheConfiguration,
-            testBundle: testBundle
-        )
-        return helper.appSyncClient
-    }
-
     override func setUp() {
         super.setUp()
         do {
@@ -43,6 +34,8 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             XCTFail(error.localizedDescription)
         }
     }
+
+    // MARK: - Tests
 
     func testClientDeinit() throws {
         let deinitCalled = expectation(description: "AWSAppSyncClient deinitialized")
@@ -208,12 +201,8 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         // This handler will be invoked if an error occurs during the setup, or if we receive a successful mutation response.
         let subscriptionResultHandlerInvoked = expectation(description: "Subscription received successfully.")
-        var subscription: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>?
-        defer {
-            subscription?.cancel()
-        }
 
-        subscription = try self.appSyncClient?.subscribe(subscription: OnUpvotePostSubscription(id: id),
+        let subscription = try self.appSyncClient?.subscribe(subscription: OnUpvotePostSubscription(id: id),
                                                          queue: AWSAppSyncAPIKeyAuthTests.subscriptionAndFetchQueue) { result, _, error in
                                                             print("Subscription result handler invoked")
                                                             guard error == nil else {
@@ -228,6 +217,10 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                                                             subscriptionResultHandlerInvoked.fulfill()
         }
         XCTAssertNotNil(subscription, "Subscription expected to be non nil.")
+
+        defer {
+            subscription?.cancel()
+        }
 
         // Currently, subscriptions don't have a good way to inspect that they have been registered on the service.
         // We'll check for `getTopics` returning a non-empty value to stand in for a completion handler
@@ -775,6 +768,126 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             timeout: 0.1
         )
 
+    }
+
+    func testSubscriptionResultHandlerCanOperateOnEmptyCacheWithBackingDatabase() throws {
+        let rootDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("emptyCacheTest-\(UUID().uuidString)")
+        let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
+        try doSubscriptionResultHandlerTesting(withCacheConfiguration: cacheConfiguration)
+    }
+
+    func testSubscriptionResultHandlerCanOperateOnEmptyCacheWithoutBackingDatabase() throws {
+        try doSubscriptionResultHandlerTesting(withCacheConfiguration: nil)
+    }
+
+    // MARK: - Utilities
+
+    static func makeAppSyncClient(authType: AppSyncClientTestHelper.AuthenticationType,
+                                  cacheConfiguration: AWSAppSyncCacheConfiguration? = nil) throws -> DeinitNotifiableAppSyncClient {
+
+        let testBundle = Bundle(for: AWSAppSyncAPIKeyAuthTests.self)
+        let helper = try AppSyncClientTestHelper(
+            with: authType,
+            cacheConfiguration: cacheConfiguration,
+            testBundle: testBundle
+        )
+        return helper.appSyncClient
+    }
+
+    func doSubscriptionResultHandlerTesting(withCacheConfiguration cacheConfiguration: AWSAppSyncCacheConfiguration?) throws {
+        let appSyncClient = try AWSAppSyncAPIKeyAuthTests.makeAppSyncClient(authType: self.authType, cacheConfiguration: cacheConfiguration)
+
+        // OnDeltaPostSubscription requires no knowledge of prior state, so we can use it to test operations on an
+        // empty cache
+        let subscriptionWatcherTriggered = expectation(description: "Subscription watcher was triggered")
+        // We don't care if this gets triggered multiple times
+        subscriptionWatcherTriggered.assertForOverFulfill = false
+        let subscription = try appSyncClient.subscribe(subscription: OnDeltaPostSubscription()) { result, transaction, error in
+            defer {
+                subscriptionWatcherTriggered.fulfill()
+            }
+
+            guard let transaction = transaction else {
+                XCTFail("Transaction unexpectedly nil in subscription watcher")
+                return
+            }
+
+            guard error == nil else {
+                XCTFail("Unexpected error in subscription watcher: \(error!.localizedDescription)")
+                return
+            }
+
+            guard
+                let result = result,
+                let onDeltaPostGraphQLResult = result.data?.onDeltaPost
+                else {
+                    XCTFail("Result onDeltaPost unexpectedly empty in subscription watcher")
+                    return
+            }
+
+            let newPost = ListPostsQuery.Data.ListPost(id: onDeltaPostGraphQLResult.id,
+                                                       author: onDeltaPostGraphQLResult.author,
+                                                       title: onDeltaPostGraphQLResult.title,
+                                                       content: onDeltaPostGraphQLResult.content,
+                                                       url: onDeltaPostGraphQLResult.url,
+                                                       ups: onDeltaPostGraphQLResult.ups,
+                                                       downs: onDeltaPostGraphQLResult.downs,
+                                                       file: nil,
+                                                       createdDate: onDeltaPostGraphQLResult.createdDate,
+                                                       awsDs: onDeltaPostGraphQLResult.awsDs)
+
+            do {
+                try transaction.update(query: ListPostsQuery()) { (data: inout ListPostsQuery.Data) in
+                    XCTAssertNil(data.listPosts)
+                    data.listPosts = [newPost]
+                }
+            } catch {
+                XCTFail("Unexpected error updating local cache in subscription watcher: \(error.localizedDescription)")
+                return
+            }
+        }
+
+        defer {
+            subscription?.cancel()
+        }
+
+        // Currently, subscriptions don't have a good way to inspect that they have been registered on the service.
+        // We'll check for `getTopics` returning a non-empty value to stand in for a completion handler
+        let subscriptionIsRegisteredExpectation = expectation(description: "Subscription should have a non-empty topics list")
+        let subscriptionGetTopicsTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) {
+            _ in
+            guard let subscription = subscription else {
+                return
+            }
+
+            let topics = subscription.getTopics()
+
+            guard !topics.isEmpty else {
+                return
+            }
+
+            subscriptionIsRegisteredExpectation.fulfill()
+        }
+        wait(for: [subscriptionIsRegisteredExpectation], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
+        subscriptionGetTopicsTimer.invalidate()
+
+        print("Sleeping a few seconds to wait for server to begin delivering subscriptions")
+        sleep(5)
+
+        let newPost = CreatePostWithoutFileUsingParametersMutation(author: "Test author",
+                                                                   title: "Test Title",
+                                                                   content: "Test content",
+                                                                   url: "http://www.amazon.com/",
+                                                                   ups: 0,
+                                                                   downs: 0)
+
+        let newPostCreated = expectation(description: "New post created")
+        self.appSyncClient?.perform(mutation: newPost,
+                                    queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { _, _ in
+                                        newPostCreated.fulfill()
+        }
+
+        wait(for: [newPostCreated, subscriptionWatcherTriggered], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
     }
 
 }
