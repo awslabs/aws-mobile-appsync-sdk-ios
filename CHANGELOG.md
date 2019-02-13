@@ -6,7 +6,78 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Bug fixes
 
-- Prepopulate the queries cache with an empty "QUERY_ROOT" record, to allow optimistic updates of the cache where no queries have been previously performed. ([Issue #92](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/92), [#101](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/101))
+- Prepopulate the queries cache with an empty `QUERY_ROOT` record, to allow optimistic updates of the cache where no queries have been previously performed. ([Issue #92](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/92), [#101](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/101))
+- Fix how "cache hits" are determined in queries, to match Apollo behavior.
+  A "cache hit" is defined as all members of the selection set having a non-nil value. For a simple query, (e.g., the `HeroNameQuery` of the StarWars API), that is an easy mental map:
+
+  **Cache hit**
+
+    ```javascript
+    {
+      "QUERY_ROOT": { "hero": "#hero" },
+      "#hero": { "hero": {"name": "R2-D2", "__typename": "Droid"} }
+    }
+    ```
+
+  **Cache misses**
+    ```javascript
+    {}
+
+    { "QUERY_ROOT": null }
+
+
+    { "QUERY_ROOT": {} }
+
+    {
+      "QUERY_ROOT": { "hero": "#hero" },
+      "#hero": { "hero": null }
+    }
+
+    // Misses because type data is incomplete
+    {
+      "QUERY_ROOT": { "hero": "#hero" },
+      "#hero": { "hero": {"name": "R2-D2"} }
+    }
+    ```
+
+  For more complex queries (like the `TwoHeroesQuery`), only all values being non-nil will result in a cache hit:
+  **Cache Hit**
+    ```javascript
+    {
+      "QUERY_ROOT": {
+        "hero": "#hero",
+        "hero(episode:EMPIRE)": "#hero(episode:EMPIRE)"
+      },
+      "#hero": {"name": "R2-D2", "__typename": "Droid"},
+      "#hero(episode:EMPIRE)": {"name": "Luke Skywalker", "__typename": "Human"}
+    }
+    ```
+
+  **Cache Misses**
+    ```javascript
+    {}
+
+    { "QUERY_ROOT": null }
+
+
+    { "QUERY_ROOT": {} }
+
+    {
+      "QUERY_ROOT": { "hero": "#hero" },
+      "#hero": { "hero": null }
+    }
+
+    {
+      "QUERY_ROOT": {
+        "hero": "#hero"
+      },
+      "#hero": {"name": "R2-D2", "__typename": "Droid"}
+    }
+    ```
+
+  These definitions match the existing Apollo behavior, as verified in additional tests against the
+  unmodified Apollo codebase.
+
 
 ### Misc. Updates
 
