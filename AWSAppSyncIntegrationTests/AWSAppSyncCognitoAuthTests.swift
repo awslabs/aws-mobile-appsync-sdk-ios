@@ -206,7 +206,7 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
         let postRetrieved = expectation(description: "Post retrieved from AppSync")
         var getPostResult: GetPostQuery.Data.GetPost? = nil
 
-        appSyncClient.fetch(query: GetPostQuery(id: postId)) { (result, error) in
+        appSyncClient.fetch(query: GetPostQuery(id: postId), cachePolicy: .fetchIgnoringCacheData) { (result, error) in
             defer {
                 postRetrieved.fulfill()
             }

@@ -337,7 +337,7 @@ class AuthProviderTests: XCTestCase {
 
         var fetchResult: Result<Void> = .failure("Fetch didn't complete before timeout")
 
-        client.fetch(query: query) { result, error in
+        client.fetch(query: query, cachePolicy: .fetchIgnoringCacheData) { result, error in
             if let error = error {
                 fetchResult = .failure(error)
             } else if result == nil {
