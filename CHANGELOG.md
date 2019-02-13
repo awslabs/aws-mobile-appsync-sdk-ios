@@ -6,7 +6,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Bug fixes
 
-- Prepopulate the queries cache with an empty "QUERY_ROOT" record, to allow optimistic updates of the cache where no queries have been previously performed. ([Issue #92](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/92))
+- Prepopulate the queries cache with an empty "QUERY_ROOT" record, to allow optimistic updates of the cache where no queries have been previously performed. ([Issue #92](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/92), [#101](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/101))
 
 ### Misc. Updates
 
