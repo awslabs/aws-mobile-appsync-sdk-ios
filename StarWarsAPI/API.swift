@@ -3512,7 +3512,7 @@ public final class HeroFriendsOfFriendsNamesQuery: GraphQLQuery {
 
 public final class HeroNameQuery: GraphQLQuery {
   public static let operationString =
-    "query HeroName($episode: Episode) {\n  hero(episode: $episode) {\n    __typename\n    name\n  }\n}"
+    "query HeroName($episode: Episode) {\n  hero(episode: $episode) {\n    __typename\n    name\n    optionalString\n  }\n}"
 
   public var episode: Episode?
 
@@ -3556,6 +3556,7 @@ public final class HeroNameQuery: GraphQLQuery {
       public static let selections: [GraphQLSelection] = [
         GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
         GraphQLField("name", type: .nonNull(.scalar(String.self))),
+        GraphQLField("optionalString", type: .scalar(String.self)),
       ]
 
       public var snapshot: Snapshot
@@ -3564,12 +3565,12 @@ public final class HeroNameQuery: GraphQLQuery {
         self.snapshot = snapshot
       }
 
-      public static func makeHuman(name: String) -> Hero {
-        return Hero(snapshot: ["__typename": "Human", "name": name])
+      public static func makeHuman(name: String, optionalString: String? = nil) -> Hero {
+        return Hero(snapshot: ["__typename": "Human", "name": name, "optionalString": optionalString])
       }
 
-      public static func makeDroid(name: String) -> Hero {
-        return Hero(snapshot: ["__typename": "Droid", "name": name])
+      public static func makeDroid(name: String, optionalString: String? = nil) -> Hero {
+        return Hero(snapshot: ["__typename": "Droid", "name": name, "optionalString": optionalString])
       }
 
       public var __typename: String {
@@ -3588,6 +3589,16 @@ public final class HeroNameQuery: GraphQLQuery {
         }
         set {
           snapshot.updateValue(newValue, forKey: "name")
+        }
+      }
+
+      /// An optional string value
+      public var optionalString: String? {
+        get {
+          return snapshot["optionalString"] as? String
+        }
+        set {
+          snapshot.updateValue(newValue, forKey: "optionalString")
         }
       }
     }

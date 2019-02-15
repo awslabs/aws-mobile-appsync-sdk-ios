@@ -6,12 +6,12 @@ import StarWarsAPI
 // the cache with an empty QUERY_ROOT. Note that there is some overlap between this and FetchQueryTests, but we're
 // allowing it to localize the changes without significantly modifying the Apollo-provided test code. These tests have
 // been run against the unmodified Apollo codebase to ensure that AppSync maintains the same caching hit/miss behavior.
-class SimpleQueryFetchTests: XCTestCase {
+class FetchQueryTestsSimple: XCTestCase {
 
     struct InitialCacheRecords {
         static let cacheHit: RecordSet = [
             "QUERY_ROOT": ["hero": Reference(key: "hero")],
-            "hero": [ "name": "R2-D2", "__typename": "Droid" ]
+            "hero": [ "name": "R2-D2", "__typename": "Droid", "optionalString": NSNull()]
         ]
 
         static let emptyCache: RecordSet = [:]
@@ -20,7 +20,7 @@ class SimpleQueryFetchTests: XCTestCase {
 
         static let missingData: RecordSet = [
             "QUERY_ROOT": ["hero": Reference(key: "hero")],
-            "hero": [ "name": "R2-D2" ]
+            "hero": [ "name": "R2-D2", "optionalString": NSNull()]
         ]
 
         private init() {}
@@ -28,7 +28,7 @@ class SimpleQueryFetchTests: XCTestCase {
 
     let mockNetworkTransport = MockNetworkTransport(body: [
         "data": [
-            "hero": [ "name": "Luke Skywalker", "__typename": "Human" ]
+            "hero": [ "name": "Luke Skywalker", "__typename": "Human", "optionalString": NSNull()]
         ]
         ])
 
@@ -66,6 +66,7 @@ class SimpleQueryFetchTests: XCTestCase {
                 guard let result = result else { XCTFail("No query result");  return }
 
                 XCTAssertEqual(result.data?.hero?.name, "Luke Skywalker")
+                XCTAssertNil(result.data?.hero?.optionalString)
             }
 
             self.waitForExpectations(timeout: 5, handler: nil)
@@ -247,4 +248,5 @@ class SimpleQueryFetchTests: XCTestCase {
             self.waitForExpectations(timeout: 5, handler: nil)
         }
     }
+
 }
