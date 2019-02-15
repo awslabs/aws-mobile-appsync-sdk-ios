@@ -11,7 +11,7 @@ public struct GraphQLResult<Data> {
   /// A list of errors, or `nil` if the operation completed without encountering any errors.
   public let errors: [GraphQLError]?
   /// Source of data
-  public let source:Source
+  public let source: Source
     
   let dependentKeys: Set<CacheKey>?
   

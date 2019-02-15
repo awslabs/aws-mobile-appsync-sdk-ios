@@ -118,6 +118,8 @@
 		E4EA2880833EDE9A29FEBC15 /* Pods_AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */; };
 		F4DE2BE323727AA52DA01C3E /* Pods_AWSAppSyncUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0FC364F581CF82AB0F22F9D /* Pods_AWSAppSyncUnitTests.framework */; };
 		FA00595A221222D800BFBD13 /* MutationOptimisticUpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA005959221222D800BFBD13 /* MutationOptimisticUpdateTests.swift */; };
+		FA005A982214E20A00BFBD13 /* FetchQueryTestsSimple.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA005A972214E20A00BFBD13 /* FetchQueryTestsSimple.swift */; };
+		FA005AA02216137C00BFBD13 /* FetchQueryTestsComplex.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA005A9F2216137C00BFBD13 /* FetchQueryTestsComplex.swift */; };
 		FA0C12BB21CD308A00B438CB /* AWSAppSyncClientConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12B921CD2FFB00B438CB /* AWSAppSyncClientConfiguration.swift */; };
 		FA0C12BF21CD360B00B438CB /* AWSAppSyncAuthType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12BE21CD360B00B438CB /* AWSAppSyncAuthType.swift */; };
 		FA0C12C121CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0C12C021CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift */; };
@@ -428,6 +430,8 @@
 		EEFAF48F41FE68936AC4A8C2 /* Pods-AWSAppSyncIntegrationTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncIntegrationTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncIntegrationTests/Pods-AWSAppSyncIntegrationTests.debug.xcconfig"; sourceTree = "<group>"; };
 		F0FC364F581CF82AB0F22F9D /* Pods_AWSAppSyncUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA005959221222D800BFBD13 /* MutationOptimisticUpdateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MutationOptimisticUpdateTests.swift; sourceTree = "<group>"; };
+		FA005A972214E20A00BFBD13 /* FetchQueryTestsSimple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchQueryTestsSimple.swift; sourceTree = "<group>"; };
+		FA005A9F2216137C00BFBD13 /* FetchQueryTestsComplex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchQueryTestsComplex.swift; sourceTree = "<group>"; };
 		FA0C12B321CBEE7B00B438CB /* MockAWSNetworkTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAWSNetworkTransport.swift; sourceTree = "<group>"; };
 		FA0C12B521CC2C9B00B438CB /* MockCancellable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCancellable.swift; sourceTree = "<group>"; };
 		FA0C12B721CC33F300B438CB /* MockS3ObjectManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockS3ObjectManager.swift; sourceTree = "<group>"; };
@@ -557,26 +561,28 @@
 		1700503721543E41008B16B6 /* ApolloTests */ = {
 			isa = PBXGroup;
 			children = (
-				17005076215445BD008B16B6 /* FetchQueryTests.swift */,
-				17005079215445BE008B16B6 /* LoadQueryFromStoreTests.swift */,
-				17005077215445BE008B16B6 /* ReadWriteFromStoreTests.swift */,
-				17005078215445BE008B16B6 /* WatchQueryTests.swift */,
-				1700506D21544011008B16B6 /* MockNetworkTransport.swift */,
-				1700506A21544011008B16B6 /* TestCacheProvider.swift */,
-				1700506B21544011008B16B6 /* XCTAssertHelpers.swift */,
-				1700506C21544011008B16B6 /* XCTestCase+Promise.swift */,
 				1700505E21543F94008B16B6 /* BatchedLoadTests.swift */,
 				1700505621543F94008B16B6 /* CacheKeyForFieldTests.swift */,
 				1700505C21543F94008B16B6 /* DataLoaderTests.swift */,
+				17005076215445BD008B16B6 /* FetchQueryTests.swift */,
+				FA005A9F2216137C00BFBD13 /* FetchQueryTestsComplex.swift */,
+				FA005A972214E20A00BFBD13 /* FetchQueryTestsSimple.swift */,
 				1700505521543F94008B16B6 /* FragmentConstructionAndConversionTests.swift */,
+				1700503A21543E41008B16B6 /* Info.plist */,
 				1700505921543F94008B16B6 /* InputValueEncodingTests.swift */,
+				17005079215445BE008B16B6 /* LoadQueryFromStoreTests.swift */,
+				1700506D21544011008B16B6 /* MockNetworkTransport.swift */,
 				1700505D21543F94008B16B6 /* MutatingResultsTests.swift */,
 				1700505721543F94008B16B6 /* NormalizeQueryResults.swift */,
 				1700505421543F94008B16B6 /* ParseQueryResponseTests.swift */,
 				1700505A21543F94008B16B6 /* PromiseTests.swift */,
 				1700505821543F94008B16B6 /* ReadFieldValueTests.swift */,
+				17005077215445BE008B16B6 /* ReadWriteFromStoreTests.swift */,
 				1700505B21543F94008B16B6 /* ResultOrPromiseTests.swift */,
-				1700503A21543E41008B16B6 /* Info.plist */,
+				1700506A21544011008B16B6 /* TestCacheProvider.swift */,
+				17005078215445BE008B16B6 /* WatchQueryTests.swift */,
+				1700506B21544011008B16B6 /* XCTAssertHelpers.swift */,
+				1700506C21544011008B16B6 /* XCTestCase+Promise.swift */,
 			);
 			path = ApolloTests;
 			sourceTree = "<group>";
@@ -1447,7 +1453,9 @@
 				1700506421543F94008B16B6 /* InputValueEncodingTests.swift in Sources */,
 				1700506921543F94008B16B6 /* BatchedLoadTests.swift in Sources */,
 				1700506F21544011008B16B6 /* XCTAssertHelpers.swift in Sources */,
+				FA005AA02216137C00BFBD13 /* FetchQueryTestsComplex.swift in Sources */,
 				1700507B215445BE008B16B6 /* ReadWriteFromStoreTests.swift in Sources */,
+				FA005A982214E20A00BFBD13 /* FetchQueryTestsSimple.swift in Sources */,
 				1700506221543F94008B16B6 /* NormalizeQueryResults.swift in Sources */,
 				1700505F21543F94008B16B6 /* ParseQueryResponseTests.swift in Sources */,
 				1700506021543F94008B16B6 /* FragmentConstructionAndConversionTests.swift in Sources */,

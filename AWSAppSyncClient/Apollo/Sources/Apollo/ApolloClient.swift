@@ -181,7 +181,38 @@ private final class FetchQueryOperation<Query: GraphQLQuery>: AsynchronousOperat
         }
         
         client.store.load(query: query) { (result, error) in
-            if error == nil {
+            // AppSync has customized the Apollo behavior and initial cache population such that queries may return
+            // empty results rather than throwing `missingValue` errors. We will broaden the definition of a "cache
+            // miss" to include both `missingValue` errors, and empty result sets.
+            //
+            // A "cache hit" is defined as all members of the selection set having a non-nil value. For a simple query,
+            // (e.g., the `HeroNameQuery` of the StarWars API), that is an easy mental map:
+            //     // Cache miss
+            //     {"data": "hero": null } }
+            //
+            //     // Cache hit
+            //     {"data": "hero": {"name": "R2-D2", ...} }
+            //
+            // For more complex queries (like the TwoHeroesQuery), only all values being non-nil will result in a cache
+            // hit:
+            //     // Cache misses
+            //     {"data": "luke": null, "r2": null }
+            //     {"data": "luke": {"name": "Luke Skywalker", ...}, "r2": null }
+            //     {"data": "luke": {"name": "Luke Skywalker", ...} }
+            //     {"data": "luke": null }
+            //     {"data": null }
+            //
+            //     // Cache hit
+            //     {"data": "luke": {"name": "Luke Skywalker", ...}, "r2": {"name": "R2-D2", ...} }
+            //
+            // These definitions match the existing Apollo behavior, as verified in additional tests against the
+            // unmodified Apollo codebase.
+            //
+            let allValues = result?.data.flatMap({ $0.snapshot })?.values
+            let hasAnyNilValue = allValues?.firstIndex { $0 == nil } != nil
+            let isCacheHit = allValues?.count ?? 0 > 0 && !hasAnyNilValue
+
+            if error == nil && isCacheHit {
                 self.notifyResultHandler(result: result, error: nil)
                 
                 if self.cachePolicy != .returnCacheDataAndFetch {
