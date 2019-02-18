@@ -1,0 +1,10 @@
+query HumanFriendsFilteredById($id: ID!, $friendId: ID = null) {
+  human(id: $id) {
+    name
+    mass
+    friendsFilteredById(id: $friendId) {
+      id
+      name
+    }
+  }
+}

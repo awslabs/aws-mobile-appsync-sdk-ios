@@ -79,12 +79,24 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
         }
     }
 
-    private func recordCacheKey(forFieldCacheKey fieldCacheKey: CacheKey) -> CacheKey {
+    /// Decompose a cache key into path components to derive a list of keys that *might* be record
+    /// keys for a given cache value. We do this because `RecordSet.merge(records:)` returns a set
+    /// of strings joined with a dot separator. This fails to properly handle query values that include
+    /// dots in the arguments, as in "QUERY_ROOT.human(id:100.1)". By returning a set of candidate
+    /// paths, we allow the `mergeRecords` method to act on a wider set of potential values, at the
+    /// expense of a larger number of comparisons.
+    private func recordCacheKeyCandidates(forFieldCacheKey fieldCacheKey: CacheKey) -> [CacheKey] {
         var components = fieldCacheKey.components(separatedBy: ".")
         if components.count > 1 {
             components.removeLast()
         }
-        return components.joined(separator: ".")
+
+        var candidates = [components.removeFirst()]
+        for component in components {
+            let nextCandidate = [candidates.last!, component].joined(separator: ".")
+            candidates.append(nextCandidate)
+        }
+        return candidates
     }
 
     private func mergeRecords(records: RecordSet) -> Promise<Set<CacheKey>> {
@@ -96,7 +108,10 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
 
             let changedFieldKeys = recordSet.merge(records: records)
 
-            let changedRecordKeys = changedFieldKeys.map { recordCacheKey(forFieldCacheKey: $0) }
+            let changedRecordKeys = changedFieldKeys
+                .map { recordCacheKeyCandidates(forFieldCacheKey: $0) }
+                .flatMap { $0 }
+
             for recordKey in Set(changedRecordKeys) {
                 if let recordFields = recordSet[recordKey]?.fields {
                     let recordData = try SQLiteSerialization.serialize(fields: recordFields)
