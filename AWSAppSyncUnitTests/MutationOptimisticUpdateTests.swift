@@ -248,6 +248,12 @@ class MutationOptimisticUpdateTests: XCTestCase {
                 }
         })
 
+        wait(
+            for: [
+                optimisticUpdatePerformed
+            ],
+            timeout: 1.0)
+
         let cacheHasOptimisticUpdateResult = expectation(description: "Cache returns optimistic update result")
 
         appSyncClient.fetch(
@@ -280,7 +286,6 @@ class MutationOptimisticUpdateTests: XCTestCase {
         wait(
             for: [
                 nonDispatchingResponseBlockInvoked,
-                optimisticUpdatePerformed,
                 cacheHasOptimisticUpdateResult
             ],
             timeout: 1.0)
