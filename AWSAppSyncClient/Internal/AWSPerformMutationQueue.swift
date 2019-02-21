@@ -13,18 +13,15 @@ final class AWSPerformMutationQueue {
     private let persistentCache: AWSMutationCache?
 
     private let operationQueue: OperationQueue
-    private let handlerQueue: DispatchQueue
 
     init(
         appSyncClient: AWSAppSyncClient,
         networkClient: AWSNetworkTransport,
-        handlerQueue: DispatchQueue = .main,
         reachabiltyChangeNotifier: NetworkReachabilityNotifier?,
         cacheFileURL: URL? = nil) {
 
         self.appSyncClient = appSyncClient
         self.networkClient = networkClient
-        self.handlerQueue = handlerQueue
 
         self.operationQueue = OperationQueue()
         self.operationQueue.name = "com.amazonaws.service.appsync.MutationQueue"
@@ -58,7 +55,8 @@ final class AWSPerformMutationQueue {
     func add<Mutation: GraphQLMutation>(
         _ mutation: Mutation,
         mutationConflictHandler: MutationConflictHandler<Mutation>?,
-        mutationResultHandler: OperationResultHandler<Mutation>?) -> Cancellable {
+        mutationResultHandler: OperationResultHandler<Mutation>?,
+        handlerQueue: DispatchQueue) -> Cancellable {
 
         let offlineMutation: AWSAppSyncMutationRecord?
         do {
@@ -115,7 +113,7 @@ final class AWSPerformMutationQueue {
                 let operation = AWSPerformOfflineMutationOperation(
                     appSyncClient: appSyncClient,
                     networkClient: networkClient,
-                    handlerQueue: handlerQueue,
+                    handlerQueue: .main,
                     mutation: mutation)
 
                 operation.operationCompletionBlock = { [weak self] operation, error in
