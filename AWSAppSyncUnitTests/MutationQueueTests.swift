@@ -569,6 +569,54 @@ class MutationQueueTests: XCTestCase {
         wait(for: [mutationWasPerformed], timeout: 1.0)
     }
 
+    func testResultHandlerIsInvokedOnSpecifiedQueueWithBackingDatabase() throws {
+        let queue = DispatchQueue(label: "Mutation result handler queue")
+
+        let key = DispatchSpecificKey<Void>()
+        queue.setSpecific(key: key, value: ())
+
+        let mutationWithoutParameters = TestMutationWithoutParametersMutation()
+        let mockHTTPTransport = MockAWSNetworkTransport()
+        mockHTTPTransport.sendOperationHandlerResponseBody = makeTestMutationWithoutParametersResponseBody(withValue: true)
+
+        let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport,
+                                                                  cacheConfiguration: AWSAppSyncCacheConfiguration())
+
+        let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
+        appSyncClient.perform(mutation: mutationWithoutParameters, queue: queue) { response, error in
+            defer {
+                mutationWasPerformed.fulfill()
+            }
+            XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+        }
+
+        wait(for: [mutationWasPerformed], timeout: 1.0)
+    }
+
+    func testResultHandlerIsInvokedOnSpecifiedQueueWithoutBackingDatabase() throws {
+        let queue = DispatchQueue(label: "Mutation result handler queue")
+
+        let key = DispatchSpecificKey<Void>()
+        queue.setSpecific(key: key, value: ())
+
+        let mutationWithoutParameters = TestMutationWithoutParametersMutation()
+        let mockHTTPTransport = MockAWSNetworkTransport()
+        mockHTTPTransport.sendOperationHandlerResponseBody = makeTestMutationWithoutParametersResponseBody(withValue: true)
+
+        let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport,
+                                                                  cacheConfiguration: nil)
+
+        let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
+        appSyncClient.perform(mutation: mutationWithoutParameters, queue: queue) { response, error in
+            defer {
+                mutationWasPerformed.fulfill()
+            }
+            XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
+        }
+
+        wait(for: [mutationWasPerformed], timeout: 1.0)
+    }
+
     // MARK: - Utility methods
 
     func makeTestMutationWithoutParametersResponseBody(withValue value: Bool) -> JSONObject {

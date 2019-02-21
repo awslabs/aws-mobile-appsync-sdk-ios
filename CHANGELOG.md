@@ -6,7 +6,8 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Bug fixes
 
-- Fix a bug where queries with dots (`"."`) in the arguments were not being properly cached ([Issue #110](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/110), [#165](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/165))
+- Fixed a bug where queries with dots (`"."`) in the arguments were not being properly cached ([Issue #110](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/110), [#165](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/165))
+- `AWSAppSyncClient.perform(mutation:queue:optimisticUpdate:conflictResolutionBlock:resultHandler:)` now properly invokes its result handler callbacks on the supplied `queue` instead of always using `DispatchQueue.main`
 
 ## 2.10.1
 

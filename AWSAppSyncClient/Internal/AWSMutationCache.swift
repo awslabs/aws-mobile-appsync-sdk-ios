@@ -86,15 +86,9 @@ public final class AWSMutationCache {
         }
     }
 
-    internal func deleteMutationRecord(record: AWSAppSyncMutationRecord) -> Promise<Void> {
-        return Promise {
-            let sqlRecord = mutationRecords.filter(recordIdentifier == record.recordIdentitifer)
-            try db.run(sqlRecord.delete())
-        }
-    }
-
     internal func deleteMutationRecord(withIdentifier identifier: String) -> Promise<Void> {
         return Promise {
+            AppSyncLog.verbose("Deleting \(identifier)")
             let sqlRecord = mutationRecords.filter(recordIdentifier == identifier)
             try db.run(sqlRecord.delete())
         }
