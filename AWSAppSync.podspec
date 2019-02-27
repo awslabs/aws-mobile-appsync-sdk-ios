@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'AWSAppSync'
-  s.version      = '2.10.1'
+  s.version      = '2.10.2'
   s.author       = 'AWS'
   s.homepage     = 'http://aws.amazon.com/mobile/sdk'
   s.license      = { :type => 'Amazon Software License', :file => 'LICENSE' }
