@@ -10,7 +10,7 @@ final class AWSAppSyncMutationRecord {
     var jsonRecord: JSONObject?
     var data: Data?
     var contentMap: GraphQLMap?
-    var recordIdentitifer: String
+    var recordIdentifier: String
     var recordState: MutationRecordState = .inQueue
     var timestamp: Date
     var type: MutationType
@@ -21,7 +21,7 @@ final class AWSAppSyncMutationRecord {
         recordIdentifier: String = UUID().uuidString,
         timestamp: Date = Date(),
         type: MutationType = .graphQLMutation) {
-        self.recordIdentitifer = recordIdentifier
+        self.recordIdentifier = recordIdentifier
         self.timestamp = timestamp
         self.type = type
     }
@@ -32,8 +32,8 @@ final class AWSAppSyncMutationRecord {
 extension AWSAppSyncMutationRecord: CustomStringConvertible {
 
     var description: String {
-        var desc: String = "<\(self):\(recordIdentitifer)"
-        desc.append("\tID: \(recordIdentitifer)")
+        var desc: String = "<\(self):\(recordIdentifier)"
+        desc.append("\tID: \(recordIdentifier)")
         desc.append("\ttimestamp: \(timestamp)")
         desc.append("\thasS3Object: \(s3ObjectInput != nil ? true : false)")
         desc.append(">")

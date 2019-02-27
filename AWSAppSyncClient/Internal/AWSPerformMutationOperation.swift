@@ -13,6 +13,8 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
     private let mutationConflictHandler: MutationConflictHandler<Mutation>?
     private let mutationResultHandler: OperationResultHandler<Mutation>?
 
+    private var networkTask: Cancellable?
+
     var identifier: String?
     var operationCompletionBlock: ((AWSPerformMutationOperation, Error?) -> Void)?
 
@@ -29,19 +31,22 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         self.mutationResultHandler = mutationResultHandler
     }
 
-    private var networkTask: Cancellable?
+    deinit {
+        AppSyncLog.verbose("\(identifier ?? "(no identifier)"): deinit")
+    }
 
     private func send(_ resultHandler: OperationResultHandler<Mutation>?) -> Cancellable? {
         guard let appSyncClient = appSyncClient else {
             return nil
         }
 
+        AppSyncLog.verbose("\(identifier ?? "(No identifier)"): sending")
+
         if let s3Object = AWSRequestBuilder.s3Object(from: mutation.variables) {
             appSyncClient.performMutationWithS3Object(
                 operation: mutation,
                 s3Object: s3Object,
                 conflictResolutionBlock: mutationConflictHandler,
-                dispatchGroup: nil,
                 handlerQueue: handlerQueue,
                 resultHandler: resultHandler)
 
@@ -49,9 +54,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         } else {
             return appSyncClient.send(
                 operation: mutation,
-                context: nil,
                 conflictResolutionBlock: mutationConflictHandler,
-                dispatchGroup: nil,
                 handlerQueue: handlerQueue,
                 resultHandler: resultHandler)
         }

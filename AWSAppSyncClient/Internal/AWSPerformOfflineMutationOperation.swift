@@ -25,6 +25,10 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         self.mutation = mutation
     }
 
+    deinit {
+        AppSyncLog.verbose("\(mutation.recordIdentifier): deinit")
+    }
+
     private func send(_ mutation: AWSAppSyncMutationRecord,
                       completion: @escaping ((JSONObject?, Error?) -> Void)) {
         guard
@@ -72,7 +76,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
 
             // call master delegate
             offlineMutationDelegate.mutationCallback(
-                recordIdentifier: self.mutation.recordIdentitifer,
+                recordIdentifier: self.mutation.recordIdentifier,
                 operationString: self.mutation.operationString!,
                 snapshot: result,
                 error: error)

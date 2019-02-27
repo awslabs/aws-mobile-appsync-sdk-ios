@@ -31,6 +31,7 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
     private let record = Expression<String>("record")
 
     init(fileURL: URL) throws {
+        AppSyncLog.verbose("Initializing normalized cache at \(fileURL.absoluteString)")
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
         db.busyTimeout = sqlBusyTimeoutConstant
         try createTableIfNeeded()
@@ -100,6 +101,7 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
     }
 
     private func mergeRecords(records: RecordSet) -> Promise<Set<CacheKey>> {
+        AppSyncLog.verbose("Merging \(records.storage.count) records")
 
         return Promise {
             var recordSet = try selectRecords(forKeys: records.keys)
