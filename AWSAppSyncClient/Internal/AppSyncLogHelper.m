@@ -8,69 +8,21 @@
 
 @implementation AppSyncLogHelper
 
-+(void)logVerbose:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line {
-    [AWSDDLog log: YES
-            level: [AWSDDLog sharedInstance].logLevel
-             flag: AWSDDLogFlagVerbose
-          context: 0
-             file: [file cStringUsingEncoding:NSUTF8StringEncoding]
-         function: [function cStringUsingEncoding:NSUTF8StringEncoding]
-             line: line
-              tag: nil
-           format:message
-             args:nil];
++(BOOL)shouldLogFlag:(AWSDDLogFlag)flag {
+    return flag & [AWSDDLog sharedInstance].logLevel;
 }
 
-+(void)logDebug:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line {
++(void)log:(NSString *)message flag:(AWSDDLogFlag)flag file:(NSString *)file function:(NSString *)function line:(NSUInteger)line {
     [AWSDDLog log: YES
             level: [AWSDDLog sharedInstance].logLevel
-             flag: AWSDDLogFlagDebug
+             flag: flag
           context: 0
              file: [file cStringUsingEncoding:NSUTF8StringEncoding]
          function: [function cStringUsingEncoding:NSUTF8StringEncoding]
              line: line
               tag: nil
-           format:message
-             args:nil];
-}
-
-+(void)logInfo:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line {
-    [AWSDDLog log: YES
-            level: [AWSDDLog sharedInstance].logLevel
-             flag: AWSDDLogFlagInfo
-          context: 0
-             file: [file cStringUsingEncoding:NSUTF8StringEncoding]
-         function: [function cStringUsingEncoding:NSUTF8StringEncoding]
-             line: line
-              tag: nil
-           format:message
-             args:nil];
-}
-
-+(void)logWarn:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line {
-    [AWSDDLog log: YES
-            level: [AWSDDLog sharedInstance].logLevel
-             flag: AWSDDLogFlagWarning
-          context: 0
-             file: [file cStringUsingEncoding:NSUTF8StringEncoding]
-         function: [function cStringUsingEncoding:NSUTF8StringEncoding]
-             line: line
-              tag: nil
-           format:message
-             args:nil];
-}
-
-+(void)logError:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line {
-    [AWSDDLog log: YES
-            level: [AWSDDLog sharedInstance].logLevel
-             flag: AWSDDLogFlagError
-          context: 0
-             file: [file cStringUsingEncoding:NSUTF8StringEncoding]
-         function: [function cStringUsingEncoding:NSUTF8StringEncoding]
-             line: line
-              tag: nil
-           format:message
-             args:nil];
+           format: message
+             args: nil];
 }
 
 @end

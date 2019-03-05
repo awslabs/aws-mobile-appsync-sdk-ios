@@ -7,6 +7,8 @@
 import Foundation
 import SQLite
 
+/// Although this class is currently public, it is not intended to be used by clients, and will be marked "internal" in
+/// a future release of AppSync.
 public final class AWSMutationCache {
 
     private let db: Connection
@@ -22,9 +24,9 @@ public final class AWSMutationCache {
     private let s3LocalUri = Expression<String?>("s3LocalUri")
     private let s3MimeType = Expression<String?>("s3MimeType")
     private let operationString = Expression<String>("operationString")
-    private let priority = Expression<Int?>("priority")
 
     public init(fileURL: URL) throws {
+        AppSyncLog.verbose("Initializing mutation cache at \(fileURL.absoluteString)")
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
         db.busyTimeout = sqlBusyTimeoutConstant
         try createTableIfNeeded()
@@ -45,50 +47,48 @@ public final class AWSMutationCache {
             table.column(operationString)
         })
 
-        do {
-            try db.run(mutationRecords.addColumn(priority))
-        } catch {}
-
         try db.run(mutationRecords.createIndex(recordIdentifier, unique: true, ifNotExists: true))
     }
 
     internal func saveMutationRecord(record: AWSAppSyncMutationRecord) -> Promise<Void> {
         return Promise {
-          if let s3Object = record.s3ObjectInput {
-              let insert = mutationRecords.insert(
-                  recordIdentifier <- record.recordIdentitifer,
-                  data <- record.data!,
-                  recordState <- record.recordState.rawValue,
-                  timestamp <- record.timestamp,
-                  s3Bucket <- s3Object.bucket,
-                  s3Key <- s3Object.key,
-                  s3Region <- s3Object.region,
-                  s3LocalUri <- s3Object.localUri,
-                  s3MimeType <- s3Object.mimeType,
-                  operationString <- record.operationString!)
-              try db.run(insert)
-          } else {
-              let insert = mutationRecords.insert(
-                  recordIdentifier <- record.recordIdentitifer,
-                  data <- record.data!,
-                  recordState <- record.recordState.rawValue,
-                  timestamp <- record.timestamp,
-                  operationString <- record.operationString!)
-              try db.run(insert)
-          }
+            AppSyncLog.verbose("\(record.recordIdentifier): saving")
+            if let s3Object = record.s3ObjectInput {
+                let insert = mutationRecords.insert(
+                    recordIdentifier <- record.recordIdentifier,
+                    data <- record.data!,
+                    recordState <- record.recordState.rawValue,
+                    timestamp <- record.timestamp,
+                    s3Bucket <- s3Object.bucket,
+                    s3Key <- s3Object.key,
+                    s3Region <- s3Object.region,
+                    s3LocalUri <- s3Object.localUri,
+                    s3MimeType <- s3Object.mimeType,
+                    operationString <- record.operationString!)
+                try db.run(insert)
+            } else {
+                let insert = mutationRecords.insert(
+                    recordIdentifier <- record.recordIdentifier,
+                    data <- record.data!,
+                    recordState <- record.recordState.rawValue,
+                    timestamp <- record.timestamp,
+                    operationString <- record.operationString!)
+                try db.run(insert)
+            }
         }
     }
 
     internal func updateMutationRecord(record: AWSAppSyncMutationRecord) -> Promise<Void> {
         return Promise {
-            let sqlRecord = mutationRecords.filter(recordIdentifier == record.recordIdentitifer)
+            AppSyncLog.verbose("\(record.recordIdentifier): updating state \(record.recordState.rawValue)")
+            let sqlRecord = mutationRecords.filter(recordIdentifier == record.recordIdentifier)
             try db.run(sqlRecord.update(recordState <- record.recordState.rawValue))
         }
     }
 
     internal func deleteMutationRecord(withIdentifier identifier: String) -> Promise<Void> {
         return Promise {
-            AppSyncLog.verbose("Deleting \(identifier)")
+            AppSyncLog.verbose("\(identifier): deleting")
             let sqlRecord = mutationRecords.filter(recordIdentifier == identifier)
             try db.run(sqlRecord.delete())
         }
@@ -96,6 +96,7 @@ public final class AWSMutationCache {
 
     internal func getStoredMutationRecordsInQueue() -> Promise<[AWSAppSyncMutationRecord]> {
         return Promise {
+            AppSyncLog.info("Retrieving stored mutation records")
             let sqlRecords = mutationRecords.filter(recordState == MutationRecordState.inQueue.rawValue).order(timestamp.asc)
             var mutationRecordQueue: [AWSAppSyncMutationRecord] = []
             for record in try db.prepare(sqlRecords) {
@@ -123,15 +124,16 @@ public final class AWSMutationCache {
                                 localUri: localUri)
                         }
                     } catch {
-                        AppSyncLog.error("\(#function) failed \(error)")
+                        AppSyncLog.error("Failed to retrieve S3Object from mutation record \(mutationRecord.recordIdentifier): \(error)")
                     }
 
                     mutationRecordQueue.append(mutationRecord)
                 } catch {
-                    AppSyncLog.error("\(#function) failed \(error)")
+                    AppSyncLog.error("Failed to retrieve stored mutation records: \(error)")
                 }
             }
 
+            AppSyncLog.debug("Retrieved \(mutationRecordQueue.count) mutation records from store")
             return mutationRecordQueue
         }
     }

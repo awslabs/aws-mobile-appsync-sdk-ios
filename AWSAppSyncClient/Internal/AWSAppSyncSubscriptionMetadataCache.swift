@@ -15,6 +15,7 @@ final class AWSSubscriptionMetaDataCache {
     private let lastSyncDate = Expression<Date?>("lastSyncDate")
     
     init(fileURL: URL) throws {
+        AppSyncLog.verbose("Initializing subscription metadata cache at \(fileURL.absoluteString)")
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
         db.busyTimeout = sqlBusyTimeoutConstant
         try createTableIfNeeded()

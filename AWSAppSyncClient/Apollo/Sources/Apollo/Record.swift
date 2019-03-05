@@ -13,7 +13,7 @@ public struct Record {
     self.key = key
     self.fields = fields
   }
-  
+
   public subscript(key: CacheKey) -> Value? {
     get {
       return fields[key]

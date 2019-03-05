@@ -6,6 +6,29 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Bug fixes
 
+- Fixed incorrect AWSCore dependency version in podspec ([Issue #190](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/190))
+
+### Misc. Updates
+
+- Added `AWSAppSyncClientLogFormatter` utility class. Developers who want to use it can add it to the appropriate logger. For example, a configuration like:
+    ```swift
+    AWSDDLog.sharedInstance.logLevel = .verbose
+    AWSDDTTYLogger.sharedInstance.logFormatter = AWSAppSyncClientLogFormatter()
+    AWSDDLog.sharedInstance.add(AWSDDTTYLogger.sharedInstance)
+    ```
+  would output log messages like:
+    ```
+    2019-03-04 07:21:32.131-0800 [I AWSAppSyncClient.init(appSyncConfig:reachabilityFactory:), L75] Initializing AppSyncClient
+    2019-03-04 07:21:32.135-0800 [V AWSPerformMutationQueue.init(appSyncClient:networkClient:reachabiltyChangeNotifier:cacheFileURL:), L24] Initializing AWSPerformMutationQueue
+    2019-03-04 07:21:32.135-0800 [V AWSPerformMutationQueue.resume(), L95] Resuming OperationQueue
+    ```
+- Added some verbose logging around mutation queue handling; minor log additions elsewhere
+- Minor dead code removal & miscellaneous cleanup
+
+## 2.10.2
+
+### Bug fixes
+
 - Fixed a bug where queries with dots (`"."`) in the arguments were not being properly cached ([Issue #110](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/110), [#165](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/165))
 - `AWSAppSyncClient.perform(mutation:queue:optimisticUpdate:conflictResolutionBlock:resultHandler:)` now properly invokes its result handler callbacks on the supplied `queue` instead of always using `DispatchQueue.main`
 

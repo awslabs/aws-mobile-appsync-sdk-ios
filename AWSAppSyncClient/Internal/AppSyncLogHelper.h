@@ -9,10 +9,12 @@
 
 @interface AppSyncLogHelper : NSObject
 
-+(void)logVerbose:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
-+(void)logDebug:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
-+(void)logInfo:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
-+(void)logWarn:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
-+(void)logError:(NSString *)message file:(NSString *)file funcion:(NSString *)function line:(NSUInteger)line;
++(BOOL)shouldLogFlag:(AWSDDLogFlag)flag NS_SWIFT_NAME(shouldLog(flag:));
+
++(void)log:(NSString *)message
+      flag:(AWSDDLogFlag)flag
+      file:(NSString *)file
+  function:(NSString *)function
+      line:(NSUInteger)line;
 
 @end

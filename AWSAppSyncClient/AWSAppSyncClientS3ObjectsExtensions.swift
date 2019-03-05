@@ -11,7 +11,6 @@ extension AWSAppSyncClient {
         operation: Operation,
         s3Object: InternalS3ObjectDetails,
         conflictResolutionBlock: MutationConflictHandler<Operation>?,
-        dispatchGroup: DispatchGroup?,
         handlerQueue: DispatchQueue,
         resultHandler: OperationResultHandler<Operation>?) {
 
@@ -19,9 +18,7 @@ extension AWSAppSyncClient {
             if success {
                 _ = self.send(
                     operation: operation,
-                    context: nil,
                     conflictResolutionBlock: conflictResolutionBlock,
-                    dispatchGroup: dispatchGroup,
                     handlerQueue: handlerQueue,
                     resultHandler: resultHandler)
             } else {
@@ -33,7 +30,6 @@ extension AWSAppSyncClient {
     func performMutationWithS3Object(
         data: Data,
         s3Object: InternalS3ObjectDetails,
-        dispatchGroup: DispatchGroup?,
         resultHandler: ((JSONObject?, Error?) -> Void)?) {
 
         s3ObjectManager!.upload(s3Object: s3Object) { success, error in
