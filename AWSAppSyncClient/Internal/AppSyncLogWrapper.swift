@@ -25,6 +25,10 @@ final class AppSyncLog {
         log(message, flag: .error, file: file, function: function, line: line)
     }
 
+    class func error(_ error: Error, file: String = #file, function: String = #function, line: Int = #line) {
+        log(error.localizedDescription, flag: .error, file: file, function: function, line: line)
+    }
+
     private class func log(_ message: @autoclosure () -> String, flag: AWSDDLogFlag, file: String, function: String, line: Int) {
         if AppSyncLogHelper.shouldLog(flag: flag) {
             AppSyncLogHelper.log(message(),

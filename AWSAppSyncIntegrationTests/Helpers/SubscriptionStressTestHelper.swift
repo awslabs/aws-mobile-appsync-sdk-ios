@@ -10,190 +10,183 @@ import XCTest
 
 class SubscriptionStressTestHelper: XCTestCase {
     private static let numberOfPostsToTest = 40
+    private static let networkOperationTimeout = TimeInterval(exactly: numberOfPostsToTest * 2)!
+
     private static let mutationQueue = DispatchQueue(label: "com.amazonaws.appsync.SubscriptionStressTestHelper.mutationQueue")
     private static let subscriptionQueue = DispatchQueue(label: "com.amazonaws.appsync.SubscriptionStressTestHelper.subscriptionQueue")
 
     private var appSyncClient: AWSAppSyncClient!
-    private var testPostIDs = [GraphQLID](repeating: "", count: SubscriptionStressTestHelper.numberOfPostsToTest)
 
     // Hold onto this to retain references to the watchers during the test invocation
-    var subscriptionWatchers = [AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>]()
+    private var subscriptionTestStateHolders = [GraphQLID: SubscriptionTestStateHolder]()
 
     // MARK: - Public test helper methods
 
-    func stressTestSubscriptions(with appSyncClient: AWSAppSyncClient) {
+    func stressTestSubscriptions(with appSyncClient: AWSAppSyncClient,
+                                 delayBetweenSubscriptions delay: TimeInterval? = nil) {
         defer {
-            subscriptionWatchers.forEach { $0.cancel() }
-            cleanUp()
+            subscriptionTestStateHolders.values.forEach { $0.watcher?.cancel() }
         }
 
         self.appSyncClient = appSyncClient
 
-        let allPostsAreCreatedExpectations = createPostsAndMakeExpectations()
-        wait(for: allPostsAreCreatedExpectations, timeout: TimeInterval(exactly: SubscriptionStressTestHelper.numberOfPostsToTest)!)
+        createPostsAndPopulateTestStateHolders()
 
-        XCTAssertEqual(testPostIDs.count, SubscriptionStressTestHelper.numberOfPostsToTest, "Number of created posts should be \(SubscriptionStressTestHelper.numberOfPostsToTest)")
+        XCTAssertEqual(subscriptionTestStateHolders.count, SubscriptionStressTestHelper.numberOfPostsToTest)
 
         // Add subscriptions for each of the created posts. The expectations will be fulfilled
         // after the mutations are generated below.
-        let allSubscriptionsAreTriggeredExpectations = subscribeToMutationsAndMakeExpectations()
+        subscribeToMutationsAndMakeExpectations(delayBetweenSubscriptions: delay)
 
-        print("Waiting 10s for the server to begin delivering subscriptions")
-        sleep(10)
+        let allPostsUpvoted = subscriptionTestStateHolders.values.map { $0.postUpvoted! }
+        let allSubscriptionsAcknowledged = subscriptionTestStateHolders.values.map { $0.subscriptionAcknowledged! }
+        let allSubscriptionsTriggered = subscriptionTestStateHolders.values.map { $0.subscriptionTriggered! }
 
-        let mutationExpectations = mutatePostsAndMakeExpectations()
+        let timeoutFactor: TimeInterval
+        if let delay = delay, delay > 1.0 {
+            timeoutFactor = delay * 2.0
+        } else {
+            timeoutFactor = 2.0
+        }
 
-        let combinedExpectations = mutationExpectations + allSubscriptionsAreTriggeredExpectations
-        wait(for: combinedExpectations, timeout: TimeInterval(exactly: SubscriptionStressTestHelper.numberOfPostsToTest)!)
+        let allExpectations = allSubscriptionsAcknowledged + allPostsUpvoted + allSubscriptionsTriggered
+        wait(for: allExpectations, timeout: SubscriptionStressTestHelper.networkOperationTimeout * timeoutFactor)
     }
 
     // MARK: - Private utility methods
 
-    private func createPostsAndMakeExpectations() -> [XCTestExpectation] {
-        // Create records to mutate later
-        var addPostsExpectations = [XCTestExpectation]()
-
+    /// Asynchronously populate `subscriptionTestStateHolders` with new state holders
+    private func createPostsAndPopulateTestStateHolders() {
+        // Hold onto these expectations so we can create the mutations prior to returning
+        var allPostsAreCreatedExpectations = [XCTestExpectation]()
         for i in 0 ..< SubscriptionStressTestHelper.numberOfPostsToTest {
-            let addPostExpectation = XCTestExpectation(description: "Added post \(i)")
-            addPostsExpectations.append(addPostExpectation)
+            let testData = SubscriptionTestStateHolder(index: i)
+
+            allPostsAreCreatedExpectations.append(testData.postCreated)
+
             appSyncClient.perform(mutation: DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation,
                                   queue: SubscriptionStressTestHelper.mutationQueue) { result, error in
-                XCTAssertNil(error, "Error should be nil")
+                                    XCTAssertNil(error, "Error should be nil")
 
-                guard
-                    let result = result,
-                    let payload = result.data?.createPostWithoutFileUsingParameters
-                    else {
-                        XCTFail("Result & payload should not be nil")
-                        return
-                }
+                                    guard
+                                        let result = result,
+                                        let payload = result.data?.createPostWithoutFileUsingParameters
+                                        else {
+                                            XCTFail("Result & payload should not be nil")
+                                            return
+                                    }
 
-                XCTAssertEqual(payload.author, DefaultTestPostData.author, "Authors should match.")
-                let id = payload.id
-                self.testPostIDs[i] = id
-                addPostExpectation.fulfill()
-                print("Successful CreatePostWithoutFileUsingParametersMutation \(i) (\(id))")
+                                    XCTAssertEqual(payload.author, DefaultTestPostData.author, "Authors should match.")
+                                    let id = payload.id
+                                    self.subscriptionTestStateHolders[id] = testData
+                                    testData.postId = id
+                                    testData.postCreated.fulfill()
+                                    print("Post created \(i) (\(id))")
             }
-            print("Attempting CreatePostWithoutFileUsingParametersMutation \(i)")
         }
 
-        return addPostsExpectations
+        wait(for: allPostsAreCreatedExpectations, timeout: SubscriptionStressTestHelper.networkOperationTimeout)
     }
 
-    private func subscribeToMutationsAndMakeExpectations() -> [XCTestExpectation] {
-        var subscriptionsTriggeredExpectations = [XCTestExpectation]()
-
-        for (i, id) in testPostIDs.enumerated() {
-            let subscriptionTriggeredExpectation = XCTestExpectation(description: "Subscription triggered for post \(i) (\(id))")
-            subscriptionsTriggeredExpectations.append(subscriptionTriggeredExpectation)
-
-            let subscription: OnUpvotePostSubscription = OnUpvotePostSubscription(id: id)
-            let optionalSubscriptionWatcher = try! appSyncClient.subscribe(subscription: subscription,
-                                                                           queue: SubscriptionStressTestHelper.subscriptionQueue) { result, _, error in
-                XCTAssertNil(error, "Error should be nil")
-
-                guard let payload = result?.data?.onUpvotePost else {
-                    XCTFail("Result & payload should not be nil")
-                    return
+    /// Schedule subscription and mutation flows for each subscriptionTestStateHolder, with `delay` seconds in between
+    /// each subscription operation
+    private func subscribeToMutationsAndMakeExpectations(delayBetweenSubscriptions delay: TimeInterval?) {
+        let createSubscriptionsQueue = DispatchQueue(label: "subscribeToMutationsAndMakeExpectations")
+        let subscriptionTestStateHolderValues = subscriptionTestStateHolders.values.map { $0 }
+        createSubscriptionsQueue.async {
+            for i in 0 ..< SubscriptionStressTestHelper.numberOfPostsToTest {
+                let subscriptionTestStateHolder = subscriptionTestStateHolderValues[i]
+                self.subscribeAcknowledgeAndMutate(subscriptionTestStateHolder: subscriptionTestStateHolder)
+                if let delay = delay, delay > 0.0 {
+                    Thread.sleep(forTimeInterval: delay)
                 }
-
-                let idFromPayload = payload.id
-
-                subscriptionTriggeredExpectation.fulfill()
-                print("Triggered OnUpvotePostSubscription \(i) (\(idFromPayload))")
             }
-            print("Attempting OnUpvotePostSubscription \(i) (\(id))")
-
-            guard let subscriptionWatcher = optionalSubscriptionWatcher else {
-                XCTFail("Subscription watcher \(i) (\(id)) should not be nil")
-                continue
-            }
-
-            subscriptionWatchers.append(subscriptionWatcher)
         }
-
-        waitForRegistration(of: subscriptionWatchers)
-
-        return subscriptionsTriggeredExpectations
     }
 
-    typealias UnregisteredWatcherExpectation = (subscriptionWatcher: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>, expectation: XCTestExpectation)
+    private func subscribeAcknowledgeAndMutate(subscriptionTestStateHolder: SubscriptionTestStateHolder) {
+        let subscription: OnUpvotePostSubscription = OnUpvotePostSubscription(id: subscriptionTestStateHolder.postId)
 
-    // Currently, `AWSAppSyncClient.subscribe(subscription:queue:resultHandler:)` doesn't have a
-    // good way to inspect that the subscription has been registered on the service. We'll check
-    // for `getTopics` returning a non-empty value to stand in for a completion handler
-    private func waitForRegistration(of subscriptionWatchers: [AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>]) {
-
-        var subscriptionWatcherRegisteredExpectations = [XCTestExpectation]()
-
-        var unregisteredWatcherExpectationsByIndex = [Int: UnregisteredWatcherExpectation]()
-        for (i, watcher) in subscriptionWatchers.enumerated() {
-            let expectation = XCTestExpectation(description: "Subscription watcher \(i) is registered")
-            subscriptionWatcherRegisteredExpectations.append(expectation)
-            unregisteredWatcherExpectationsByIndex[i] = (subscriptionWatcher: watcher, expectation: expectation)
-        }
-
-        // Wait until subscriptions are all registered
-        let subscriptionWatcherRegistrationTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) {
-            _ in
-            var indexesToDelete = Set<Int>()
-            for index in unregisteredWatcherExpectationsByIndex.keys {
-                guard let (subscriptionWatcher, expectation) = unregisteredWatcherExpectationsByIndex[index] else {
-                    continue
-                }
-                let isRegistered = !subscriptionWatcher.getTopics().isEmpty
-                if isRegistered {
-                    expectation.fulfill()
-                    indexesToDelete.insert(index)
-                    print("Registered OnUpvotePostSubscription \(index)")
-                }
-            }
-
-            for index in indexesToDelete {
-                unregisteredWatcherExpectationsByIndex.removeValue(forKey: index)
+        let statusChangeHandler: SubscriptionStatusChangeHandler = { status in
+            if case .connected = status {
+                print("Subscription acknowledged \(subscriptionTestStateHolder.index) (\(subscriptionTestStateHolder.postId!))")
+                subscriptionTestStateHolder.subscriptionAcknowledged.fulfill()
+                self.mutatePost(for: subscriptionTestStateHolder)
             }
         }
 
-        // Wait for all subscriptions to be registered
-        let timeToWait = Double(testPostIDs.count)
-        wait(for: subscriptionWatcherRegisteredExpectations, timeout: timeToWait)
-        subscriptionWatcherRegistrationTimer.invalidate()
+        print("Subscribing \(subscriptionTestStateHolder.index) (\(subscriptionTestStateHolder.postId!))")
+        let optionalSubscriptionWatcher = try! appSyncClient.subscribe(
+            subscription: subscription,
+            queue: SubscriptionStressTestHelper.subscriptionQueue,
+            statusChangeHandler: statusChangeHandler
+        ) {
+            result, _, error in
+            XCTAssertNil(error, "Error should be nil")
 
-        XCTAssertTrue(unregisteredWatcherExpectationsByIndex.isEmpty, "All subscriptions should have been registered by now")
+            guard result?.data?.onUpvotePost != nil else {
+                XCTFail("Result & payload should not be nil")
+                return
+            }
+
+            subscriptionTestStateHolder.subscriptionTriggered.fulfill()
+            print("Subscription triggered \(subscriptionTestStateHolder.index) (\(subscriptionTestStateHolder.postId!))")
+        }
+
+        guard let subscriptionWatcher = optionalSubscriptionWatcher else {
+            XCTFail("Subscription watcher \(subscriptionTestStateHolder.index) (\(subscriptionTestStateHolder.postId!)) should not be nil")
+            return
+        }
+
+        subscriptionTestStateHolder.watcher = subscriptionWatcher
     }
 
     /// Mutate the watched objects by upvoting them. This should fire each associated subscription
     /// We set up mutation expectations so that, if the test fails, we can tell whether it was the
     /// mutation that failed to complete, or the subscription that failed to trigger
-    private func mutatePostsAndMakeExpectations() -> [XCTestExpectation] {
-        var mutationExpectations = [XCTestExpectation]()
-        for (i, id) in testPostIDs.enumerated() {
-            let upvoteExpectation = XCTestExpectation(description: "Upvoted on event \(i)")
-            mutationExpectations.append(upvoteExpectation)
+    private func mutatePost(for subscriptionTestStateHolder: SubscriptionTestStateHolder) {
+        let postId = subscriptionTestStateHolder.postId!
+        let mutation = UpvotePostMutation(id: postId)
 
-            let mutation = UpvotePostMutation(id: id)
+        appSyncClient.perform(mutation: mutation, queue: SubscriptionStressTestHelper.mutationQueue) { result, error in
+            XCTAssertNil(error, "Error should be nil")
 
-            appSyncClient.perform(mutation: mutation, queue: SubscriptionStressTestHelper.mutationQueue) { result, error in
-                XCTAssertNil(error, "Error should be nil")
-
-                guard
-                    let result = result,
-                    let _ = result.data?.upvotePost
-                    else {
-                        XCTFail("Result & payload should not be nil")
-                        return
-                }
-                upvoteExpectation.fulfill()
-                print("Successful UpvotePostMutation \(i) (\(id))")
+            guard
+                let result = result,
+                let _ = result.data?.upvotePost
+                else {
+                    XCTFail("Result & payload should not be nil")
+                    return
             }
-            print("Attempting UpvotePostMutation \(i) (\(id))")
+            print("Post upvoted \(subscriptionTestStateHolder.index) (\(subscriptionTestStateHolder.postId!))")
+            subscriptionTestStateHolder.postUpvoted.fulfill()
         }
 
-        return mutationExpectations
     }
 
-    // Removes test records from DB
-    private func cleanUp() {
+}
 
+// A state holder for the various stages of a subscription test, built up by each operation
+private class SubscriptionTestStateHolder {
+    let index: Int
+    var postId: GraphQLID! {
+        didSet {
+            self.subscriptionAcknowledged = XCTestExpectation(description: "subscriptionAcknowledged for \(index) (\(postId!))")
+            self.postUpvoted = XCTestExpectation(description: "postUpvoted for \(index) (\(postId!))")
+            self.subscriptionTriggered = XCTestExpectation(description: "subscriptionTriggered for \(index) (\(postId!))")
+        }
+    }
+
+    var watcher: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>!
+    let postCreated: XCTestExpectation
+
+    // These are created after the postId is set
+    var subscriptionAcknowledged: XCTestExpectation!
+    var postUpvoted: XCTestExpectation!
+    var subscriptionTriggered: XCTestExpectation!
+
+    init(index: Int) {
+        self.index = index
+        postCreated = XCTestExpectation(description: "postCreated for \(index)")
     }
 }
