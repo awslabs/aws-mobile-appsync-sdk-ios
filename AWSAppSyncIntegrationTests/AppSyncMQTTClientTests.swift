@@ -36,8 +36,8 @@ class AppSyncMQTTClientTests: XCTestCase {
         let client = AppSyncMQTTClient()
         
         let watcher = MockSubscriptionWatcher(topics: ["1", "2"])
-        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.getTopics())], identifier: "1")
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.getTopics())], identifier: 1)
         
         wait(for: [expectation], timeout: 2)
     }
@@ -59,14 +59,14 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         let watcher0 = MockSubscriptionWatcher(topics: ["1", "2"])
         
-        client.addWatcher(watcher: watcher0, topics: watcher0.getTopics(), identifier: watcher0.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher0.getTopics())], identifier: "1")
+        client.add(watcher: watcher0, forNewTopics: watcher0.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher0.getTopics())], identifier: 1)
         
         let watcher1 = MockSubscriptionWatcher(topics: ["2", "3"])
         
         let allTopics = [watcher0.getTopics(), watcher1.getTopics()].flatMap({ $0 })
-        client.addWatcher(watcher: watcher1, topics: watcher1.getTopics(), identifier: watcher1.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: allTopics)], identifier: "1")
+        client.add(watcher: watcher1, forNewTopics: watcher1.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: allTopics)], identifier: 1)
 
         wait(for: [expectation], timeout: 2)
     }
@@ -88,8 +88,8 @@ class AppSyncMQTTClientTests: XCTestCase {
         let watcher = MockSubscriptionWatcher(topics: ["1", "2"])
         let unwantedTopics = ["3"]
         
-        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: unwantedTopics)], identifier: "1")
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: unwantedTopics)], identifier: 1)
         
         wait(for: [expectation], timeout: 2)
     }
@@ -110,14 +110,14 @@ class AppSyncMQTTClientTests: XCTestCase {
         let watcher = MockSubscriptionWatcher(topics: ["1", "2"])
         let topics = ["2", "3"]
         
-        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: topics)], identifier: "1")
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: topics)], identifier: 1)
         
         wait(for: [expectation], timeout: 2)
     }
     
     func testStopSubscriptionsOnWatcherDealloc() {
-        
+
         let connectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
         let disconnectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should disconnect")
         
@@ -139,12 +139,12 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         autoreleasepool {
             let deallocBlock: (MQTTSubscriptionWatcher) -> Void = { (object) in
-                client.stopSubscription(subscription: object, subscriptionId: "1")
+                client.cancelSubscription(for: object)
             }
             
             let watcher = MockSubscriptionWatcher(topics: ["1", "2"], deallocBlock: deallocBlock)
-            client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-            client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.topics)], identifier: "1")
+            client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+            client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.topics)], identifier: 1)
             weakWatcher = watcher
             
             wait(for: [connectExpectation], timeout: 2)
@@ -156,7 +156,6 @@ class AppSyncMQTTClientTests: XCTestCase {
     }
     
     func testSubscribeTopicsAfterConnected() {
-        
         let connectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
         
         let subscriptionExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should subscribe to topic once connected")
@@ -164,7 +163,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         var triggerConnectionStatusChangedToConnected: (() -> Void)?
         
-        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, client, url, wat) -> Bool in
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (instance, _, _, _) -> Bool in
             connectExpectation.fulfill()
             triggerConnectionStatusChangedToConnected = {
                 instance.clientDelegate.connectionStatusChanged(.connected, client: instance)
@@ -174,21 +173,21 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         var subscribedTopics = [String]()
         
-        let subscribe: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, UInt8, Any?) -> Void = { (_, topic, _, _) in
+        let subscribe: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, UInt8, Any?, Any?) -> Void = { (_, topic, _, _, _) in
             subscribedTopics.append(topic as String)
             subscriptionExpectation.fulfill()
         }
         
         AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
-        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.subscribe(toTopic:qos:extendedCallback:)), withBlock: subscribe)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.subscribe(toTopic:qos:extendedCallback:ackCallback:)), withBlock: subscribe)
         
         let client = AppSyncMQTTClient()
         
         let watcher = MockSubscriptionWatcher(topics: ["1", "2", "3"])
         let topics = ["2", "3"]
         
-        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: topics)], identifier: "1")
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: topics)], identifier: 1)
         
         wait(for: [connectExpectation], timeout: 5)
         
@@ -225,8 +224,8 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         let watcher = MockSubscriptionWatcher(topics: ["1"], disconnectCallbackBlock: disconnectCallbackBlock)
         
-        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.getTopics())], identifier: "1")
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.getTopics())], identifier: 1)
         
         wait(for: [connectExpectation], timeout: 2)
         
@@ -262,8 +261,8 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         let watcher = MockSubscriptionWatcher(topics: ["1"], messageCallbackBlock: messageCallbackBlock)
         
-        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.getTopics())], identifier: "1")
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.getTopics())], identifier: 1)
         
         wait(for: [connectExpectation], timeout: 2)
         
@@ -295,13 +294,14 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         let watcher = MockSubscriptionWatcher(topics: ["1", "2"])
         
-        client.addWatcher(watcher: watcher, topics: watcher.getTopics(), identifier: watcher.getIdentifier())
-        client.startSubscriptions(subscriptionInfo: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.topics)], identifier: "1")
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.topics)], identifier: 1)
         
         wait(for: [expectation], timeout: 2)
         
-        client.stopSubscription(subscription: watcher, subscriptionId: "1")
+        client.cancelSubscription(for: watcher)
         
         wait(for: [disconnectExpectation], timeout: 2)
     }
+
 }

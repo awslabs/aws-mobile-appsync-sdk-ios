@@ -6,6 +6,31 @@
 
 import Foundation
 
+extension AWSAppSyncSubscriptionError {
+    @available(*, deprecated, message: "use errorDescription instead")
+    var additionalInfo: String? {
+        switch self {
+        case .connectionRefused, .connectionError, .protocolError, .disconnected:
+            return "Subscription Terminated."
+        case .parseError(let error):
+            return error.localizedDescription
+        default:
+            return nil
+        }
+    }
+
+    @available(*, deprecated, message: "use recoverySuggestion and failureReason instead")
+    var errorDetails: [String: String]? {
+        switch self {
+        case .connectionRefused, .connectionError, .protocolError, .disconnected:
+            return ["recoverySuggestion": "Restart subscription request.",
+                    "failureReason": "Disconnected from service."]
+        default:
+            return nil
+        }
+    }
+}
+
 extension AWSAppSyncClientError {
 
     @available(*, deprecated, message: "use the enum pattern matching instead")

@@ -9,6 +9,8 @@ import AWSCore
 
 public typealias SubscriptionResultHandler<Operation: GraphQLSubscription> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
 
+public typealias SubscriptionStatusChangeHandler = (AWSAppSyncSubscriptionWatcherStatus) -> Void
+
 public typealias DeltaQueryResultHandler<Operation: GraphQLQuery> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
 
 public typealias OptimisticResponseBlock = (ApolloStore.ReadWriteTransaction?) -> Void
@@ -16,23 +18,6 @@ public typealias OptimisticResponseBlock = (ApolloStore.ReadWriteTransaction?) -
 public typealias MutationConflictHandler<Mutation: GraphQLMutation> = (_ serverState: Snapshot?, _ taskCompletionSource: AWSTaskCompletionSource<Mutation>?, _ resultHandler: OperationResultHandler<Mutation>?) -> Void
 
 internal let NoOpOperationString = "No-op"
-
-public struct AWSAppSyncSubscriptionError: Error, LocalizedError {
-    let additionalInfo: String?
-    let errorDetails: [String: String]?
-
-    public var errorDescription: String? {
-        return additionalInfo ?? "Unable to start subscription."
-    }
-
-    public var recoverySuggestion: String? {
-        return errorDetails?["recoverySuggestion"]
-    }
-
-    public var failureReason: String? {
-        return errorDetails?["failureReason"]
-    }
-}
 
 /// Delegates will be notified when a mutation is performed from the `mutationCallback`. This pattern is necessary
 /// in order to provide notifications of mutations which are performed after an app restart and the initial callback
@@ -76,7 +61,6 @@ public class AWSAppSyncClient {
 
         self.autoSubmitOfflineMutations = appSyncConfig.autoSubmitOfflineMutations
         self.store = appSyncConfig.store
-        self.appSyncMQTTClient.allowCellularAccess = appSyncConfig.allowsCellularAccess
         self.presignedURLClient = appSyncConfig.presignedURLClient
         self.s3ObjectManager = appSyncConfig.s3ObjectManager
         self.subscriptionMetadataCache = appSyncConfig.subscriptionMetadataCache
@@ -155,7 +139,10 @@ public class AWSAppSyncClient {
         return apolloClient!.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
 
-    public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
+    public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription,
+                                                             queue: DispatchQueue = DispatchQueue.main,
+                                                             statusChangeHandler: SubscriptionStatusChangeHandler? = nil,
+                                                             resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
 
         return AWSAppSyncSubscriptionWatcher(client: self.appSyncMQTTClient,
                                               httpClient: self.httpTransport!,
@@ -163,6 +150,7 @@ public class AWSAppSyncClient {
                                               subscriptionsQueue: self.subscriptionsQueue,
                                               subscription: subscription,
                                               handlerQueue: queue,
+                                              statusChangeHandler: statusChangeHandler,
                                               resultHandler: resultHandler)
     }
 
@@ -174,6 +162,7 @@ public class AWSAppSyncClient {
                                              subscriptionsQueue: self.subscriptionsQueue,
                                              subscription: subscription,
                                              handlerQueue: queue,
+                                             statusChangeHandler: nil,
                                              connectedCallback: connectCallback,
                                              resultHandler: resultHandler)
     }
