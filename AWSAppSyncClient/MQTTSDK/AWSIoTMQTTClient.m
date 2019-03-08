@@ -21,6 +21,10 @@
 #import "AWSIoTWebSocketOutputStream.h"
 #import "AWSIoTKeychain.h"
 
+// The AppSync client does not expect its underlying MQTT client to attempt auto reconnection--instead, it manages
+// reconnections in the AppSync library itself, so it can manage subscription watchers appropriately.
+BOOL SUPPORT_AUTO_RECONNECT = NO;
+
 @implementation AWSIoTMQTTTopicModel
 @end
 
@@ -428,8 +432,12 @@ static const NSString *SDK_VERSION = @"2.6.19";
         //Get Credentials from credentials provider.
         [[self.configuration.credentialsProvider credentials] continueWithBlock:^id _Nullable(AWSTask<AWSCredentials *> * _Nonnull task) {
             
-            //If an error occured when trying to get credentials, setup a timer to retry the connection after self.currentRecconectTime seconds and schedule it on the current Thread.
+            //If an error occured when trying to get credentials, setup a timer to retry the connection after self.currentReconnectTime seconds and schedule it on the current Thread.
             if (task.error) {
+                if (!SUPPORT_AUTO_RECONNECT) {
+                    return nil;
+                }
+
                 self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
                 [self.reconnectThread start];
                 
@@ -545,7 +553,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
     self.reconnectTimer = nil;
 
     //Check if the user has issued a disconnect. If so, don't retry.
-    if (self.userDidIssueDisconnect  )  {
+    if (self.userDidIssueDisconnect)  {
         return;
     }
     
@@ -938,11 +946,13 @@ static const NSString *SDK_VERSION = @"2.6.19";
                 [self notifyConnectionStatus];
 
                 //Retry
-                self.reconnectThread = [[NSThread alloc] initWithTarget:self
-                                                               selector:@selector(initiateReconnectTimer:)
-                                                                 object:nil];
-                self.reconnectThread.name = [NSString stringWithFormat:@"AWSIoTMQTTClient reconnect %@", self.clientId];
-                [self.reconnectThread start];
+                if (SUPPORT_AUTO_RECONNECT) {
+                    self.reconnectThread = [[NSThread alloc] initWithTarget:self
+                                                                   selector:@selector(initiateReconnectTimer:)
+                                                                     object:nil];
+                    self.reconnectThread.name = [NSString stringWithFormat:@"AWSIoTMQTTClient reconnect %@", self.clientId];
+                    [self.reconnectThread start];
+                }
             }
             break;
         case AWSMQTTSessionEventConnectionError:
@@ -967,9 +977,11 @@ static const NSString *SDK_VERSION = @"2.6.19";
                 [self notifyConnectionStatus];
 
                 //Retry
-                self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
-                self.reconnectThread.name = [NSString stringWithFormat:@"AWSIoTMQTTClient reconnect %@", self.clientId];
-                [self.reconnectThread start];
+                if (SUPPORT_AUTO_RECONNECT) {
+                    self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
+                    self.reconnectThread.name = [NSString stringWithFormat:@"AWSIoTMQTTClient reconnect %@", self.clientId];
+                    [self.reconnectThread start];
+                }
             }
             break;
         case AWSMQTTSessionEventProtocolError:
@@ -1112,8 +1124,11 @@ static const NSString *SDK_VERSION = @"2.6.19";
         self.mqttStatus = AWSIoTMQTTStatusConnectionError;
         // Indicate an error to the connection status callback.
         [self notifyConnectionStatus];
-        self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
-        [self.reconnectThread start];
+
+        if (SUPPORT_AUTO_RECONNECT) {
+            self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
+            [self.reconnectThread start];
+        }
     }
 }
 
@@ -1149,8 +1164,11 @@ static const NSString *SDK_VERSION = @"2.6.19";
         self.mqttStatus = AWSIoTMQTTStatusConnectionError;
         // Indicate an error to the connection status callback.
         [self notifyConnectionStatus];
-        self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
-        [self.reconnectThread start];
+
+        if (SUPPORT_AUTO_RECONNECT) {
+            self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
+            [self.reconnectThread start];
+        }
     }
 }
 
