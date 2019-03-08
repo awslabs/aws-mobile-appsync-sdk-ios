@@ -28,7 +28,7 @@ class SubscriptionTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        AWSDDLog.sharedInstance.logLevel = .debug
+        AWSDDLog.sharedInstance.logLevel = .warning
         AWSDDTTYLogger.sharedInstance.logFormatter = AWSAppSyncClientLogFormatter()
         AWSDDLog.sharedInstance.add(AWSDDTTYLogger.sharedInstance)
 
