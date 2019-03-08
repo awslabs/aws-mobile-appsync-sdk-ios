@@ -11,6 +11,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
   `AWSAppSyncSubscriptionWatcherStatus` for a description of the statuses and their progression. Thanks @fans3210, @shannon-hager-skookum, and @achager for
   contributing your thoughts to the original request ([Issue #42](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/42)) and to
   @MarioBajr for contributing the original implementation on [PR #75](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/75).
+- Added a `queuedMutationCount` property to AppSyncClient ([Issue #192](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/192))
 
 ### Bug fixes
 

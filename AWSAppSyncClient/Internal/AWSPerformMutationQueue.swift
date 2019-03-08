@@ -15,6 +15,12 @@ final class AWSPerformMutationQueue {
     /// The OperationQueue onto which we enqueue mutations to perform
     private let operationQueue: OperationQueue
 
+    /// Returns the count of mutations yet to be processed, so apps can give UI advice if there are unprocessed
+    /// mutations.
+    var operationQueueCount: Int {
+        return operationQueue.operationCount
+    }
+
     init(
         appSyncClient: AWSAppSyncClient,
         networkClient: AWSNetworkTransport,
