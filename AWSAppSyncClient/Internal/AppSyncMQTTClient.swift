@@ -264,6 +264,8 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     /// watchers, topics and clients, a status change on a single client may alert multiple subscription watchers
     /// of the same status event.
     ///
+    /// This method must be called from `concurrencyQueue`.
+    ///
     /// - Parameters:
     /// - Parameter mqttClient: The client that received the status update
     ///   - status: The new status
@@ -332,9 +334,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     }
 
     /// Removes MQTT clients that have been flagged as expired, and whose topics are handled by another client
-    ///
-    /// This method must be called from `concurrencyQueue`.
-    ///
+    
     private func clearTopicFromExpiredClientsAndCleanup(topic: String) {
         concurrencyQueue.async(flags: .barrier) {
             guard let expiringClients = self.expiringClientsByTopic[topic] else {
