@@ -946,6 +946,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
                 [self notifyConnectionStatus];
 
                 //Retry
+
                 if (SUPPORT_AUTO_RECONNECT) {
                     self.reconnectThread = [[NSThread alloc] initWithTarget:self
                                                                    selector:@selector(initiateReconnectTimer:)
