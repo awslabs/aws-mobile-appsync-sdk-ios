@@ -39,6 +39,17 @@ public class AWSAppSyncClient {
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
     private var mutationQueue: AWSPerformMutationQueue!
 
+    /// The count of Mutation operations queued for sending to the backend.
+    ///
+    /// AppSyncClient processes both offline and online mutations, and mutations are queued for processing even while
+    /// the client is offline, so this count represents a good measure of the number of mutations that have yet to be
+    /// successfully sent to the service, regardless of the state of the network.
+    ///
+    /// This value is `nil` if the mutationQueue cannot be accessed (e.g., has not finished initializing).
+    public var queuedMutationCount: Int? {
+        return mutationQueue?.operationQueueCount
+    }
+
     private var connectionStateChangeHandler: ConnectionStateChangeHandler?
     private var autoSubmitOfflineMutations: Bool = false
     private var appSyncMQTTClient = AppSyncMQTTClient()
@@ -167,7 +178,9 @@ public class AWSAppSyncClient {
                                              resultHandler: resultHandler)
     }
 
-    /// Performs a mutation by sending it to the server.
+    /// Performs a mutation by sending it to the server. Internally, these mutations are added to a queue and performed
+    /// serially, in first-in, first-out order. Clients can inspect the size of the queue with the `queuedMutationCount`
+    /// property.
     ///
     /// - Parameters:
     ///   - mutation: The mutation to perform.
