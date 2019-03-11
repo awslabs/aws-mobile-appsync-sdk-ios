@@ -435,6 +435,11 @@ static const NSString *SDK_VERSION = @"2.6.19";
             //If an error occured when trying to get credentials, setup a timer to retry the connection after self.currentReconnectTime seconds and schedule it on the current Thread.
             if (task.error) {
                 if (!SUPPORT_AUTO_RECONNECT) {
+                    AWSDDLogError(@"(%@) Unable to connect to MQTT due to an error fetching credentials from the Credentials Provider.", self.clientId);
+                    //Set Connection status to Error.
+                    self.mqttStatus = AWSIoTMQTTStatusConnectionError;
+                    //Notify connection status.
+                    [self notifyConnectionStatus];
                     return nil;
                 }
 
