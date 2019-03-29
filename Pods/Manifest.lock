@@ -1,8 +1,8 @@
 PODS:
-  - AWSCore (2.9.0)
-  - AWSS3 (2.9.0):
-    - AWSCore (= 2.9.0)
-  - ReachabilitySwift (4.3.0)
+  - AWSCore (2.9.3)
+  - AWSS3 (2.9.3):
+    - AWSCore (= 2.9.3)
+  - ReachabilitySwift (4.3.1)
   - SQLite.swift (0.11.5):
     - SQLite.swift/standard (= 0.11.5)
   - SQLite.swift/standard (0.11.5)
@@ -21,9 +21,9 @@ SPEC REPOS:
     - SQLite.swift
 
 SPEC CHECKSUMS:
-  AWSCore: 4e3bb5d2c38bcc0811882cd8107ba7ff94bee9b9
-  AWSS3: 09697145dad965a40d68fa4e57e8c473c463d1ce
-  ReachabilitySwift: 408477d1b6ed9779dba301953171e017c31241f3
+  AWSCore: 5cbb6c6ccfad4b55e494c2e8df87781512f7881e
+  AWSS3: f016dddb6de858f0cc328d4e10a551299a66a3bb
+  ReachabilitySwift: 4032e2f59586e11e3b0ebe15b167abdd587a388b
   SQLite.swift: 6e5356850bb1791459f8c16d6ee9195b28714a2e
 
 PODFILE CHECKSUM: 3cf3d52f14af2accc28066f3079dfddc660b3629
