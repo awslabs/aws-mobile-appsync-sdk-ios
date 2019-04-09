@@ -38,6 +38,7 @@ public class AWSAppSyncClient {
 
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
     private var mutationQueue: AWSPerformMutationQueue!
+    internal var retryStrategy: AWSAppSyncRetryStrategy
 
     /// The count of Mutation operations queued for sending to the backend.
     ///
@@ -78,6 +79,8 @@ public class AWSAppSyncClient {
 
         self.httpTransport = appSyncConfig.networkTransport
         self.connectionStateChangeHandler = appSyncConfig.connectionStateChangeHandler
+        
+        self.retryStrategy = appSyncConfig.retryStrategy
 
         self.apolloClient = ApolloClient(networkTransport: self.httpTransport!, store: appSyncConfig.store)
 

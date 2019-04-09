@@ -123,7 +123,7 @@ class AWSAppSyncRetryHandlerTests: XCTestCase {
         XCTAssertEqual(retryAdvice.retryInterval, .seconds(50))
     }
 
-    func test_doesNotRetryUnreasonably() {
+    func test_doesNotRetryUnreasonablyDefaultConfig() {
         let retryHandler = AWSAppSyncRetryHandler()
         let httpResponse = HTTPURLResponse(url: URL(string: "http://www.amazon.com")!,
                                            statusCode: 500,
@@ -143,5 +143,57 @@ class AWSAppSyncRetryHandlerTests: XCTestCase {
             print("retryAdvice: should retry in \(retryAdvice.retryInterval ?? .seconds(-1))")
         }
         XCTAssertFalse(retryAdvice.shouldRetry)
+    }
+    
+    func test_doesNotRetryUnreasonablyAggressiveConfig() {
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: .aggressive)
+        let httpResponse = HTTPURLResponse(url: URL(string: "http://www.amazon.com")!,
+                                           statusCode: 500,
+                                           httpVersion: "1.1",
+                                           headerFields: [:])!
+        let error = AWSAppSyncClientError.noData(httpResponse)
+        
+        // Initialize this to `true` so we can assert it eventually moves to `false`
+        var retryAdvice = AWSAppSyncRetryAdvice(shouldRetry: true, retryInterval: .seconds(1001))
+        
+        // We'll arbitrarily define "reasonable" as about 50. In practice, it should stop well before this
+        for _ in 1 ... 50 {
+            retryAdvice = retryHandler.shouldRetryRequest(for: error)
+            if (!retryAdvice.shouldRetry) {
+                break
+            }
+            XCTAssertTrue(1000 ... 1099 ~= retryAdvice.retryInterval!.intValueForMillis()!)
+            print("retryAdvice: should retry in \(retryAdvice.retryInterval ?? .seconds(-1))")
+        }
+        XCTAssertFalse(retryAdvice.shouldRetry)
+    }
+    
+    func test_exponentialRetryDuration() {
+        let expAttempt2 = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: 2, retryStrategy: .exponential)
+        XCTAssert(400 ... 499 ~= expAttempt2, "\(expAttempt2) value is out of expected range.")
+        let expAttempt4 = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: 4, retryStrategy: .exponential)
+        XCTAssert(1600 ... 1699 ~= expAttempt4, "\(expAttempt4) value is out of expected range.")
+        let expAttempt6 = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: 6, retryStrategy: .exponential)
+        XCTAssert(6400 ... 6499 ~= expAttempt6, "\(expAttempt6) value is out of expected range.")
+    }
+    
+    func test_aggressiveRetryDuration() {
+        let aggAttempt2 = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: 2, retryStrategy: .aggressive)
+        XCTAssert(1000 ... 1099 ~= aggAttempt2, "\(aggAttempt2) value is out of expected range.")
+        let aggAttempt4 = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: 4, retryStrategy: .aggressive)
+        XCTAssert(1000 ... 1099 ~= aggAttempt4, "\(aggAttempt4) value is out of expected range.")
+        let aggAttempt6 = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: 6, retryStrategy: .aggressive)
+        XCTAssert(1000 ... 1099 ~= aggAttempt6, "\(aggAttempt6) value is out of expected range.")
+    }
+}
+
+extension DispatchTimeInterval {
+    func intValueForMillis() -> Int? {
+        switch self {
+        case .milliseconds(let value):
+            return value
+        default:
+            return nil
+        }
     }
 }

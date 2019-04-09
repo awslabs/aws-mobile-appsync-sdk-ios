@@ -18,6 +18,9 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     var oidcAuthProvider: AWSOIDCAuthProvider? = nil
     var endpoint: AWSEndpoint? = nil
     let authType: AWSAppSyncAuthType
+    // We use the default strategy as exponential retry if someone is using AWSAppSyncHTTPTransport directly.
+    // Currently, retry strategy cannot be changed individually for HTTP network; it is controlled at client level.
+    var retryStrategy: AWSAppSyncRetryStrategy = .exponential
     var activeTimers: [String: DispatchSourceTimer] = [:]
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -309,7 +312,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = try! serializationFormat.serialize(value: body)
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        let retryHandler = AWSAppSyncRetryHandler()
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: self.retryStrategy)
         sendGraphQLRequest(mutableRequest: mutableRequest,
                            retryHandler: retryHandler,
                            networkTransportOperation: networkTransportOperation,
@@ -340,7 +343,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = string!.data(using: String.Encoding.utf8)
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        let retryHandler = AWSAppSyncRetryHandler()
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: self.retryStrategy)
         
         let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
             guard error == nil else {
@@ -384,7 +387,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = body
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        let retryHandler = AWSAppSyncRetryHandler()
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: self.retryStrategy)
         let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
             completionHandler?(jsonObject, error)
         }

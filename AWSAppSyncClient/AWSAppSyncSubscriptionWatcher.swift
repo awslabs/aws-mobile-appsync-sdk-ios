@@ -66,7 +66,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     private var isCancelled: Bool = false
     private var subscriptionTopic: [String]?
 
-    private let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
+    public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
     private var status = AWSAppSyncSubscriptionWatcherStatus.connecting
 
     init(client: AppSyncMQTTClient,
