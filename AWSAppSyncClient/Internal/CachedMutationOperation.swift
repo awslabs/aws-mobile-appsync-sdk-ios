@@ -100,22 +100,23 @@ final class CachedMutationOperation: AsynchronousOperation, Cancellable {
 
     private func notifyCompletion(_ result: JSONObject?, error: Error?) {
         operationCompletionBlock?(self, error)
+        withExtendedLifetime(self) {
+            handlerQueue.async { [weak self] in
+                guard
+                    let self = self,
+                    let appSyncClient = self.appSyncClient,
+                    let offlineMutationDelegate = appSyncClient.offlineMutationDelegate
+                    else {
+                        return
+                }
 
-        handlerQueue.async { [weak self] in
-            guard
-                let self = self,
-                let appSyncClient = self.appSyncClient,
-                let offlineMutationDelegate = appSyncClient.offlineMutationDelegate
-                else {
-                    return
+                // call master delegate
+                offlineMutationDelegate.mutationCallback(
+                    recordIdentifier: self.mutation.recordIdentifier,
+                    operationString: self.mutation.operationString!,
+                    snapshot: result,
+                    error: error)
             }
-
-            // call master delegate
-            offlineMutationDelegate.mutationCallback(
-                recordIdentifier: self.mutation.recordIdentifier,
-                operationString: self.mutation.operationString!,
-                snapshot: result,
-                error: error)
         }
     }
     
