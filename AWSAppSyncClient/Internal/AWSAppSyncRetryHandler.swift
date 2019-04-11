@@ -20,7 +20,9 @@ struct AWSAppSyncRetryAdvice {
 // implementing above protocol.
 final class AWSAppSyncRetryHandler {
     static let maxWaitMilliseconds = 300 * 1000 // 5 minutes of max retry duration.
-    static let maxRetryAttemptsWhenUsingAggresiveMode = 12
+    // For aggressive retries, we will not be attempting retries for 5 minutes.
+    // We will rather cap it to 30.
+    static let maxRetryAttemptsWhenUsingAggresiveMode = 30
     
     private static let jitterMilliseconds: Float = 100.0
 

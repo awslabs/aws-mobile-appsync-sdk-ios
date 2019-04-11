@@ -366,26 +366,28 @@ public class AWSAppSyncClientConfiguration {
             networkTransport = try makeNetworkTransportForAPIKey(url: url,
                                                                  urlSessionConfiguration: urlSessionConfiguration,
                                                                  apiKey: apiKey,
-                                                                 authProvider: apiKeyAuthProvider)
+                                                                 authProvider: apiKeyAuthProvider,
+                                                                 retryStrategy: retryStrategy)
 
         case .awsIAM:
             networkTransport = makeNetworkTransportForIAM(url: url,
                                                           urlSessionConfiguration: urlSessionConfiguration,
                                                           region: region,
-                                                          authProvider: credentialsProvider)
+                                                          authProvider: credentialsProvider,
+                                                          retryStrategy: retryStrategy)
 
         case .amazonCognitoUserPools:
             networkTransport = try makeNetworkTransportForCognitoUserPools(url: url,
                                                                            urlSessionConfiguration: urlSessionConfiguration,
-                                                                           authProvider: userPoolsAuthProvider)
+                                                                           authProvider: userPoolsAuthProvider,
+                                                                           retryStrategy: retryStrategy)
 
         case .oidcToken:
             networkTransport = try makeNetworkTransportForOIDC(url: url,
                                                                urlSessionConfiguration: urlSessionConfiguration,
-                                                               authProvider: oidcAuthProvider)
+                                                               authProvider: oidcAuthProvider,
+                                                               retryStrategy: retryStrategy)
         }
-        
-        networkTransport.retryStrategy = retryStrategy
 
         return networkTransport
     }
@@ -396,20 +398,22 @@ public class AWSAppSyncClientConfiguration {
     ///   - url: The endpoint URL
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForAPIKey(url: URL,
                                                       urlSessionConfiguration: URLSessionConfiguration,
                                                       apiKey: String?,
-                                                      authProvider: AWSAPIKeyAuthProvider?) throws -> AWSAppSyncHTTPNetworkTransport {
+                                                      authProvider: AWSAPIKeyAuthProvider?,
+                                                      retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
         let resolvedAPIKeyAuthProvider = try AWSAppSyncClientConfiguration.resolveAPIKeyAuthProvider(
             apiKeyAuthProvider: authProvider,
             apiKey: apiKey
         )
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               apiKeyAuthProvider: resolvedAPIKeyAuthProvider,
-                                                              configuration: urlSessionConfiguration)
-
+                                                              configuration: urlSessionConfiguration,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 
@@ -420,17 +424,20 @@ public class AWSAppSyncClientConfiguration {
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - region: The AWS region to which the auth provider is configured
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForIAM(url: URL,
                                                    urlSessionConfiguration: URLSessionConfiguration,
                                                    region: AWSRegionType,
-                                                   authProvider: AWSCredentialsProvider?) -> AWSAppSyncHTTPNetworkTransport {
+                                                   authProvider: AWSCredentialsProvider?,
+                                                   retryStrategy: AWSAppSyncRetryStrategy) -> AWSAppSyncHTTPNetworkTransport {
         let resolvedCredentialsProvider = authProvider ?? AWSServiceInfo().cognitoCredentialsProvider
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               configuration: urlSessionConfiguration,
                                                               region: region,
-                                                              credentialsProvider: resolvedCredentialsProvider)
+                                                              credentialsProvider: resolvedCredentialsProvider,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 
@@ -440,18 +447,21 @@ public class AWSAppSyncClientConfiguration {
     ///   - url: The endpoint URL
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForCognitoUserPools(url: URL,
                                                                 urlSessionConfiguration: URLSessionConfiguration,
-                                                                authProvider: AWSCognitoUserPoolsAuthProvider?) throws -> AWSAppSyncHTTPNetworkTransport {
+                                                                authProvider: AWSCognitoUserPoolsAuthProvider?,
+                                                                retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
         // No default OIDC provider available
         guard let authProvider = authProvider else {
             throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AWSCognitoUserPoolsAuthProvider cannot be nil.")
         }
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               userPoolsAuthProvider: authProvider,
-                                                              configuration: urlSessionConfiguration)
+                                                              configuration: urlSessionConfiguration,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 
@@ -461,18 +471,21 @@ public class AWSAppSyncClientConfiguration {
     ///   - url: The endpoint URL
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForOIDC(url: URL,
                                                     urlSessionConfiguration: URLSessionConfiguration,
-                                                    authProvider: AWSOIDCAuthProvider?) throws -> AWSAppSyncHTTPNetworkTransport {
+                                                    authProvider: AWSOIDCAuthProvider?,
+                                                    retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
         // No default OIDC provider available
         guard let authProvider = authProvider else {
             throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AWSOIDCAuthProvider cannot be nil.")
         }
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               oidcAuthProvider: authProvider,
-                                                              configuration: urlSessionConfiguration)
+                                                              configuration: urlSessionConfiguration,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 

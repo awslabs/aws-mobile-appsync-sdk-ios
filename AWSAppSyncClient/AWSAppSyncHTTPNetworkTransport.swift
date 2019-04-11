@@ -18,9 +18,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     var oidcAuthProvider: AWSOIDCAuthProvider? = nil
     var endpoint: AWSEndpoint? = nil
     let authType: AWSAppSyncAuthType
-    // We use the default strategy as exponential retry if someone is using AWSAppSyncHTTPTransport directly.
-    // Currently, retry strategy cannot be changed individually for HTTP network; it is controlled at client level.
-    var retryStrategy: AWSAppSyncRetryStrategy = .exponential
+    var retryStrategy: AWSAppSyncRetryStrategy
     var activeTimers: [String: DispatchSourceTimer] = [:]
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -29,11 +27,13 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - url: The URL of a GraphQL server to connect to.
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
+    ///   - retryStrategy: The retry strategy to be followed by HTTP client
     public init(url: URL,
                 configuration: URLSessionConfiguration = URLSessionConfiguration.default,
                 region: AWSRegionType,
                 credentialsProvider: AWSCredentialsProvider,
-                sendOperationIdentifiers: Bool = false) {
+                sendOperationIdentifiers: Bool = false,
+                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
         self.url = url
         self.session = URLSession(configuration: configuration)
         self.sendOperationIdentifiers = sendOperationIdentifiers
@@ -41,6 +41,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         self.region = region
         self.endpoint = AWSEndpoint(region: region, serviceName: "appsync", url: url)
         self.authType = .awsIAM
+        self.retryStrategy = retryStrategy
     }
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -50,15 +51,18 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - apiKeyAuthProvider: An object of `AWSAPIKeyAuthProvider` protocol for API Key based authorization.
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
+    ///   - retryStrategy: The retry strategy to be followed by HTTP client
     public init(url: URL,
                 apiKeyAuthProvider: AWSAPIKeyAuthProvider,
                 configuration: URLSessionConfiguration = URLSessionConfiguration.default,
-                sendOperationIdentifiers: Bool = false) {
+                sendOperationIdentifiers: Bool = false,
+                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
         self.url = url
         self.session = URLSession(configuration: configuration)
         self.sendOperationIdentifiers = sendOperationIdentifiers
         self.apiKeyAuthProvider = apiKeyAuthProvider
         self.authType = .apiKey
+        self.retryStrategy = retryStrategy
     }
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -68,15 +72,18 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - userPoolsAuthProvider: An implementation of `AWSCognitoUserPoolsAuthProvider` protocol.
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
+    ///   - retryStrategy: The retry strategy to be followed by HTTP client
     public init(url: URL,
                 userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider,
                 configuration: URLSessionConfiguration = URLSessionConfiguration.default,
-                sendOperationIdentifiers: Bool = false) {
+                sendOperationIdentifiers: Bool = false,
+                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
         self.url = url
         self.session = URLSession(configuration: configuration)
         self.sendOperationIdentifiers = sendOperationIdentifiers
         self.userPoolsAuthProvider = userPoolsAuthProvider
         self.authType = .amazonCognitoUserPools
+        self.retryStrategy = retryStrategy
     }
     
     /// Creates a network transport with the specified server URL and session configuration.
@@ -86,15 +93,18 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - oidcAuthProvider: An implementation of `AWSOIDCAuthProvider` protocol.
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
+    ///   - retryStrategy: The retry strategy to be followed by HTTP client
     public init(url: URL,
                 oidcAuthProvider: AWSOIDCAuthProvider,
                 configuration: URLSessionConfiguration = URLSessionConfiguration.default,
-                sendOperationIdentifiers: Bool = false) {
+                sendOperationIdentifiers: Bool = false,
+                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
         self.url = url
         self.session = URLSession(configuration: configuration)
         self.sendOperationIdentifiers = sendOperationIdentifiers
         self.oidcAuthProvider = oidcAuthProvider
         self.authType = .oidcToken
+        self.retryStrategy = retryStrategy
     }
     
     func initRequest(request: inout URLRequest) {
@@ -312,7 +322,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = try! serializationFormat.serialize(value: body)
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: self.retryStrategy)
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
         sendGraphQLRequest(mutableRequest: mutableRequest,
                            retryHandler: retryHandler,
                            networkTransportOperation: networkTransportOperation,
@@ -343,7 +353,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = string!.data(using: String.Encoding.utf8)
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: self.retryStrategy)
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
         
         let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
             guard error == nil else {
@@ -387,7 +397,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpBody = body
         
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
-        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: self.retryStrategy)
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
         let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
             completionHandler?(jsonObject, error)
         }
