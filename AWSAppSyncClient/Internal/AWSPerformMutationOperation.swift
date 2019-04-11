@@ -103,6 +103,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
     override func cancel() {
         super.cancel()
         networkTask?.cancel()
+        self.notifyCompletion(nil, error: nil)
     }
 
     // MARK: - CustomStringConvertible
