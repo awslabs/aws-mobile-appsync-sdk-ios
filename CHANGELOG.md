@@ -2,6 +2,16 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.10.4
+
+### New Features
+
+- The AppSyncClient now supports specifying retry strategy using the `retryStrategy` parameter in `AWSAppSyncClientConfiguration`. You can choose between `aggressive` and `exponential`(default selection).
+
+### Bug Fixes
+
+- Mark `uniqueIdentifier` field in `AWSSubscriptionWatcher` as public which was incorrectly marked private in previous version.
+
 ## 2.10.3
 
 ### New Features

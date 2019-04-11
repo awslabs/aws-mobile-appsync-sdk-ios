@@ -16,12 +16,13 @@ public class AWSAppSyncClientConfiguration {
     private(set) var workingDirectory: URL?
     private(set) var store: ApolloStore
     private(set) var subscriptionMetadataCache: AWSSubscriptionMetaDataCache?
-
     private(set) var s3ObjectManager: AWSS3ObjectManager? = nil
     private(set) var presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil
     private(set) var connectionStateChangeHandler: ConnectionStateChangeHandler? = nil
     private(set) var allowsCellularAccess: Bool = true
     private(set) var autoSubmitOfflineMutations: Bool = true
+    // retry strategy is set during initializing the configuration object and cannot be changed on the fly.
+    let retryStrategy: AWSAppSyncRetryStrategy
 
     // MARK: - Initializers that specify the network transport
 
@@ -35,12 +36,15 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSS3ObjectPresignedURLGenerator` object.
+    ///   - retryStrategy: The `AWSAppSyncRetryStrategy` object which determines the retry strategy for client.
+    ///
     public convenience init(appSyncServiceConfig: AWSAppSyncServiceConfigProvider,
                             networkTransport: AWSNetworkTransport,
                             cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
         let urlFromConfig = appSyncServiceConfig.endpoint
         let regionFromConfig = appSyncServiceConfig.region
 
@@ -50,7 +54,8 @@ public class AWSAppSyncClientConfiguration {
                   cacheConfiguration: cacheConfiguration,
                   connectionStateChangeHandler: connectionStateChangeHandler,
                   s3ObjectManager: s3ObjectManager,
-                  presignedURLClient: presignedURLClient)
+                  presignedURLClient: presignedURLClient,
+                  retryStrategy: retryStrategy)
     }
 
     /// Creates a configuration object for the `AWSAppSyncClient` using a caller-specified AWSNetworkTransport.
@@ -63,13 +68,16 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - retryStrategy: The `AWSAppSyncRetryStrategy` object which determines the retry strategy for client.
+    ///
     public init(url: URL,
                 serviceRegion: AWSRegionType,
                 networkTransport: AWSNetworkTransport,
                 cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                 connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                 s3ObjectManager: AWSS3ObjectManager? = nil,
-                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) {
+                presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
         self.url = url
         self.cacheConfiguration = cacheConfiguration
         self.store = AWSAppSyncClientConfiguration.makeApolloStore(for: cacheConfiguration?.queries)
@@ -78,6 +86,7 @@ public class AWSAppSyncClientConfiguration {
         self.s3ObjectManager = s3ObjectManager
         self.presignedURLClient = presignedURLClient
         self.connectionStateChangeHandler = connectionStateChangeHandler
+        self.retryStrategy = retryStrategy
     }
 
     // MARK: - Initializers that derive the network transport from auth provider configuration
@@ -111,6 +120,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`.
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object.
+    ///   - retryStrategy: The `AWSAppSyncRetryStrategy` object which determines the retry strategy for client.
     ///
     /// - Throws: A AWSAppSyncClientConfigurationError if the auth configuration is invalid
     public convenience init(appSyncServiceConfig: AWSAppSyncServiceConfigProvider,
@@ -122,7 +132,8 @@ public class AWSAppSyncClientConfiguration {
                             cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) throws {
 
         let apiKeyFromConfig = appSyncServiceConfig.apiKey
         let authTypeFromConfig = appSyncServiceConfig.authType
@@ -141,7 +152,8 @@ public class AWSAppSyncClientConfiguration {
                       cacheConfiguration: cacheConfiguration,
                       connectionStateChangeHandler: connectionStateChangeHandler,
                       s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                      presignedURLClient: presignedURLClient,
+                      retryStrategy: retryStrategy)
     }
 
     /// Creates a configuration object for the `AWSAppSyncClient`.
@@ -167,6 +179,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes
     ///   - s3ObjectManager: The client used for uploading / downloading `S3Objects`
     ///   - presignedURLClient: The `AWSAppSyncClientConfiguration` object
+    ///   - retryStrategy: The `AWSAppSyncRetryStrategy` object which determines the retry strategy for client.
     ///
     /// - Throws: A AWSAppSyncClientConfigurationError if the auth configuration is invalid
     public convenience init(url: URL,
@@ -179,7 +192,8 @@ public class AWSAppSyncClientConfiguration {
                             cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
-                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil) throws {
+                            presignedURLClient: AWSS3ObjectPresignedURLGenerator? = nil,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) throws {
         let authType: AWSAppSyncAuthType
 
         if apiKeyAuthProvider != nil {
@@ -206,7 +220,8 @@ public class AWSAppSyncClientConfiguration {
                       cacheConfiguration: cacheConfiguration,
                       connectionStateChangeHandler: connectionStateChangeHandler,
                       s3ObjectManager: s3ObjectManager,
-                      presignedURLClient: presignedURLClient)
+                      presignedURLClient: presignedURLClient,
+                      retryStrategy: retryStrategy)
     }
 
     // MARK: - Designated initializer that derives network transport from auth configuration
@@ -241,7 +256,8 @@ public class AWSAppSyncClientConfiguration {
                  cacheConfiguration: AWSAppSyncCacheConfiguration?,
                  connectionStateChangeHandler: ConnectionStateChangeHandler?,
                  s3ObjectManager: AWSS3ObjectManager?,
-                 presignedURLClient: AWSS3ObjectPresignedURLGenerator?) throws {
+                 presignedURLClient: AWSS3ObjectPresignedURLGenerator?,
+                 retryStrategy: AWSAppSyncRetryStrategy = .exponential) throws {
 
         // Passthrough properties
         self.connectionStateChangeHandler = connectionStateChangeHandler
@@ -264,8 +280,10 @@ public class AWSAppSyncClientConfiguration {
             apiKeyAuthProvider: apiKeyAuthProvider,
             credentialsProvider: credentialsProvider,
             userPoolsAuthProvider: userPoolsAuthProvider,
-            oidcAuthProvider: oidcAuthProvider
+            oidcAuthProvider: oidcAuthProvider,
+            retryStrategy: retryStrategy
         )
+        self.retryStrategy = retryStrategy
     }
 
     // MARK: - Initialization helpers
@@ -325,7 +343,8 @@ public class AWSAppSyncClientConfiguration {
                                             apiKeyAuthProvider: AWSAPIKeyAuthProvider?,
                                             credentialsProvider: AWSCredentialsProvider?,
                                             userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider?,
-                                            oidcAuthProvider: AWSOIDCAuthProvider?) throws -> AWSAppSyncHTTPNetworkTransport {
+                                            oidcAuthProvider: AWSOIDCAuthProvider?,
+                                            retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
 
         // Validate the incoming parameters are consistent with the intent expressed by `authType`
         let unusedProvidersAreNil = AWSAppSyncClientConfiguration.unusedAuthProvidersAreNil(
@@ -347,23 +366,27 @@ public class AWSAppSyncClientConfiguration {
             networkTransport = try makeNetworkTransportForAPIKey(url: url,
                                                                  urlSessionConfiguration: urlSessionConfiguration,
                                                                  apiKey: apiKey,
-                                                                 authProvider: apiKeyAuthProvider)
+                                                                 authProvider: apiKeyAuthProvider,
+                                                                 retryStrategy: retryStrategy)
 
         case .awsIAM:
             networkTransport = makeNetworkTransportForIAM(url: url,
                                                           urlSessionConfiguration: urlSessionConfiguration,
                                                           region: region,
-                                                          authProvider: credentialsProvider)
+                                                          authProvider: credentialsProvider,
+                                                          retryStrategy: retryStrategy)
 
         case .amazonCognitoUserPools:
             networkTransport = try makeNetworkTransportForCognitoUserPools(url: url,
                                                                            urlSessionConfiguration: urlSessionConfiguration,
-                                                                           authProvider: userPoolsAuthProvider)
+                                                                           authProvider: userPoolsAuthProvider,
+                                                                           retryStrategy: retryStrategy)
 
         case .oidcToken:
             networkTransport = try makeNetworkTransportForOIDC(url: url,
                                                                urlSessionConfiguration: urlSessionConfiguration,
-                                                               authProvider: oidcAuthProvider)
+                                                               authProvider: oidcAuthProvider,
+                                                               retryStrategy: retryStrategy)
         }
 
         return networkTransport
@@ -375,20 +398,22 @@ public class AWSAppSyncClientConfiguration {
     ///   - url: The endpoint URL
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForAPIKey(url: URL,
                                                       urlSessionConfiguration: URLSessionConfiguration,
                                                       apiKey: String?,
-                                                      authProvider: AWSAPIKeyAuthProvider?) throws -> AWSAppSyncHTTPNetworkTransport {
+                                                      authProvider: AWSAPIKeyAuthProvider?,
+                                                      retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
         let resolvedAPIKeyAuthProvider = try AWSAppSyncClientConfiguration.resolveAPIKeyAuthProvider(
             apiKeyAuthProvider: authProvider,
             apiKey: apiKey
         )
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               apiKeyAuthProvider: resolvedAPIKeyAuthProvider,
-                                                              configuration: urlSessionConfiguration)
-
+                                                              configuration: urlSessionConfiguration,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 
@@ -399,17 +424,20 @@ public class AWSAppSyncClientConfiguration {
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - region: The AWS region to which the auth provider is configured
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForIAM(url: URL,
                                                    urlSessionConfiguration: URLSessionConfiguration,
                                                    region: AWSRegionType,
-                                                   authProvider: AWSCredentialsProvider?) -> AWSAppSyncHTTPNetworkTransport {
+                                                   authProvider: AWSCredentialsProvider?,
+                                                   retryStrategy: AWSAppSyncRetryStrategy) -> AWSAppSyncHTTPNetworkTransport {
         let resolvedCredentialsProvider = authProvider ?? AWSServiceInfo().cognitoCredentialsProvider
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               configuration: urlSessionConfiguration,
                                                               region: region,
-                                                              credentialsProvider: resolvedCredentialsProvider)
+                                                              credentialsProvider: resolvedCredentialsProvider,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 
@@ -419,18 +447,21 @@ public class AWSAppSyncClientConfiguration {
     ///   - url: The endpoint URL
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForCognitoUserPools(url: URL,
                                                                 urlSessionConfiguration: URLSessionConfiguration,
-                                                                authProvider: AWSCognitoUserPoolsAuthProvider?) throws -> AWSAppSyncHTTPNetworkTransport {
+                                                                authProvider: AWSCognitoUserPoolsAuthProvider?,
+                                                                retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
         // No default OIDC provider available
         guard let authProvider = authProvider else {
             throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AWSCognitoUserPoolsAuthProvider cannot be nil.")
         }
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               userPoolsAuthProvider: authProvider,
-                                                              configuration: urlSessionConfiguration)
+                                                              configuration: urlSessionConfiguration,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 
@@ -440,18 +471,21 @@ public class AWSAppSyncClientConfiguration {
     ///   - url: The endpoint URL
     ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
     ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
     /// - Returns: The AWSAppSyncHTTPNetworkTransport
     /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
     private static func makeNetworkTransportForOIDC(url: URL,
                                                     urlSessionConfiguration: URLSessionConfiguration,
-                                                    authProvider: AWSOIDCAuthProvider?) throws -> AWSAppSyncHTTPNetworkTransport {
+                                                    authProvider: AWSOIDCAuthProvider?,
+                                                    retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
         // No default OIDC provider available
         guard let authProvider = authProvider else {
             throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AWSOIDCAuthProvider cannot be nil.")
         }
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               oidcAuthProvider: authProvider,
-                                                              configuration: urlSessionConfiguration)
+                                                              configuration: urlSessionConfiguration,
+                                                              retryStrategy: retryStrategy)
         return networkTransport
     }
 

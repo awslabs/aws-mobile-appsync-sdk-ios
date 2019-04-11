@@ -12,12 +12,27 @@ struct AWSAppSyncRetryAdvice {
     let retryInterval: DispatchTimeInterval?
 }
 
+// Current implementation has heavy coupling of retry strategy, appsync config and http transport.
+// The logic of shouldRetryRequest should be decoupled for different retryStrategies.
+// TODO: Implement a protocol which accepts a standardized set of inputs, errorResponse, attemptNumber, etc.
+// and returns if retry should be done and after what duration.
+// We can also extend the `AWSAppSyncRetryStrategy` to accept a `custom` enum type which contains a class
+// implementing above protocol.
 final class AWSAppSyncRetryHandler {
     static let maxWaitMilliseconds = 300 * 1000 // 5 minutes of max retry duration.
-
+    // For aggressive retries, we will not be attempting retries for 5 minutes.
+    // We will rather cap it to 30.
+    static let maxRetryAttemptsWhenUsingAggresiveMode = 30
+    
     private static let jitterMilliseconds: Float = 100.0
 
     private var currentAttemptNumber = 0
+    
+    private var retryStrategy: AWSAppSyncRetryStrategy
+    
+    init(retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
+        self.retryStrategy = retryStrategy
+    }
 
     /// Returns if a request should be retried
     ///
@@ -49,7 +64,13 @@ final class AWSAppSyncRetryHandler {
             return AWSAppSyncRetryAdvice(shouldRetry: true, retryInterval: .seconds(retryAfterValueInSeconds))
         }
         
-        let waitMillis = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: currentAttemptNumber)
+        // If using aggressive retry strategy, we attempt a maximum 12 times.
+        if self.retryStrategy == .aggressive &&
+            currentAttemptNumber > AWSAppSyncRetryHandler.maxRetryAttemptsWhenUsingAggresiveMode {
+            return AWSAppSyncRetryAdvice(shouldRetry: false, retryInterval: nil)
+        }
+        
+        let waitMillis = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: currentAttemptNumber, retryStrategy: retryStrategy)
 
         switch unwrappedResponse.statusCode {
         case 500 ... 599, 429:
@@ -70,9 +91,15 @@ final class AWSAppSyncRetryHandler {
 
     /// Returns a delay in milliseconds for the current attempt number. The delay includes random jitter as
     /// described in https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
-    static func retryDelayInMillseconds(for attemptNumber: Int) -> Int {
-        let delay = Int(Double(truncating: pow(2.0, attemptNumber) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.jitterMilliseconds))
-        return delay
+    static func retryDelayInMillseconds(for attemptNumber: Int, retryStrategy: AWSAppSyncRetryStrategy) -> Int {
+        switch retryStrategy {
+        case .aggressive:
+            let delay = Int(Double(1000.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.jitterMilliseconds)))
+            return delay
+        case .exponential:
+            let delay = Int(Double(truncating: pow(2.0, attemptNumber) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.jitterMilliseconds))
+            return delay
+        }
     }
 
     /// Returns the value of the "Retry-After" header as an Int, or nil if the value isn't present or cannot be converted to
