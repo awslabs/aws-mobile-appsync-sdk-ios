@@ -109,7 +109,7 @@ class MutationQueueTests: XCTestCase {
         wait(for: [delayedMutationResponseDispatched, appSyncClientReleased], timeout: Double(secondsToWait) + 1.0)
     }
 
-    func testMutationIsNotSentIfAddedWhileNoNetwork() throws {
+    func testMutationIsAttemptedIfAddedWhileNoNetwork() throws {
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
         reachability.connection = .none
@@ -122,10 +122,9 @@ class MutationQueueTests: XCTestCase {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
         let mockHTTPTransport = MockAWSNetworkTransport()
 
-        let sendWasNotInvoked = expectation(description: "HTTPTransport.send was not invoked while host was unreachable")
-        sendWasNotInvoked.isInverted = true
+        let sendWasInvoked = expectation(description: "HTTPTransport.send was not invoked while host was unreachable")
         let queuedResponseBlock: SendOperationResponseBlock<CreatePostWithoutFileUsingParametersMutation> = { _, _ in
-            sendWasNotInvoked.fulfill()
+            sendWasInvoked.fulfill()
         }
 
         mockHTTPTransport.sendOperationResponseQueue.append(queuedResponseBlock)
@@ -134,7 +133,7 @@ class MutationQueueTests: XCTestCase {
 
         appSyncClient.perform(mutation: addPost) { _, _ in }
 
-        wait(for: [sendWasNotInvoked], timeout: 0.5)
+        wait(for: [sendWasInvoked], timeout: 0.5)
     }
 
     func testMutationErrorDeliveredToCompletionHandler() throws {

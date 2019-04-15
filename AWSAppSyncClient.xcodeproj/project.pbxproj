@@ -35,6 +35,26 @@
 		1729A0BF1F9DAB2400F88594 /* AWSSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 1729A0951F9DAB2300F88594 /* AWSSRWebSocket.m */; };
 		1729A0D01FA1365900F88594 /* AWSAppSyncSubscriptionWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1729A0CF1FA1365900F88594 /* AWSAppSyncSubscriptionWatcher.swift */; };
 		1729A0D21FA149A000F88594 /* AppSyncMQTTClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1729A0D11FA149A000F88594 /* AppSyncMQTTClient.swift */; };
+		172C2C8A22629A5E007A3552 /* AWSMutationRetryHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172C2C8922629A5E007A3552 /* AWSMutationRetryHelper.swift */; };
+		172C2C8C22641994007A3552 /* AWSMutationSteps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172C2C8B22641994007A3552 /* AWSMutationSteps.swift */; };
+		172D2F6B2264EAFE00F01924 /* appsync_test_credentials.json in Resources */ = {isa = PBXBuildFile; fileRef = 17D9061D224EAE3900C1BCCF /* appsync_test_credentials.json */; };
+		172D2F6C2264FF6900F01924 /* testS3Object.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FAA83BF7220A6AB40029FF7B /* testS3Object.jpg */; };
+		172D2F6D2265003100F01924 /* AWSAppSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17DECF5E1F59F5FF004B0512 /* AWSAppSync.framework */; };
+		172D2F6E2265003100F01924 /* AWSAppSync.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 17DECF5E1F59F5FF004B0512 /* AWSAppSync.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		172D2F6F2265003100F01924 /* AWSAppSyncTestCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8C62D421D6E59600FF9924 /* AWSAppSyncTestCommon.framework */; };
+		172D2F702265003100F01924 /* AWSAppSyncTestCommon.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FA8C62D421D6E59600FF9924 /* AWSAppSyncTestCommon.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		172D2F72226574C000F01924 /* AWSMutationRetryAdviceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172D2F71226574C000F01924 /* AWSMutationRetryAdviceHelper.swift */; };
+		172D2FA22265839300F01924 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172D2FA12265839300F01924 /* AppDelegate.swift */; };
+		172D2FA42265839300F01924 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172D2FA32265839300F01924 /* ViewController.swift */; };
+		172D2FA72265839300F01924 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FA52265839300F01924 /* Main.storyboard */; };
+		172D2FA92265839400F01924 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FA82265839400F01924 /* Assets.xcassets */; };
+		172D2FAC2265839400F01924 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FAA2265839400F01924 /* LaunchScreen.storyboard */; };
+		172D2FB7226583AA00F01924 /* cacheConfigUnitTests-noSubscriptionMetadata.db in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FB1226583A900F01924 /* cacheConfigUnitTests-noSubscriptionMetadata.db */; };
+		172D2FB8226583AA00F01924 /* cacheConfigUnitTests-noTables.db in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FB2226583A900F01924 /* cacheConfigUnitTests-noTables.db */; };
+		172D2FB9226583AA00F01924 /* awsconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FB3226583AA00F01924 /* awsconfiguration.json */; };
+		172D2FBA226583AA00F01924 /* cacheConfigUnitTests-noMutationRecords.db in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FB4226583AA00F01924 /* cacheConfigUnitTests-noMutationRecords.db */; };
+		172D2FBB226583AA00F01924 /* cacheConfigUnitTests-allTables.db in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FB5226583AA00F01924 /* cacheConfigUnitTests-allTables.db */; };
+		172D2FBC226583AA00F01924 /* cacheConfigUnitTests-noRecords.db in Resources */ = {isa = PBXBuildFile; fileRef = 172D2FB6226583AA00F01924 /* cacheConfigUnitTests-noRecords.db */; };
 		174F808C2107E74F00775D0D /* AWSMQTTMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 174F80822107E74E00775D0D /* AWSMQTTMessage.h */; };
 		174F808D2107E74F00775D0D /* AWSMQTTSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 174F80832107E74E00775D0D /* AWSMQTTSession.h */; };
 		174F808E2107E74F00775D0D /* AWSMQttTxFlow.m in Sources */ = {isa = PBXBuildFile; fileRef = 174F80842107E74E00775D0D /* AWSMQttTxFlow.m */; };
@@ -108,6 +128,7 @@
 		17E009DC1FCAB234005031DB /* ApolloClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009BA1FCAB234005031DB /* ApolloClient.swift */; };
 		17FD3F58225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17FD3F57225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift */; };
 		8032C5415EF414C038394D69 /* Pods_AWSAppSyncTestCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */; };
+		A70604C0C722923A70C937A1 /* Pods_AWSAppSyncTestApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57F5A94352E1ABE35159489D /* Pods_AWSAppSyncTestApp.framework */; };
 		C4980354FE541C9D8DC01364 /* Pods_ApolloTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */; };
 		CC96F8A521BABE5600446EBD /* AWSPerformMutationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A421BABE5600446EBD /* AWSPerformMutationQueue.swift */; };
 		CC96F8A721BACA1C00446EBD /* AWSPerformMutationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A621BACA1C00446EBD /* AWSPerformMutationOperation.swift */; };
@@ -166,11 +187,6 @@
 		FABD70752205101600C99B47 /* AWSAppSyncClientInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FABD70742205101600C99B47 /* AWSAppSyncClientInfoTests.swift */; };
 		FAC28D3B221B0F09000F84CD /* CacheKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC28D3A221B0F09000F84CD /* CacheKeyTests.swift */; };
 		FAC28D3D221B1195000F84CD /* UnitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC28D3C221B1195000F84CD /* UnitTestHelpers.swift */; };
-		FAC3E70C2208FB550037813E /* cacheConfigUnitTests-allTables.db in Resources */ = {isa = PBXBuildFile; fileRef = FAC3E70A2208F2190037813E /* cacheConfigUnitTests-allTables.db */; };
-		FAC3E70D2208FB550037813E /* cacheConfigUnitTests-noMutationRecords.db in Resources */ = {isa = PBXBuildFile; fileRef = FAC3E7082208F2190037813E /* cacheConfigUnitTests-noMutationRecords.db */; };
-		FAC3E70E2208FB550037813E /* cacheConfigUnitTests-noRecords.db in Resources */ = {isa = PBXBuildFile; fileRef = FAC3E7092208F2190037813E /* cacheConfigUnitTests-noRecords.db */; };
-		FAC3E70F2208FB550037813E /* cacheConfigUnitTests-noSubscriptionMetadata.db in Resources */ = {isa = PBXBuildFile; fileRef = FAC3E70B2208F2190037813E /* cacheConfigUnitTests-noSubscriptionMetadata.db */; };
-		FAC3E7102208FB550037813E /* cacheConfigUnitTests-noTables.db in Resources */ = {isa = PBXBuildFile; fileRef = FAC3E7072208F2190037813E /* cacheConfigUnitTests-noTables.db */; };
 		FAC3E712220900A20037813E /* AWSAppSyncCacheConfigurationMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC3E711220900A20037813E /* AWSAppSyncCacheConfigurationMigrationTests.swift */; };
 		FAD17C6721C16DD9008D116C /* SyncStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6621C16DD9008D116C /* SyncStrategy.swift */; };
 		FAD17C6F21C1CDE6008D116C /* SubscriptionMessageQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */; };
@@ -225,6 +241,41 @@
 			proxyType = 1;
 			remoteGlobalIDString = 1795778321485FA400C834E1;
 			remoteInfo = AWSAppSyncTestApp;
+		};
+		172C2C8D2264E6D9007A3552 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 17DECF551F59F5FF004B0512 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17DECF5D1F59F5FF004B0512;
+			remoteInfo = AWSAppSync;
+		};
+		172C2C8F2264E6D9007A3552 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 17DECF551F59F5FF004B0512 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FA8C62D321D6E59600FF9924;
+			remoteInfo = AWSAppSyncTestCommon;
+		};
+		172D2FBD226583B600F01924 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 17DECF551F59F5FF004B0512 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 172D2F9E2265839300F01924;
+			remoteInfo = AWSAppSyncTestHostApp;
+		};
+		172D2FBF226583B800F01924 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 17DECF551F59F5FF004B0512 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 172D2F9E2265839300F01924;
+			remoteInfo = AWSAppSyncTestHostApp;
+		};
+		172D2FC1226583BB00F01924 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 17DECF551F59F5FF004B0512 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 172D2F9E2265839300F01924;
+			remoteInfo = AWSAppSyncTestHostApp;
 		};
 		FA8C62B721D6E3AA00FF9924 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -284,6 +335,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				172D2F702265003100F01924 /* AWSAppSyncTestCommon.framework in Embed Frameworks */,
+				172D2F6E2265003100F01924 /* AWSAppSync.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -323,6 +376,22 @@
 		1729A0961F9DAB2300F88594 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		1729A0CF1FA1365900F88594 /* AWSAppSyncSubscriptionWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncSubscriptionWatcher.swift; sourceTree = "<group>"; };
 		1729A0D11FA149A000F88594 /* AppSyncMQTTClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncMQTTClient.swift; sourceTree = "<group>"; };
+		172C2C8922629A5E007A3552 /* AWSMutationRetryHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSMutationRetryHelper.swift; sourceTree = "<group>"; };
+		172C2C8B22641994007A3552 /* AWSMutationSteps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSMutationSteps.swift; sourceTree = "<group>"; };
+		172D2F71226574C000F01924 /* AWSMutationRetryAdviceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSMutationRetryAdviceHelper.swift; sourceTree = "<group>"; };
+		172D2F9F2265839300F01924 /* AWSAppSyncTestHostApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AWSAppSyncTestHostApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		172D2FA12265839300F01924 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		172D2FA32265839300F01924 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		172D2FA62265839300F01924 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		172D2FA82265839400F01924 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		172D2FAB2265839400F01924 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		172D2FAD2265839400F01924 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		172D2FB1226583A900F01924 /* cacheConfigUnitTests-noSubscriptionMetadata.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noSubscriptionMetadata.db"; sourceTree = "<group>"; };
+		172D2FB2226583A900F01924 /* cacheConfigUnitTests-noTables.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noTables.db"; sourceTree = "<group>"; };
+		172D2FB3226583AA00F01924 /* awsconfiguration.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = awsconfiguration.json; sourceTree = "<group>"; };
+		172D2FB4226583AA00F01924 /* cacheConfigUnitTests-noMutationRecords.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noMutationRecords.db"; sourceTree = "<group>"; };
+		172D2FB5226583AA00F01924 /* cacheConfigUnitTests-allTables.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-allTables.db"; sourceTree = "<group>"; };
+		172D2FB6226583AA00F01924 /* cacheConfigUnitTests-noRecords.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noRecords.db"; sourceTree = "<group>"; };
 		174F80822107E74E00775D0D /* AWSMQTTMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSMQTTMessage.h; sourceTree = "<group>"; };
 		174F80832107E74E00775D0D /* AWSMQTTSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSMQTTSession.h; sourceTree = "<group>"; };
 		174F80842107E74E00775D0D /* AWSMQttTxFlow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AWSMQttTxFlow.m; sourceTree = "<group>"; };
@@ -407,8 +476,10 @@
 		3EFDEC03028113885E64C3EF /* Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncUnitTests/Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		41C7F099AA45E55D08A8BA68 /* Pods-ApolloTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ApolloTests/Pods-ApolloTests.release.xcconfig"; sourceTree = "<group>"; };
 		43DE4437D9C5383591E2097D /* Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncUnitTests/Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig"; sourceTree = "<group>"; };
+		47FFA48771A04D7FA39E7FE0 /* Pods-AWSAppSyncTestApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestApp.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestApp/Pods-AWSAppSyncTestApp.release.xcconfig"; sourceTree = "<group>"; };
 		501C2133634282FF97CF8826 /* Pods-AWSAppSync-AWSAppSyncTestCommon.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncTestCommon.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncTestCommon/Pods-AWSAppSync-AWSAppSyncTestCommon.release.xcconfig"; sourceTree = "<group>"; };
 		53895D2B728EEBF96828979B /* Pods_StarWarsAPI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_StarWarsAPI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		57F5A94352E1ABE35159489D /* Pods_AWSAppSyncTestApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncTestApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		621AB86198B779E235D8B962 /* Pods_AWSAppSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		638B965BDCAD9E3264A1C722 /* Pods-AWSAppSyncTestCommon.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestCommon.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestCommon/Pods-AWSAppSyncTestCommon.release.xcconfig"; sourceTree = "<group>"; };
 		6878E4A0F7372438C7043A88 /* Pods_AWSAppSync_AWSAppSyncTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -419,6 +490,7 @@
 		90CBFC0B3531908E949BF9F0 /* Pods-AWSAppSyncIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncIntegrationTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncIntegrationTests/Pods-AWSAppSyncIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
 		AC48F9822142949C001C7D35 /* AppSyncMQTTClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSyncMQTTClientTests.swift; sourceTree = "<group>"; };
 		AC48F9832142949C001C7D35 /* Object+Swizzling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Object+Swizzling.swift"; sourceTree = "<group>"; };
+		AC900D19F2ADD7D9AA202420 /* Pods-AWSAppSyncTestApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestApp/Pods-AWSAppSyncTestApp.debug.xcconfig"; sourceTree = "<group>"; };
 		AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.debug.xcconfig"; sourceTree = "<group>"; };
 		AE7015F188184AE5B561E7F0 /* Pods_AWSAppSync_AWSAppSyncUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C38567A6FD373D3EE5D7EBC1 /* Pods-AWSAppSync-AWSAppSyncIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncIntegrationTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncIntegrationTests/Pods-AWSAppSync-AWSAppSyncIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -495,11 +567,6 @@
 		FABD70742205101600C99B47 /* AWSAppSyncClientInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSAppSyncClientInfoTests.swift; sourceTree = "<group>"; };
 		FAC28D3A221B0F09000F84CD /* CacheKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheKeyTests.swift; sourceTree = "<group>"; };
 		FAC28D3C221B1195000F84CD /* UnitTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitTestHelpers.swift; sourceTree = "<group>"; };
-		FAC3E7072208F2190037813E /* cacheConfigUnitTests-noTables.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noTables.db"; sourceTree = "<group>"; };
-		FAC3E7082208F2190037813E /* cacheConfigUnitTests-noMutationRecords.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noMutationRecords.db"; sourceTree = "<group>"; };
-		FAC3E7092208F2190037813E /* cacheConfigUnitTests-noRecords.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noRecords.db"; sourceTree = "<group>"; };
-		FAC3E70A2208F2190037813E /* cacheConfigUnitTests-allTables.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-allTables.db"; sourceTree = "<group>"; };
-		FAC3E70B2208F2190037813E /* cacheConfigUnitTests-noSubscriptionMetadata.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = "cacheConfigUnitTests-noSubscriptionMetadata.db"; sourceTree = "<group>"; };
 		FAC3E711220900A20037813E /* AWSAppSyncCacheConfigurationMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncCacheConfigurationMigrationTests.swift; sourceTree = "<group>"; };
 		FAD17C6621C16DD9008D116C /* SyncStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStrategy.swift; sourceTree = "<group>"; };
 		FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStrategyTests.swift; sourceTree = "<group>"; };
@@ -535,10 +602,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		172D2F9C2265839300F01924 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1795778121485FA400C834E1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A70604C0C722923A70C937A1 /* Pods_AWSAppSyncTestApp.framework in Frameworks */,
+				172D2F6F2265003100F01924 /* AWSAppSyncTestCommon.framework in Frameworks */,
+				172D2F6D2265003100F01924 /* AWSAppSync.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -662,6 +739,25 @@
 			path = SocketRocket;
 			sourceTree = "<group>";
 		};
+		172D2FA02265839300F01924 /* AWSAppSyncTestHostApp */ = {
+			isa = PBXGroup;
+			children = (
+				172D2FB3226583AA00F01924 /* awsconfiguration.json */,
+				172D2FB5226583AA00F01924 /* cacheConfigUnitTests-allTables.db */,
+				172D2FB4226583AA00F01924 /* cacheConfigUnitTests-noMutationRecords.db */,
+				172D2FB6226583AA00F01924 /* cacheConfigUnitTests-noRecords.db */,
+				172D2FB1226583A900F01924 /* cacheConfigUnitTests-noSubscriptionMetadata.db */,
+				172D2FB2226583A900F01924 /* cacheConfigUnitTests-noTables.db */,
+				172D2FA12265839300F01924 /* AppDelegate.swift */,
+				172D2FA32265839300F01924 /* ViewController.swift */,
+				172D2FA52265839300F01924 /* Main.storyboard */,
+				172D2FA82265839400F01924 /* Assets.xcassets */,
+				172D2FAA2265839400F01924 /* LaunchScreen.storyboard */,
+				172D2FAD2265839400F01924 /* Info.plist */,
+			);
+			path = AWSAppSyncTestHostApp;
+			sourceTree = "<group>";
+		};
 		1756980121349F9900319ABC /* Internal */ = {
 			isa = PBXGroup;
 			children = (
@@ -688,6 +784,9 @@
 				FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */,
 				FAE3558D21C081A400513FAE /* SyncConfiguration.swift */,
 				FAD17C6621C16DD9008D116C /* SyncStrategy.swift */,
+				172C2C8922629A5E007A3552 /* AWSMutationRetryHelper.swift */,
+				172C2C8B22641994007A3552 /* AWSMutationSteps.swift */,
+				172D2F71226574C000F01924 /* AWSMutationRetryAdviceHelper.swift */,
 			);
 			path = Internal;
 			sourceTree = "<group>";
@@ -707,6 +806,7 @@
 				74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */,
 				F0FC364F581CF82AB0F22F9D /* Pods_AWSAppSyncUnitTests.framework */,
 				CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */,
+				57F5A94352E1ABE35159489D /* Pods_AWSAppSyncTestApp.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -717,11 +817,6 @@
 				1795778621485FA400C834E1 /* AppDelegate.swift */,
 				1795778D21485FA400C834E1 /* Assets.xcassets */,
 				FA7204A021CDA06600938B81 /* awsconfiguration.json */,
-				FAC3E70A2208F2190037813E /* cacheConfigUnitTests-allTables.db */,
-				FAC3E7082208F2190037813E /* cacheConfigUnitTests-noMutationRecords.db */,
-				FAC3E7092208F2190037813E /* cacheConfigUnitTests-noRecords.db */,
-				FAC3E70B2208F2190037813E /* cacheConfigUnitTests-noSubscriptionMetadata.db */,
-				FAC3E7072208F2190037813E /* cacheConfigUnitTests-noTables.db */,
 				1795779221485FA400C834E1 /* Info.plist */,
 				1795778F21485FA400C834E1 /* LaunchScreen.storyboard */,
 				1795778A21485FA400C834E1 /* Main.storyboard */,
@@ -740,6 +835,7 @@
 				1795778521485FA400C834E1 /* AWSAppSyncTestApp */,
 				1700503721543E41008B16B6 /* ApolloTests */,
 				1700504721543E7F008B16B6 /* StarWarsAPI */,
+				172D2FA02265839300F01924 /* AWSAppSyncTestHostApp */,
 				17DECF5F1F59F5FF004B0512 /* Products */,
 				17915C5E1F5FA36300C4B73C /* Frameworks */,
 				E1D9078E4FB0753759F6C498 /* Pods */,
@@ -756,6 +852,7 @@
 				FA8C62B121D6E3AA00FF9924 /* AWSAppSyncUnitTests.xctest */,
 				FA8C62C021D6E41600FF9924 /* AWSAppSyncIntegrationTests.xctest */,
 				FA8C62D421D6E59600FF9924 /* AWSAppSyncTestCommon.framework */,
+				172D2F9F2265839300F01924 /* AWSAppSyncTestHostApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -857,6 +954,8 @@
 				FE287B16EB3226D1790DEC1D /* Pods-AWSAppSyncUnitTests.release.xcconfig */,
 				82E714A3E9BFB80BD9E5EF90 /* Pods-ApolloTests.debug.xcconfig */,
 				41C7F099AA45E55D08A8BA68 /* Pods-ApolloTests.release.xcconfig */,
+				AC900D19F2ADD7D9AA202420 /* Pods-AWSAppSyncTestApp.debug.xcconfig */,
+				47FFA48771A04D7FA39E7FE0 /* Pods-AWSAppSyncTestApp.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -1002,6 +1101,7 @@
 				170050732154418A008B16B6 /* PBXTargetDependency */,
 				1700503D21543E41008B16B6 /* PBXTargetDependency */,
 				17005075215441C0008B16B6 /* PBXTargetDependency */,
+				172D2FC2226583BB00F01924 /* PBXTargetDependency */,
 			);
 			name = ApolloTests;
 			productName = ApolloTests;
@@ -1027,18 +1127,39 @@
 			productReference = 1700504621543E7F008B16B6 /* StarWarsAPI.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		1795778321485FA400C834E1 /* AWSAppSyncTestApp */ = {
+		172D2F9E2265839300F01924 /* AWSAppSyncTestHostApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1795779321485FA400C834E1 /* Build configuration list for PBXNativeTarget "AWSAppSyncTestApp" */;
+			buildConfigurationList = 172D2FAE2265839400F01924 /* Build configuration list for PBXNativeTarget "AWSAppSyncTestHostApp" */;
 			buildPhases = (
-				1795778021485FA400C834E1 /* Sources */,
-				1795778121485FA400C834E1 /* Frameworks */,
-				1795778221485FA400C834E1 /* Resources */,
-				FA8C62EE21D6E59700FF9924 /* Embed Frameworks */,
+				172D2F9B2265839300F01924 /* Sources */,
+				172D2F9C2265839300F01924 /* Frameworks */,
+				172D2F9D2265839300F01924 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+			);
+			name = AWSAppSyncTestHostApp;
+			productName = AWSAppSyncTestHostApp;
+			productReference = 172D2F9F2265839300F01924 /* AWSAppSyncTestHostApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1795778321485FA400C834E1 /* AWSAppSyncTestApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1795779321485FA400C834E1 /* Build configuration list for PBXNativeTarget "AWSAppSyncTestApp" */;
+			buildPhases = (
+				8594912BCC88BCEDAAEB5501 /* [CP] Check Pods Manifest.lock */,
+				1795778021485FA400C834E1 /* Sources */,
+				1795778121485FA400C834E1 /* Frameworks */,
+				1795778221485FA400C834E1 /* Resources */,
+				FA8C62EE21D6E59700FF9924 /* Embed Frameworks */,
+				C5EBFB9DD3C537014817214F /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				172C2C8E2264E6D9007A3552 /* PBXTargetDependency */,
+				172C2C902264E6D9007A3552 /* PBXTargetDependency */,
 			);
 			name = AWSAppSyncTestApp;
 			productName = AWSAppSyncTestApp;
@@ -1081,6 +1202,7 @@
 				FA8C62B821D6E3AA00FF9924 /* PBXTargetDependency */,
 				FAE7948321D6E66B0032D37F /* PBXTargetDependency */,
 				FA8C62CE21D6E4D300FF9924 /* PBXTargetDependency */,
+				172D2FC0226583B800F01924 /* PBXTargetDependency */,
 			);
 			name = AWSAppSyncUnitTests;
 			productName = AWSAppSyncUnitTests;
@@ -1103,6 +1225,7 @@
 				FA8C62C721D6E41600FF9924 /* PBXTargetDependency */,
 				FAE7948121D6E65F0032D37F /* PBXTargetDependency */,
 				FA8C62CC21D6E45000FF9924 /* PBXTargetDependency */,
+				172D2FBE226583B600F01924 /* PBXTargetDependency */,
 			);
 			name = AWSAppSyncIntegrationTests;
 			productName = AWSAppSyncIntegrationTests;
@@ -1143,35 +1266,42 @@
 						CreatedOnToolsVersion = 10.0;
 						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
-						TestTargetID = 1795778321485FA400C834E1;
+						TestTargetID = 172D2F9E2265839300F01924;
 					};
 					1700504521543E7F008B16B6 = {
 						CreatedOnToolsVersion = 10.0;
 						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
+					172D2F9E2265839300F01924 = {
+						CreatedOnToolsVersion = 10.1;
+						ProvisioningStyle = Automatic;
+					};
 					1795778321485FA400C834E1 = {
 						CreatedOnToolsVersion = 9.2;
+						DevelopmentTeam = W9GWBC2HN3;
 						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 					17DECF5D1F59F5FF004B0512 = {
 						CreatedOnToolsVersion = 8.3.3;
+						DevelopmentTeam = W9GWBC2HN3;
 						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 					FA8C62B021D6E3AA00FF9924 = {
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
-						TestTargetID = 1795778321485FA400C834E1;
+						TestTargetID = 172D2F9E2265839300F01924;
 					};
 					FA8C62BF21D6E41600FF9924 = {
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
-						TestTargetID = 1795778321485FA400C834E1;
+						TestTargetID = 172D2F9E2265839300F01924;
 					};
 					FA8C62D321D6E59600FF9924 = {
 						CreatedOnToolsVersion = 10.1;
+						DevelopmentTeam = W9GWBC2HN3;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -1196,6 +1326,7 @@
 				1795778321485FA400C834E1 /* AWSAppSyncTestApp */,
 				1700503521543E41008B16B6 /* ApolloTests */,
 				1700504521543E7F008B16B6 /* StarWarsAPI */,
+				172D2F9E2265839300F01924 /* AWSAppSyncTestHostApp */,
 			);
 		};
 /* End PBXProject section */
@@ -1215,15 +1346,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		172D2F9D2265839300F01924 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				172D2FAC2265839400F01924 /* LaunchScreen.storyboard in Resources */,
+				172D2FBB226583AA00F01924 /* cacheConfigUnitTests-allTables.db in Resources */,
+				172D2FA92265839400F01924 /* Assets.xcassets in Resources */,
+				172D2FBC226583AA00F01924 /* cacheConfigUnitTests-noRecords.db in Resources */,
+				172D2FB9226583AA00F01924 /* awsconfiguration.json in Resources */,
+				172D2FA72265839300F01924 /* Main.storyboard in Resources */,
+				172D2FBA226583AA00F01924 /* cacheConfigUnitTests-noMutationRecords.db in Resources */,
+				172D2FB7226583AA00F01924 /* cacheConfigUnitTests-noSubscriptionMetadata.db in Resources */,
+				172D2FB8226583AA00F01924 /* cacheConfigUnitTests-noTables.db in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1795778221485FA400C834E1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FAC3E70C2208FB550037813E /* cacheConfigUnitTests-allTables.db in Resources */,
-				FAC3E70D2208FB550037813E /* cacheConfigUnitTests-noMutationRecords.db in Resources */,
-				FAC3E70E2208FB550037813E /* cacheConfigUnitTests-noRecords.db in Resources */,
-				FAC3E70F2208FB550037813E /* cacheConfigUnitTests-noSubscriptionMetadata.db in Resources */,
-				FAC3E7102208FB550037813E /* cacheConfigUnitTests-noTables.db in Resources */,
+				172D2F6B2264EAFE00F01924 /* appsync_test_credentials.json in Resources */,
+				172D2F6C2264FF6900F01924 /* testS3Object.jpg in Resources */,
 				FA7204A121CDA06600938B81 /* awsconfiguration.json in Resources */,
 				1795779121485FA400C834E1 /* LaunchScreen.storyboard in Resources */,
 				1795778E21485FA400C834E1 /* Assets.xcassets in Resources */,
@@ -1381,6 +1525,28 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		8594912BCC88BCEDAAEB5501 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-AWSAppSyncTestApp-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		9D3DC3D41DFE40A8E77BE89C /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1453,6 +1619,42 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		C5EBFB9DD3C537014817214F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-AWSAppSyncTestApp/Pods-AWSAppSyncTestApp-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AWSCore/AWSCore.framework",
+				"${BUILT_PRODUCTS_DIR}/AWSS3/AWSS3.framework",
+				"${BUILT_PRODUCTS_DIR}/AWSAuthCore/AWSAuthCore.framework",
+				"${BUILT_PRODUCTS_DIR}/AWSCognitoIdentityProvider/AWSCognitoIdentityProvider.framework",
+				"${BUILT_PRODUCTS_DIR}/AWSCognitoIdentityProviderASF/AWSCognitoIdentityProviderASF.framework",
+				"${BUILT_PRODUCTS_DIR}/AWSMobileClient/AWSMobileClient.framework",
+				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift/Reachability.framework",
+				"${BUILT_PRODUCTS_DIR}/SQLite.swift/SQLite.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSS3.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSAuthCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCognitoIdentityProvider.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCognitoIdentityProviderASF.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSMobileClient.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Reachability.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SQLite.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AWSAppSyncTestApp/Pods-AWSAppSyncTestApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		CC254EED21B656000078FDD1 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1508,6 +1710,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				1700505121543EF8008B16B6 /* API.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		172D2F9B2265839300F01924 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				172D2FA42265839300F01924 /* ViewController.swift in Sources */,
+				172D2FA22265839300F01924 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1597,6 +1808,7 @@
 				17E009D91FCAB234005031DB /* JSONStandardTypeConversions.swift in Sources */,
 				FA0C12C121CD3BB200B438CB /* BasicAWSAPIKeyAuthProvider.swift in Sources */,
 				17E009D31FCAB234005031DB /* GraphQLResponseGenerator.swift in Sources */,
+				172C2C8A22629A5E007A3552 /* AWSMutationRetryHelper.swift in Sources */,
 				17E009D81FCAB234005031DB /* NetworkTransport.swift in Sources */,
 				FAAACC2621DD7BC300D24B37 /* AWSAppSyncMutations.swift in Sources */,
 				17A7F8CA1FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift in Sources */,
@@ -1604,11 +1816,13 @@
 				17E009CB1FCAB234005031DB /* HTTPNetworkTransport.swift in Sources */,
 				17E009D11FCAB234005031DB /* Utilities.swift in Sources */,
 				CC96F8A921BAF45600446EBD /* AWSPerformOfflineMutationOperation.swift in Sources */,
+				172D2F72226574C000F01924 /* AWSMutationRetryAdviceHelper.swift in Sources */,
 				17E009DA1FCAB234005031DB /* Result.swift in Sources */,
 				174F80A42107F17700775D0D /* AWSIoTCSR.m in Sources */,
 				FA0C12BF21CD360B00B438CB /* AWSAppSyncAuthType.swift in Sources */,
 				CCEF79E121DE7FF7004AD64D /* Deprecations+Removals.swift in Sources */,
 				179577992149CD1B00C834E1 /* AWSAppSyncRetryHandler.swift in Sources */,
+				172C2C8C22641994007A3552 /* AWSMutationSteps.swift in Sources */,
 				17E009D21FCAB234005031DB /* RecordSet.swift in Sources */,
 				FAE1E0ED21D3D61B005767C7 /* Foundation+Utils.swift in Sources */,
 				FAD17C6F21C1CDE6008D116C /* SubscriptionMessageQueue.swift in Sources */,
@@ -1701,6 +1915,31 @@
 			target = 1795778321485FA400C834E1 /* AWSAppSyncTestApp */;
 			targetProxy = 17005074215441C0008B16B6 /* PBXContainerItemProxy */;
 		};
+		172C2C8E2264E6D9007A3552 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17DECF5D1F59F5FF004B0512 /* AWSAppSync */;
+			targetProxy = 172C2C8D2264E6D9007A3552 /* PBXContainerItemProxy */;
+		};
+		172C2C902264E6D9007A3552 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FA8C62D321D6E59600FF9924 /* AWSAppSyncTestCommon */;
+			targetProxy = 172C2C8F2264E6D9007A3552 /* PBXContainerItemProxy */;
+		};
+		172D2FBE226583B600F01924 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 172D2F9E2265839300F01924 /* AWSAppSyncTestHostApp */;
+			targetProxy = 172D2FBD226583B600F01924 /* PBXContainerItemProxy */;
+		};
+		172D2FC0226583B800F01924 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 172D2F9E2265839300F01924 /* AWSAppSyncTestHostApp */;
+			targetProxy = 172D2FBF226583B800F01924 /* PBXContainerItemProxy */;
+		};
+		172D2FC2226583BB00F01924 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 172D2F9E2265839300F01924 /* AWSAppSyncTestHostApp */;
+			targetProxy = 172D2FC1226583BB00F01924 /* PBXContainerItemProxy */;
+		};
 		FA8C62B821D6E3AA00FF9924 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 17DECF5D1F59F5FF004B0512 /* AWSAppSync */;
@@ -1739,6 +1978,22 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		172D2FA52265839300F01924 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				172D2FA62265839300F01924 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		172D2FAA2265839400F01924 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				172D2FAB2265839400F01924 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
 		1795778A21485FA400C834E1 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -1779,7 +2034,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestApp.app/AWSAppSyncTestApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestHostApp.app/AWSAppSyncTestHostApp";
 			};
 			name = Debug;
 		};
@@ -1803,7 +2058,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestApp.app/AWSAppSyncTestApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestHostApp.app/AWSAppSyncTestHostApp";
 			};
 			name = Release;
 		};
@@ -1867,8 +2122,52 @@
 			};
 			name = Release;
 		};
+		172D2FAF2265839400F01924 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = AWSAppSyncTestHostApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.amazonaws.AWSAppSyncTestHostApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		172D2FB02265839400F01924 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = AWSAppSyncTestHostApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.amazonaws.AWSAppSyncTestHostApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		1795779421485FA400C834E1 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AC900D19F2ADD7D9AA202420 /* Pods-AWSAppSyncTestApp.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1876,9 +2175,10 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = W9GWBC2HN3;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = AWSAppSyncTestApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.amazonaws.AWSAppSyncTestApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1889,6 +2189,7 @@
 		};
 		1795779521485FA400C834E1 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 47FFA48771A04D7FA39E7FE0 /* Pods-AWSAppSyncTestApp.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1896,9 +2197,10 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = W9GWBC2HN3;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = AWSAppSyncTestApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.amazonaws.AWSAppSyncTestApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2027,8 +2329,9 @@
 			baseConfigurationReference = AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = W9GWBC2HN3;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -2053,8 +2356,9 @@
 			baseConfigurationReference = C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = W9GWBC2HN3;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -2094,7 +2398,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestApp.app/AWSAppSyncTestApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestHostApp.app/AWSAppSyncTestHostApp";
 			};
 			name = Debug;
 		};
@@ -2118,7 +2422,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestApp.app/AWSAppSyncTestApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestHostApp.app/AWSAppSyncTestHostApp";
 			};
 			name = Release;
 		};
@@ -2143,7 +2447,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestApp.app/AWSAppSyncTestApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestHostApp.app/AWSAppSyncTestHostApp";
 			};
 			name = Debug;
 		};
@@ -2167,7 +2471,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestApp.app/AWSAppSyncTestApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AWSAppSyncTestHostApp.app/AWSAppSyncTestHostApp";
 			};
 			name = Release;
 		};
@@ -2179,9 +2483,10 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = W9GWBC2HN3;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -2208,9 +2513,10 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = W9GWBC2HN3;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -2245,6 +2551,15 @@
 			buildConfigurations = (
 				1700504C21543E7F008B16B6 /* Debug */,
 				1700504D21543E7F008B16B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		172D2FAE2265839400F01924 /* Build configuration list for PBXNativeTarget "AWSAppSyncTestHostApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				172D2FAF2265839400F01924 /* Debug */,
+				172D2FB02265839400F01924 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

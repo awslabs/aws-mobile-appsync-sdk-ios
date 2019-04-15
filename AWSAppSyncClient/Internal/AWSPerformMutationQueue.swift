@@ -54,9 +54,7 @@ final class AWSPerformMutationQueue {
         } else {
             persistentCache = nil
         }
-
-        self.suspendOrResumeQueue(reachabiltyChangeNotifier: reachabiltyChangeNotifier)
-        reachabiltyChangeNotifier?.add(watcher: self)
+        
     }
 
     // MARK: - Queue operations
@@ -92,24 +90,6 @@ final class AWSPerformMutationQueue {
         operationQueue.addOperation(operation)
 
         return operation
-    }
-
-    func suspend() {
-        AppSyncLog.verbose("Suspending OperationQueue")
-        operationQueue.isSuspended = true
-    }
-
-    func resume() {
-        AppSyncLog.verbose("Resuming OperationQueue")
-        operationQueue.isSuspended = false
-    }
-
-    private func suspendOrResumeQueue(reachabiltyChangeNotifier: NetworkReachabilityNotifier?) {
-        if reachabiltyChangeNotifier?.isNetworkReachable ?? false {
-            resume()
-        } else {
-            suspend()
-        }
     }
 
     // MARK: Offline Mutations
@@ -182,17 +162,4 @@ final class AWSPerformMutationQueue {
             .catch { error in AppSyncLog.error("\(#function) failure: \(error)") }
     }
 
-}
-
-// MARK: - NetworkConnectionNotification
-
-extension AWSPerformMutationQueue: NetworkReachabilityWatcher {
-
-    func onNetworkReachabilityChanged(isEndpointReachable: Bool) {
-        if isEndpointReachable {
-            resume()
-        } else {
-            suspend()
-        }
-    }
 }

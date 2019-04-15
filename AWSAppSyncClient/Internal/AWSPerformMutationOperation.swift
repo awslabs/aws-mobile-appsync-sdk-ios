@@ -6,12 +6,19 @@
 
 import Foundation
 
+/// This class(operation) is responsible for executing mutations when they are submitted to the operation queue
+/// from application side and not when loading from cache. If the app is killed and restarted, these operations
+/// are lost. To ensure they still are sent, they are loaded from the cache and a different type of operation is
+/// created: `AWSPerformOfflineMutationOperation`.
 final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: AsynchronousOperation, Cancellable {
     private weak var appSyncClient: AWSAppSyncClient?
     private let handlerQueue: DispatchQueue
     private let mutation: Mutation
     private let mutationConflictHandler: MutationConflictHandler<Mutation>?
     private let mutationResultHandler: OperationResultHandler<Mutation>?
+    var currentAttemptNumber: Int = 1
+    var mutationNextStep: MutationNextStep = .unknown
+    var mutationRetryHelper: AWSMutationRetryHelper?
 
     private var networkTask: Cancellable?
 
@@ -29,10 +36,20 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         self.mutation = mutation
         self.mutationConflictHandler = mutationConflictHandler
         self.mutationResultHandler = mutationResultHandler
+        super.init()
+        determineMutationStep()
     }
 
     deinit {
         AppSyncLog.verbose("\(identifier ?? "(no identifier)"): deinit")
+    }
+    
+    private func determineMutationStep() {
+        if AWSRequestBuilder.s3Object(from: mutation.variables) != nil {
+            mutationNextStep = .s3Upload
+        } else {
+            mutationNextStep = .graphqlOperation
+        }
     }
 
     private func send(_ resultHandler: OperationResultHandler<Mutation>?) -> Cancellable? {
@@ -41,23 +58,39 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         }
 
         AppSyncLog.verbose("\(identifier ?? "(No identifier)"): sending")
-
-        if let s3Object = AWSRequestBuilder.s3Object(from: mutation.variables) {
-            appSyncClient.performMutationWithS3Object(
-                operation: mutation,
-                s3Object: s3Object,
-                conflictResolutionBlock: mutationConflictHandler,
-                handlerQueue: handlerQueue,
-                resultHandler: resultHandler)
-
-            return nil
-        } else {
-            return appSyncClient.send(
-                operation: mutation,
-                conflictResolutionBlock: mutationConflictHandler,
-                handlerQueue: handlerQueue,
-                resultHandler: resultHandler)
+        
+        switch mutationNextStep {
+        case .s3Upload:
+            appSyncClient.performS3ObjectUploadForMutation(operation: mutation,
+                                                           s3Object: AWSRequestBuilder.s3Object(from: mutation.variables)!) { (error) in
+            if let error = error, AWSMutationRetryAdviceHelper.isErrorRetriable(error: error) {
+                // If the error retriable, do not mark the operation as completed; schedule a retry.
+                self.scheduleRetry()
+            } else if error != nil {
+                // if the complex object error is not retriable, we callback the developer
+                resultHandler?(nil, error)
+            } else {
+                // If the complex object upload goes through, we set the next step to be graphql operation
+                // and then send the graphql mutation request over wire.
+                self.mutationNextStep = .graphqlOperation
+                self.networkTask = self.performGraphQLMutation(resultHandler)
+            }
         }
+        case .graphqlOperation:
+            // If the mutation next step is graphql operation, then we invoke the network send.
+            return performGraphQLMutation(resultHandler)
+        default:
+            break
+        }
+        return nil
+    }
+    
+    private func performGraphQLMutation(_ resultHandler: OperationResultHandler<Mutation>?) -> Cancellable? {
+        return appSyncClient?.send(
+            operation: mutation,
+            conflictResolutionBlock: mutationConflictHandler,
+            handlerQueue: handlerQueue,
+            resultHandler: resultHandler)
     }
 
     private func notifyCompletion(_ result: GraphQLResult<Mutation.Data>?, error: Error?) {
@@ -67,6 +100,40 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
             handlerQueue.async {
                 mutationResultHandler(result, error)
             }
+        }
+    }
+    
+    private func scheduleRetry() {
+        AppSyncLog.debug("Scheduling mutation retry for in-memory mutation.")
+        mutationRetryHelper = AWSMutationRetryHelper(retryAttemptNumber: currentAttemptNumber) {
+            self.performMutation()
+            self.mutationRetryHelper = nil
+        }
+        currentAttemptNumber += 1
+    }
+    
+    private func performMutation() {
+        networkTask = send { (result, error) in
+            if error == nil {
+                self.notifyCompletion(result, error: nil)
+                self.state = .finished
+                return
+            }
+            
+            if self.isCancelled {
+                self.state = .finished
+                return
+            }
+            
+            if let error = error, AWSMutationRetryAdviceHelper.isErrorRetriable(error: error) {
+                // If the error retriable, do not mark the operation as completed; schedule a retry.
+                AppSyncLog.debug("InMemory mutation could not be done due to network issue. Scheduling retry.")
+                self.scheduleRetry()
+                return
+            }
+            
+            self.notifyCompletion(result, error: error)
+            self.state = .finished
         }
     }
 
@@ -80,22 +147,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
 
         state = .executing
 
-        networkTask = send { (result, error) in
-            if error == nil {
-                self.notifyCompletion(result, error: nil)
-                self.state = .finished
-
-                return
-            }
-
-            if self.isCancelled {
-                self.state = .finished
-                return
-            }
-
-            self.notifyCompletion(result, error: error)
-            self.state = .finished
-        }
+        performMutation()
     }
 
     // MARK: Cancellable
