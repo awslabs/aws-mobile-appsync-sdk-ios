@@ -8,9 +8,9 @@ import Foundation
 
 /// Determines the next step in a mutation operation.
 ///
-/// - unknown: when the next steo of mutation is not determined yet
+/// - unknown: when the next step of mutation is not determined yet
 /// - s3Upload: the mutation is required to do a s3 upload before the graphql call
 /// - graphqlOperation: the mutation to complete needs to make a graphql call
-enum MutationNextStep {
+enum MutationState {
     case unknown, s3Upload, graphqlOperation
 }

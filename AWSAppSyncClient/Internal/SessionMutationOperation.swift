@@ -6,24 +6,21 @@
 
 import Foundation
 
-/// This class(operation) is responsible for executing mutations when they are submitted to the operation queue
-/// from application side and not when loading from cache. If the app is killed and restarted, these operations
-/// are lost. To ensure they still are sent, they are loaded from the cache and a different type of operation is
-/// created: `AWSPerformOfflineMutationOperation`.
-final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: AsynchronousOperation, Cancellable {
+/// This class(operation) is responsible for executing mutations when they are submitted from the application during the current session. If the app is killed and restarted, these operations are reloaded from cache, but their callback context will be lost, and instead the global delegate callback will be invoked with the mutation result. See: `CachedMutationOperation`.
+final class SessionMutationOperation<Mutation: GraphQLMutation>: AsynchronousOperation, Cancellable {
     private weak var appSyncClient: AWSAppSyncClient?
     private let handlerQueue: DispatchQueue
     private let mutation: Mutation
     private let mutationConflictHandler: MutationConflictHandler<Mutation>?
     private let mutationResultHandler: OperationResultHandler<Mutation>?
     var currentAttemptNumber: Int = 1
-    var mutationNextStep: MutationNextStep = .unknown
-    var mutationRetryHelper: AWSMutationRetryHelper?
+    var mutationNextStep: MutationState = .unknown
+    var mutationRetryNotifier: AWSMutationRetryNotifier?
 
     private var networkTask: Cancellable?
 
     var identifier: String?
-    var operationCompletionBlock: ((AWSPerformMutationOperation, Error?) -> Void)?
+    var operationCompletionBlock: ((SessionMutationOperation, Error?) -> Void)?
 
     init(
         appSyncClient: AWSAppSyncClient?,
@@ -37,14 +34,14 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         self.mutationConflictHandler = mutationConflictHandler
         self.mutationResultHandler = mutationResultHandler
         super.init()
-        determineMutationStep()
+        resolveInitialMutationState()
     }
 
     deinit {
         AppSyncLog.verbose("\(identifier ?? "(no identifier)"): deinit")
     }
     
-    private func determineMutationStep() {
+    private func resolveInitialMutationState() {
         if AWSRequestBuilder.s3Object(from: mutation.variables) != nil {
             mutationNextStep = .s3Upload
         } else {
@@ -63,7 +60,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
         case .s3Upload:
             appSyncClient.performS3ObjectUploadForMutation(operation: mutation,
                                                            s3Object: AWSRequestBuilder.s3Object(from: mutation.variables)!) { (error) in
-            if let error = error, AWSMutationRetryAdviceHelper.isErrorRetriable(error: error) {
+            if let error = error, AWSMutationRetryAdviceHelper.isRetriableNetworkError(error: error) {
                 // If the error retriable, do not mark the operation as completed; schedule a retry.
                 self.scheduleRetry()
             } else if error != nil {
@@ -105,9 +102,9 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
     
     private func scheduleRetry() {
         AppSyncLog.debug("Scheduling mutation retry for in-memory mutation.")
-        mutationRetryHelper = AWSMutationRetryHelper(retryAttemptNumber: currentAttemptNumber) {
+        mutationRetryNotifier = AWSMutationRetryNotifier(retryAttemptNumber: currentAttemptNumber) {
             self.performMutation()
-            self.mutationRetryHelper = nil
+            self.mutationRetryNotifier = nil
         }
         currentAttemptNumber += 1
     }
@@ -125,7 +122,7 @@ final class AWSPerformMutationOperation<Mutation: GraphQLMutation>: Asynchronous
                 return
             }
             
-            if let error = error, AWSMutationRetryAdviceHelper.isErrorRetriable(error: error) {
+            if let error = error, AWSMutationRetryAdviceHelper.isRetriableNetworkError(error: error) {
                 // If the error retriable, do not mark the operation as completed; schedule a retry.
                 AppSyncLog.debug("InMemory mutation could not be done due to network issue. Scheduling retry.")
                 self.scheduleRetry()

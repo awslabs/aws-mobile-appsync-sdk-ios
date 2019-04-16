@@ -6,20 +6,17 @@
 
 import Foundation
 
-/// This class(operation) is responsible to handle mutations which were created from previous run of the app but
-/// were not able to sent to the service due to connectivity issues. These operations are unique and different
-/// from `AWSPerformMutationOperation` since they do not have an inmemory callback or an operation object they
-/// can be mapped to. They use json/ dictionary mechanism to pass data between service and developer callback.
-final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellable {
+/// This class(operation) is responsible for executing mutations when they are submitted from the application during the previous session, but were not be able to sent to service due to network not being available or app being quit. The callbacks for these mutations are given to the global callback delegate. For mutations submitted in current session, see: `SessionMutationOperation`.
+final class CachedMutationOperation: AsynchronousOperation, Cancellable {
     private weak var appSyncClient: AWSAppSyncClient?
     private weak var networkClient: AWSNetworkTransport?
     private let handlerQueue: DispatchQueue
     let mutation: AWSAppSyncMutationRecord
     var currentAttemptNumber: Int = 1
-    var mutationNextStep: MutationNextStep = .unknown
-    var mutationRetryHelper: AWSMutationRetryHelper?
+    var mutationNextStep: MutationState = .unknown
+    var mutationRetryNotifier: AWSMutationRetryNotifier?
 
-    var operationCompletionBlock: ((AWSPerformOfflineMutationOperation, Error?) -> Void)?
+    var operationCompletionBlock: ((CachedMutationOperation, Error?) -> Void)?
 
     init(
         appSyncClient: AWSAppSyncClient?,
@@ -32,14 +29,14 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         self.handlerQueue = handlerQueue
         self.mutation = mutation
         super.init()
-        determineMutationStep()
+        resolveInitialMutationState()
     }
 
     deinit {
         AppSyncLog.verbose("\(mutation.recordIdentifier): deinit")
     }
     
-    private func determineMutationStep() {
+    private func resolveInitialMutationState() {
         if mutation.s3ObjectInput != nil {
             mutationNextStep = .s3Upload
         } else {
@@ -75,7 +72,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
                     self?.mutationNextStep = .graphqlOperation
                     self?.send(mutation, completion: completion)
                 } else {
-                    if let error = error, AWSMutationRetryAdviceHelper.isErrorRetriable(error: error) {
+                    if let error = error, AWSMutationRetryAdviceHelper.isRetriableNetworkError(error: error) {
                         // If the error retriable, do not mark the operation as completed; schedule a retry.
                         self?.scheduleRetry()
                         return
@@ -94,9 +91,9 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
     
      func scheduleRetry() {
         AppSyncLog.debug("Scheduling mutation retry for persistent mutation.")
-        mutationRetryHelper = AWSMutationRetryHelper(retryAttemptNumber: currentAttemptNumber) {
+        mutationRetryNotifier = AWSMutationRetryNotifier(retryAttemptNumber: currentAttemptNumber) {
             self.performMutation()
-            self.mutationRetryHelper = nil
+            self.mutationRetryNotifier = nil
         }
         currentAttemptNumber += 1
     }
@@ -135,7 +132,7 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
                 return
             }
             
-            if let error = error, AWSMutationRetryAdviceHelper.isErrorRetriable(error: error) {
+            if let error = error, AWSMutationRetryAdviceHelper.isRetriableNetworkError(error: error) {
                 // If the error retriable, do not mark the operation as completed; schedule a retry.
                 AppSyncLog.debug("Persistent mutation could not be done due to network issue. Scheduling retry.")
                 self.scheduleRetry()

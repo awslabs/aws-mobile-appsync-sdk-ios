@@ -2,6 +2,23 @@
 
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK also includes support for offline operations.
 
+## 2.11.0
+
+## Misc. Updates
+
+**Behavior Change for Mutation Queue**
+
+- With this update, the internal operation logic of how mutations are processed is updated
+- The mutation queue in the previous SDKs, depended on notification from reachability to determine if the mutations could be sent to the service; in the new behavior we are more aligned to Apple's [Designing for Real-World Networks
+](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/NetworkingOverview/WhyNetworkingIsHard/WhyNetworkingIsHard.html) guidance
+- The AppSync client will now `always` attempt to make a mutation request regardless of the network state
+- One the network response comes back, the SDK will inspect the error from `NSURLSession` and determine if the error was due to network not available, host not found or DNS lookup failed. If it was, the SDK will schedule a retry timer responsible to retry the request which will grow exponentially with every attempt
+- The retry handler will also watch for notification from reachability to determine if network is available again; in cases where SDK does get the notification, it will prempt the timer and make the request right away
+- If the notification is not received, the timer will contrinue to retry the request. The polling time is capped at 5 minutes to ensure that attempts are made at frequent attempts while respecting resources on device
+- AppSync client will ensure that it works with auth clients who return the correct errors. The AWS credential providers are validated to check if they return the correct `NSURLSession` errors so that retry can be scheduled
+- If using a custom auth client, while invoking the error callback for auth provider, it is recommended to include `NSURLErrorDomain` in the `domain` field and the indicated error code in `code` field.
+- There are no API changes required to update to this behavior
+
 ## 2.10.4
 
 ### New Features

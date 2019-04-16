@@ -8,14 +8,20 @@ import Foundation
 
 final class AWSMutationRetryAdviceHelper {
     
-    static func isErrorRetriable(error: Error) -> Bool {
+    static func isRetriableNetworkError(error: Error) -> Bool {
         if let appsyncError = error as? AWSAppSyncClientError {
             switch appsyncError {
             case .authenticationError(let authError):
+                // We are currently checking for this error due to IAM auth.
+                // If Cognito Identity SDK does not have an identity id available,
+                // It tries to get one before giving the callback to appsync SDK.
+                // If Cognito Identity SDK cannot reach the service to fetch identityd id,
+                // it will propogate the error it encoutered to AppSync. We specifically
+                // check if the error is of type internet not available and then retry.
                 return isErrorURLDomainError(error: authError)
             case .requestFailed(_, _, let urlError):
-                if urlError != nil {
-                    return isErrorURLDomainError(error: urlError!)
+                if let urlError = urlError {
+                    return isErrorURLDomainError(error: urlError)
                 }
             default:
                 break
@@ -28,17 +34,19 @@ final class AWSMutationRetryAdviceHelper {
     
     /// We evaluate the error against known error codes which could result due to unavailable internet or spotty network connection.
     private static func isErrorURLDomainError(error: Error) -> Bool {
-        if let nserror = error as NSError?, nserror.domain == NSURLErrorDomain {
-            switch nserror.code {
-            case NSURLErrorNotConnectedToInternet,
-                 NSURLErrorDNSLookupFailed,
-                 NSURLErrorCannotConnectToHost,
-                 NSURLErrorCannotFindHost,
-                 NSURLErrorTimedOut:
-                return true
-            default:
-                break
-            }
+        let nsError = error as NSError
+        guard nsError.domain == NSURLErrorDomain else {
+            return false
+        }
+        switch nsError.code {
+        case NSURLErrorNotConnectedToInternet,
+             NSURLErrorDNSLookupFailed,
+             NSURLErrorCannotConnectToHost,
+             NSURLErrorCannotFindHost,
+             NSURLErrorTimedOut:
+            return true
+        default:
+            break
         }
         return false
     }

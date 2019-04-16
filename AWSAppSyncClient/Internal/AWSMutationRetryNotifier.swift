@@ -9,7 +9,7 @@ import Foundation
 /// This class is responsible to create a timer and watch for network up events and
 /// retry the mutation when the timer expires or network up event is received.
 /// Note: -  This class can also be used by `sync` to watch for network events and back-off based on timer in future.
-final class AWSMutationRetryHelper: Cancellable {
+final class AWSMutationRetryNotifier: Cancellable {
     private var nextSyncTimer: DispatchSourceTimer?
     private var retryAttemptNumber: Int
     private var retryStrategy: AWSAppSyncRetryStrategy = .exponential
@@ -26,23 +26,27 @@ final class AWSMutationRetryHelper: Cancellable {
         
         retryOperationQueue = OperationQueue()
         retryOperationQueue.maxConcurrentOperationCount = 1
-        
-        let delayForCurrentAttempt = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: retryAttemptNumber, retryStrategy: retryStrategy)
-        // Either follow the advice from retry strategy or fallback to max wait.
-        let delay = min(delayForCurrentAttempt, AWSAppSyncRetryHandler.maxWaitMilliseconds)
-        let interval: DispatchTimeInterval = .milliseconds(delay)
-        let deadline = DispatchTime.now() + interval
+        retryOperationQueue.name = "com.amazonaws.service.appsync.retryoperationqueue"
         
         //  Enable notification for reachability.
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(AWSMutationRetryHelper.didConnectivityChange(notification:)),
+            selector: #selector(AWSMutationRetryNotifier.didConnectivityChange(notification:)),
             name: .appSyncReachabilityChanged,
             object: nil
         )
         
         // Start timer as well for retrying  mutation.
-        scheduleTimer(at: deadline)
+        // The timer is started on the operation queue to avoid any potential data races in the requester.
+        retryOperationQueue.addOperation {
+            let delayForCurrentAttempt = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: retryAttemptNumber, retryStrategy: self.retryStrategy)
+            // Either follow the advice from retry strategy or fallback to max wait.
+            let delay = min(delayForCurrentAttempt, AWSAppSyncRetryHandler.maxWaitMilliseconds)
+            let interval: DispatchTimeInterval = .milliseconds(delay)
+            let deadline = DispatchTime.now() + interval
+            self.scheduleTimer(at: deadline)
+        }
+        
     }
     
     deinit {
@@ -54,7 +58,7 @@ final class AWSMutationRetryHelper: Cancellable {
     
     private func scheduleTimer(at deadline: DispatchTime) {
         nextSyncTimer = DispatchSource.makeOneOffDispatchSourceTimer(deadline: deadline, queue: handlerQueue) {
-            AppSyncLog.debug("Timer fired, attempting mutation operation")
+            AppSyncLog.debug("Timer fired, attempting mutation operation. Retry number: \(self.retryAttemptNumber)")
             self.retryOperationQueue.addOperation {
                 self.notifyCallback()
             }
@@ -80,11 +84,11 @@ final class AWSMutationRetryHelper: Cancellable {
     }
     
     @objc private func didConnectivityChange(notification: Notification) {
-        // If internet was disconnected and is available now, perform deltaSync
+        // If internet was disconnected and is available now, perform mutation
         let connectionInfo = notification.object as! AppSyncConnectionInfo
         
         if connectionInfo.isConnectionAvailable {
-            AppSyncLog.debug("Connection state updated, attempting mutation operation")
+            AppSyncLog.debug("Connection state updated, attempting mutation operation. Retry number: \(retryAttemptNumber)")
             retryOperationQueue.addOperation {
                 self.notifyCallback()
             }

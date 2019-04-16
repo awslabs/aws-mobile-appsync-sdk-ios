@@ -73,7 +73,7 @@ final class AWSPerformMutationQueue {
             AppSyncLog.error("error saving offline mutation: \(error)")
         }
 
-        let operation = AWSPerformMutationOperation(
+        let operation = SessionMutationOperation(
             appSyncClient: appSyncClient,
             handlerQueue: handlerQueue,
             mutation: mutation,
@@ -103,7 +103,7 @@ final class AWSPerformMutationQueue {
             }
 
             for mutation in mutations {
-                let operation = AWSPerformOfflineMutationOperation(
+                let operation = CachedMutationOperation(
                     appSyncClient: appSyncClient,
                     networkClient: networkClient,
                     handlerQueue: .main,
