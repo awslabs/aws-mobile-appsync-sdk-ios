@@ -13,7 +13,7 @@ final class SessionMutationOperation<Mutation: GraphQLMutation>: AsynchronousOpe
     private let mutation: Mutation
     private let mutationConflictHandler: MutationConflictHandler<Mutation>?
     private let mutationResultHandler: OperationResultHandler<Mutation>?
-    var currentAttemptNumber: Int = 1
+    var currentAttemptNumber = 1
     var mutationNextStep: MutationState = .unknown
     var mutationRetryNotifier: AWSMutationRetryNotifier?
 

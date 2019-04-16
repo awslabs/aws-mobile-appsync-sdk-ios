@@ -12,7 +12,7 @@ final class CachedMutationOperation: AsynchronousOperation, Cancellable {
     private weak var networkClient: AWSNetworkTransport?
     private let handlerQueue: DispatchQueue
     let mutation: AWSAppSyncMutationRecord
-    var currentAttemptNumber: Int = 1
+    var currentAttemptNumber = 1
     var mutationNextStep: MutationState = .unknown
     var mutationRetryNotifier: AWSMutationRetryNotifier?
 

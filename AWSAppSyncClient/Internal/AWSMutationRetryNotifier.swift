@@ -57,8 +57,9 @@ final class AWSMutationRetryNotifier: Cancellable {
     }
     
     private func scheduleTimer(at deadline: DispatchTime) {
+        let currentRetryNumber = self.retryAttemptNumber
         nextSyncTimer = DispatchSource.makeOneOffDispatchSourceTimer(deadline: deadline, queue: handlerQueue) {
-            AppSyncLog.debug("Timer fired, attempting mutation operation. Retry number: \(self.retryAttemptNumber)")
+            AppSyncLog.debug("Timer fired, attempting mutation operation. Retry number: \(currentRetryNumber)")
             self.retryOperationQueue.addOperation {
                 self.notifyCallback()
             }
