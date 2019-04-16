@@ -17,6 +17,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 - Fixed incorrect AWSCore dependency version in podspec ([Issue #190](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/190))
 - Fixed data races in AppSyncMQTTClient that were causing crashes ([Issue #184](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/184))
+- Fixed bug where canceling a mutation properly removes it from the persistent mutation cache.  ([Issue #187](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/187))
 
 ### Misc. Updates
 
