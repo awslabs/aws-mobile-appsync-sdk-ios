@@ -152,7 +152,6 @@ final class SessionMutationOperation<Mutation: GraphQLMutation>: AsynchronousOpe
     override func cancel() {
         super.cancel()
         networkTask?.cancel()
-        self.notifyCompletion(nil, error: nil)
     }
 
     // MARK: - CustomStringConvertible

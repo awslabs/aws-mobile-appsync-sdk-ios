@@ -20,10 +20,6 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 - If using a custom auth client, while invoking the error callback for auth provider, it is recommended to include `NSURLErrorDomain` in the `domain` field and the indicated error code in `code` field.
 - There are no API changes required to update to this behavior
 
-### Bug Fixes
-
-- Fixed bug where canceling a mutation properly removes it from the persistent mutation cache.  ([Issue #187](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/187))
-
 ## 2.10.4
 
 ### New Features
