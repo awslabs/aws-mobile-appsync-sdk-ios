@@ -1,0 +1,6 @@
+framework module Pods_AWSAppSyncTestHostApp {
+  umbrella header "Pods-AWSAppSyncTestHostApp-umbrella.h"
+
+  export *
+  module * { export * }
+}

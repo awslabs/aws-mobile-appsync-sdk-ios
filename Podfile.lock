@@ -1,16 +1,16 @@
 PODS:
-  - AWSAuthCore (2.9.3):
-    - AWSCore (= 2.9.3)
-  - AWSCognitoIdentityProvider (2.9.3):
+  - AWSAuthCore (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSCognitoIdentityProvider (2.9.5):
     - AWSCognitoIdentityProviderASF (= 1.0.1)
-    - AWSCore (= 2.9.3)
+    - AWSCore (= 2.9.5)
   - AWSCognitoIdentityProviderASF (1.0.1)
-  - AWSCore (2.9.3)
-  - AWSMobileClient (2.9.3):
-    - AWSAuthCore (= 2.9.3)
-    - AWSCognitoIdentityProvider (= 2.9.3)
-  - AWSS3 (2.9.3):
-    - AWSCore (= 2.9.3)
+  - AWSCore (2.9.5)
+  - AWSMobileClient (2.9.5):
+    - AWSAuthCore (= 2.9.5)
+    - AWSCognitoIdentityProvider (= 2.9.5)
+  - AWSS3 (2.9.5):
+    - AWSCore (= 2.9.5)
   - ReachabilitySwift (4.3.0)
   - SQLite.swift (0.11.5):
     - SQLite.swift/standard (= 0.11.5)
@@ -21,7 +21,7 @@ DEPENDENCIES:
   - AWSMobileClient (~> 2.9.0)
   - AWSS3 (~> 2.9.0)
   - ReachabilitySwift (= 4.3.0)
-  - SQLite.swift (= 0.11.5)
+  - SQLite.swift (from `https://github.com/stephencelis/SQLite.swift.git`, commit `861ff28adec8d175e7f5923340947f0895121416`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -32,18 +32,27 @@ SPEC REPOS:
     - AWSMobileClient
     - AWSS3
     - ReachabilitySwift
-    - SQLite.swift
+
+EXTERNAL SOURCES:
+  SQLite.swift:
+    :commit: 861ff28adec8d175e7f5923340947f0895121416
+    :git: https://github.com/stephencelis/SQLite.swift.git
+
+CHECKOUT OPTIONS:
+  SQLite.swift:
+    :commit: 861ff28adec8d175e7f5923340947f0895121416
+    :git: https://github.com/stephencelis/SQLite.swift.git
 
 SPEC CHECKSUMS:
-  AWSAuthCore: 616e8c65607d7d4b29a1320e62fe2c6586f2f396
-  AWSCognitoIdentityProvider: 827e8d7ec506dd09ed4f72afe7be587a6dd85af5
+  AWSAuthCore: 62400ec16e67ebe810f0f8b662e8c532487d0178
+  AWSCognitoIdentityProvider: 52d859858e5166513fd7e1774d15596f405fa115
   AWSCognitoIdentityProviderASF: f94f1a502e72ef3d0a1de93e10bf7a79c8698118
-  AWSCore: 5cbb6c6ccfad4b55e494c2e8df87781512f7881e
-  AWSMobileClient: 57b907ae11832376a2d7cf07eba5fbe2c6b8cfa4
-  AWSS3: f016dddb6de858f0cc328d4e10a551299a66a3bb
+  AWSCore: 90ddc0234a321d5649c9572b1447f528f68d41b9
+  AWSMobileClient: 43aeda9d2e89438c70b456d96c1a1c347e8ec4dc
+  AWSS3: 09de855268185fe8403ca03131f3a26c270aa037
   ReachabilitySwift: 408477d1b6ed9779dba301953171e017c31241f3
-  SQLite.swift: 6e5356850bb1791459f8c16d6ee9195b28714a2e
+  SQLite.swift: 7e42c4b88dc7a5d764fbd431001e6d8dc8c1cfce
 
-PODFILE CHECKSUM: 7d711ba0bc54981d63f815ffe15ef7fc945d6a0f
+PODFILE CHECKSUM: c741199cf71571e49bb9ee0585a5be2221204021
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.6.1

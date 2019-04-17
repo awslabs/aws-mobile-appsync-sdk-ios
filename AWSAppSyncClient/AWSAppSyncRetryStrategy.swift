@@ -6,7 +6,6 @@
 
 import Foundation
 
-
 /// The retry strategy to be used by the `AWSAppSyncClient`.
 /// You can specify this in the `AWSAppSyncClientConfiguration`.
 ///
