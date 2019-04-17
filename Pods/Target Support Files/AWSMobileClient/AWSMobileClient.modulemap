@@ -1,0 +1,6 @@
+framework module AWSMobileClient {
+  umbrella header "AWSMobileClient-umbrella.h"
+
+  export *
+  module * { export * }
+}

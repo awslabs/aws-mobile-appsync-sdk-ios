@@ -2,8 +2,9 @@
 //  AppDelegate.swift
 //  AWSAppSyncTestApp
 //
-//  Created by Dubal, Rohan on 9/11/18.
-//  Copyright © 2018 Amazon Web Services. All rights reserved.
+// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Licensed under the Amazon Software License
+// http://aws.amazon.com/asl/
 //
 
 import UIKit

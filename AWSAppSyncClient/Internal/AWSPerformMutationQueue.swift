@@ -54,9 +54,7 @@ final class AWSPerformMutationQueue {
         } else {
             persistentCache = nil
         }
-
-        self.suspendOrResumeQueue(reachabiltyChangeNotifier: reachabiltyChangeNotifier)
-        reachabiltyChangeNotifier?.add(watcher: self)
+        
     }
 
     // MARK: - Queue operations
@@ -75,7 +73,7 @@ final class AWSPerformMutationQueue {
             AppSyncLog.error("error saving offline mutation: \(error)")
         }
 
-        let operation = AWSPerformMutationOperation(
+        let operation = SessionMutationOperation(
             appSyncClient: appSyncClient,
             handlerQueue: handlerQueue,
             mutation: mutation,
@@ -94,24 +92,6 @@ final class AWSPerformMutationQueue {
         return operation
     }
 
-    func suspend() {
-        AppSyncLog.verbose("Suspending OperationQueue")
-        operationQueue.isSuspended = true
-    }
-
-    func resume() {
-        AppSyncLog.verbose("Resuming OperationQueue")
-        operationQueue.isSuspended = false
-    }
-
-    private func suspendOrResumeQueue(reachabiltyChangeNotifier: NetworkReachabilityNotifier?) {
-        if reachabiltyChangeNotifier?.isNetworkReachable ?? false {
-            resume()
-        } else {
-            suspend()
-        }
-    }
-
     // MARK: Offline Mutations
 
     private func loadMutations() throws {
@@ -123,7 +103,7 @@ final class AWSPerformMutationQueue {
             }
 
             for mutation in mutations {
-                let operation = AWSPerformOfflineMutationOperation(
+                let operation = CachedMutationOperation(
                     appSyncClient: appSyncClient,
                     networkClient: networkClient,
                     handlerQueue: .main,
@@ -182,17 +162,4 @@ final class AWSPerformMutationQueue {
             .catch { error in AppSyncLog.error("\(#function) failure: \(error)") }
     }
 
-}
-
-// MARK: - NetworkConnectionNotification
-
-extension AWSPerformMutationQueue: NetworkReachabilityWatcher {
-
-    func onNetworkReachabilityChanged(isEndpointReachable: Bool) {
-        if isEndpointReachable {
-            resume()
-        } else {
-            suspend()
-        }
-    }
 }
