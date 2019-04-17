@@ -1241,9 +1241,11 @@ Outputs:
     Value: !Ref AWS::Region
 
   BucketName:
+    Condition: AuthTypeIsIAM
     Value: !Ref S3Bucket
     Description: Bucket name for the S3 bucket.  This value should be included in your appsync_test_credentials.json file.
   BucketRegion:
+    Condition: AuthTypeIsIAM
     Description: The AWS Region of the S3 bucket. This value should be included in your appsync_test_credentials.json file.
     Value: !Ref AWS::Region
 
