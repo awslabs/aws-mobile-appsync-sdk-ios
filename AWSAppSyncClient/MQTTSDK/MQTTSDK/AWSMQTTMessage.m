@@ -13,7 +13,7 @@
 // permissions and limitations under the License.
 //
 
-#import "AWSCocoaLumberjack.h"
+#import "AppSyncLogHelper.h"
 #import "AWSMQTTMessage.h"
 
 @implementation AWSMQTTMessage

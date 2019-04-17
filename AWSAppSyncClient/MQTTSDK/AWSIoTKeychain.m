@@ -13,7 +13,7 @@
 // permissions and limitations under the License.
 //
 
-#import "AWSCocoaLumberjack.h"
+#import "AppSyncLogHelper.h"
 #import "AWSIoTKeychain.h"
 
 NSString *const AWSIoTKeychainStartPrivateKeyTag = @"-----BEGIN RSA PRIVATE KEY-----\n";

@@ -7,8 +7,7 @@
 import Foundation
 
 final class AWSMutationRetryAdviceHelper {
-    
-    
+
     /// This method is a special retry evaluator currently only used for mutations.It is responsible to identify if the error is caused due to internet
     /// not being available or appsync hosts not reachable from the client. It evaluates it by checking for error codes in NSURLErrorDomain.
     /// We have an additional HTTP layer retry handleer which is responsible to parse and retry errors which occur at HTTP layer(5XX, 429 status codes.)
