@@ -9,8 +9,10 @@ target 'AWSAppSync' do
   # The latest official release of SQLite.swift does not work with apps
   # compiled in Xcode 10.2 because it relies on the format of the `#function`
   # expression behavior, which changed between 10.1 and 10.2. This was fixed in
-  # the master branch.
-  pod 'SQLite.swift', :git => 'https://github.com/stephencelis/SQLite.swift.git', :commit => '861ff28adec8d175e7f5923340947f0895121416'
+  # the master branch. However, we cannot specify the master branch in the
+  # podspec file, so until we resolve this we will remain on the broken
+  # version.
+  pod 'SQLite.swift', '0.11.5'
 
   # We are pinning to this version as 4.3.1 updates XCode requirements to Xcode
   # 10.2 and Swift 5. We currently intend to keep Xcode 10+ and Swift 4+ as
@@ -24,7 +26,7 @@ target 'AWSAppSyncTestCommon' do
   pod 'ReachabilitySwift', '4.3.0'
   # We directly access a database connection to verify certain initialization
   # setups
-  pod 'SQLite.swift', :git => 'https://github.com/stephencelis/SQLite.swift.git', :commit => '861ff28adec8d175e7f5923340947f0895121416'
+  pod 'SQLite.swift', '0.11.5'
 end
 
 target 'AWSAppSyncTestApp' do
