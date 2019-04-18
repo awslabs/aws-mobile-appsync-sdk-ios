@@ -7,6 +7,7 @@ also includes support for offline operations.
 
 ### Bug Fixes
 - Updated SQLite.swift to master to fix caching error. ([Issue #211](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/211))
+- Fixed a bug where cancelled mutations would not be cleared from the persistent store and would be sent to service on app restart. See [issue #187](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/187)
 
 ### Misc. Updates
 - Updated AWS SDK dependencies to 2.9.5

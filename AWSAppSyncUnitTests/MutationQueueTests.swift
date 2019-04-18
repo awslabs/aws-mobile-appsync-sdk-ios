@@ -615,6 +615,31 @@ class MutationQueueTests: XCTestCase {
 
         wait(for: [mutationWasPerformed], timeout: 1.0)
     }
+    
+    func testCancelingOfflineMutationRemovesFromQueue() throws {
+        
+        let reachability = MockReachabilityProvidingFactory.instance
+        try reachability.startNotifier()
+        reachability.connection = .none
+        
+        NetworkReachabilityNotifier.setupShared(
+            host: "http://www.amazon.com",
+            allowsCellularAccess: true,
+            reachabilityFactory: MockReachabilityProvidingFactory.self)
+        
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+        let mockHTTPTransport = MockAWSNetworkTransport()
+        
+        let persistentCache = try AWSMutationCache(fileURL: cacheConfiguration.offlineMutations!)
+        let n0 = try persistentCache.getStoredMutationRecordsInQueue().await().count
+        let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: cacheConfiguration)
+        let cancellable = appSyncClient.perform(mutation: addPost) { _, _ in }
+        let n1 = try persistentCache.getStoredMutationRecordsInQueue().await().count
+        XCTAssertEqual(n0, n1 - 1 )
+        cancellable.cancel()
+        let n2 = try persistentCache.getStoredMutationRecordsInQueue().await().count
+        XCTAssertEqual(n0, n2)
+    }
 
     // MARK: - Utility methods
 

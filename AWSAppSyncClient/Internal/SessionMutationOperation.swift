@@ -91,8 +91,14 @@ final class SessionMutationOperation<Mutation: GraphQLMutation>: AsynchronousOpe
     }
 
     private func notifyCompletion(_ result: GraphQLResult<Mutation.Data>?, error: Error?) {
+        // notify operation completion block which deletes the mutation from persistent store.
         operationCompletionBlock?(self, error)
 
+        // Validate that either the result or error is set for the operation.
+        // If niether is set set, it is a cancelled operation and we do not
+        // need to invoke the result handler of the developer.
+        guard result != nil || error != nil else {return}
+        
         if let mutationResultHandler = mutationResultHandler {
             handlerQueue.async {
                 mutationResultHandler(result, error)
@@ -152,6 +158,7 @@ final class SessionMutationOperation<Mutation: GraphQLMutation>: AsynchronousOpe
     override func cancel() {
         super.cancel()
         networkTask?.cancel()
+        self.notifyCompletion(nil, error: nil)
     }
 
     // MARK: - CustomStringConvertible
