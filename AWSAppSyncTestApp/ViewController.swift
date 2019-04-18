@@ -16,7 +16,7 @@ import AWSMobileClient
 class ViewController: UIViewController {
     
     @IBOutlet weak var resultLabel: UITextView!
-    private static let networkOperationTimeout = 60.0
+    private static let networkOperationTimeout = 180.0
     
     private static let s3TransferUtilityKey = "AWSAppSyncCognitoAuthTestsTransferUtility"
     
