@@ -62,25 +62,27 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
         }
     }
 
-    private func notifyCompletion(_ result: JSONObject?, error: Error?) {
+    private func notifyCompletion(_ result: JSONObject?, error: Error?, completion: @escaping (() -> Void)) {
         operationCompletionBlock?(self, error)
-        withExtendedLifetime(self) {
-            handlerQueue.async { [weak self] in
-                guard
-                    let self = self,
-                    let appSyncClient = self.appSyncClient,
-                    let offlineMutationDelegate = appSyncClient.offlineMutationDelegate
-                    else {
-                        return
-                }
-
-                // call master delegate
-                offlineMutationDelegate.mutationCallback(
-                    recordIdentifier: self.mutation.recordIdentifier,
-                    operationString: self.mutation.operationString!,
-                    snapshot: result,
-                    error: error)
+        handlerQueue.async { [weak self] in
+            guard
+                let self = self,
+                let appSyncClient = self.appSyncClient,
+                let offlineMutationDelegate = appSyncClient.offlineMutationDelegate
+                else {
+                    completion()
+                    return
             }
+
+            // call master delegate
+            offlineMutationDelegate.mutationCallback(
+                recordIdentifier: self.mutation.recordIdentifier,
+                operationString: self.mutation.operationString!,
+                snapshot: result,
+                error: error)
+
+            completion()
+
         }
     }
 
@@ -96,8 +98,10 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
 
         send { result, error in
             if error == nil {
-                self.notifyCompletion(result, error: nil)
-                self.state = .finished
+                self.notifyCompletion(result, error: nil) {
+                    self.state = .finished
+                }
+                
                 return
             }
 
@@ -106,8 +110,10 @@ final class AWSPerformOfflineMutationOperation: AsynchronousOperation, Cancellab
                 return
             }
 
-            self.notifyCompletion(result, error: error)
-            self.state = .finished
+            self.notifyCompletion(result, error: error){
+                self.state = .finished
+            }
+            
         }
     }
 
