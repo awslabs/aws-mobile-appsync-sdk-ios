@@ -6,14 +6,10 @@ also includes support for offline operations.
 ## 2.11.1
 
 ### Bug Fixes
-- Updated SQLite.swift to master to fix caching error. ([Issue #211](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/211))
 - Fixed a bug where cancelled mutations would not be cleared from the persistent store and would be sent to service on app restart. See [issue #187](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/187)
 
 ### Misc. Updates
 - Updated AWS SDK dependencies to 2.9.5
-- Updated SQLite.swift to the latest version of the master branch instead of official release. The latest official release of SQLite.swift does not work
-  with apps compiled in Xcode 10.2 because it relies on the format of the `#function` expression behavior, which changed between 10.1 and 10.2. This
-  was fixed in the master branch.
 
 ## 2.11.0
 
