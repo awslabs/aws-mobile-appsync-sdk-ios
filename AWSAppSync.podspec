@@ -12,14 +12,7 @@ Pod::Spec.new do |s|
   s.swift_version = '4.2'
 
   s.dependency 'AWSCore', '~> 2.9.0'
-
-  # The latest official release of SQLite.swift does not work with apps
-  # compiled in Xcode 10.2 because it relies on the format of the `#function`
-  # expression behavior, which changed between 10.1 and 10.2. This was fixed in
-  # the master branch. However, we cannot specify the master branch in the
-  # podspec file, so until we resolve this we will remain on the broken
-  # version.
-  s.dependency 'SQLite.swift', '0.11.5'
+  s.dependency 'SQLite.swift', '0.11.6'
 
   # We are pinning to this version as 4.3.1 updates XCode requirements to Xcode
   # 10.2 and Swift 5. We currently intend to keep Xcode 10+ and Swift 4+ as

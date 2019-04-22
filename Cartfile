@@ -1,3 +1,7 @@
 github "aws/aws-sdk-ios" ~> 2.8.0
-github "stephencelis/SQLite.swift" ~> 0.11.5
-github "ashleymills/Reachability.swift" ~> 4.3.0
+github "stephencelis/SQLite.swift" ~> 0.11.6
+
+# We are pinning to this version as 4.3.1 updates XCode requirements to Xcode
+# 10.2 and Swift 5. We currently intend to keep Xcode 10+ and Swift 4+ as
+# minimum requirement for development.
+github "ashleymills/Reachability.swift" == 4.3.0
