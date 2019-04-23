@@ -14,7 +14,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ## Setup
 
-> Note: AWS AppSync uses Swift 4.2.1. Use Xcode 10.1 or greater to build.
+> Note: AWS AppSync uses Swift 4.2.1. Use Xcode 10.2 or greater to build.
 
 ### Installing the SDK
 
