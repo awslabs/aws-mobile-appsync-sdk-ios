@@ -10,9 +10,8 @@ also includes support for offline operations.
   that declare direct dependencies on SQLite.swift must update the pods to avoid a conflict and get the fixed version. This new requires that AppSync be
   built using Xcode 10.2 or later.
 
-### Breaking 
-
 ### Misc. Updates
+
 * **Breaking Build Environment Changes**
   - AppSync SDK for iOS now requires Xcode 10.2 or later to build.
 
