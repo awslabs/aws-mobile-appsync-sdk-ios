@@ -66,8 +66,8 @@ public class AWSAppSyncClient {
         try self.init(appSyncConfig: appSyncConfig, reachabilityFactory: nil)
     }
 
-    init(appSyncConfig: AWSAppSyncClientConfiguration,
-         reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil) throws {
+    public init(appSyncConfig: AWSAppSyncClientConfiguration,
+                reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil) throws {
 
         AppSyncLog.info("Initializing AppSyncClient")
 
