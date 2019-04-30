@@ -66,6 +66,19 @@ public class AWSAppSyncClient {
         try self.init(appSyncConfig: appSyncConfig, reachabilityFactory: nil)
     }
 
+    /// Creates a client with the specified `AWSAppSyncClientConfiguration`
+    /// and `NetworkReachabilityProvidingFactory`.
+    ///
+    /// This method is primarily intended to facilitate integration testing, but may be used by apps that wish
+    /// to use their own reachability solution in place of AppSync's bundled reachability framework.
+    ///
+    /// Note that the AppSync client's use of the Reachability client provided by the factory should be
+    /// considered an implementation detail. In particular, apps should not rely on AppSync to inspect network
+    /// reachability status before attempting a network connection.
+    ///
+    /// - Parameters:
+    ///   - appSyncConfig: The `AWSAppSyncClientConfiguration` object.
+    ///   - reachabilityFactory: An optional factory that provides `NetworkReachabilityProviding` instances.
     public init(appSyncConfig: AWSAppSyncClientConfiguration,
                 reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil) throws {
 
