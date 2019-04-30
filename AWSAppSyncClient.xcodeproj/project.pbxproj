@@ -128,6 +128,7 @@
 		17E009DB1FCAB234005031DB /* NormalizedCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B91FCAB234005031DB /* NormalizedCache.swift */; };
 		17E009DC1FCAB234005031DB /* ApolloClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009BA1FCAB234005031DB /* ApolloClient.swift */; };
 		17FD3F58225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17FD3F57225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift */; };
+		3D9BF115227836800079F52F /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9BF114227836800079F52F /* NetworkReachability.swift */; };
 		70C68E4D132FE62623DB8C07 /* Pods_AWSAppSyncTestHostApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C707001F57B091A8A001CAB /* Pods_AWSAppSyncTestHostApp.framework */; };
 		8032C5415EF414C038394D69 /* Pods_AWSAppSyncTestCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */; };
 		A70604C0C722923A70C937A1 /* Pods_AWSAppSyncTestApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57F5A94352E1ABE35159489D /* Pods_AWSAppSyncTestApp.framework */; };
@@ -170,7 +171,7 @@
 		FA7204A121CDA06600938B81 /* awsconfiguration.json in Resources */ = {isa = PBXBuildFile; fileRef = FA7204A021CDA06600938B81 /* awsconfiguration.json */; };
 		FA7A9BF5220D010E004D613D /* AppSyncTestAPI+S3Object.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7A9BF4220D010E004D613D /* AppSyncTestAPI+S3Object.swift */; };
 		FA88833C21DE824100DEBCB3 /* MockAWSAppSyncServiceConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88833B21DE824100DEBCB3 /* MockAWSAppSyncServiceConfigProvider.swift */; };
-		FA88834321E3B8BF00DEBCB3 /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88834221E3B8BF00DEBCB3 /* NetworkReachability.swift */; };
+		FA88834321E3B8BF00DEBCB3 /* NetworkReachabilityNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88834221E3B8BF00DEBCB3 /* NetworkReachabilityNotifier.swift */; };
 		FA88834521E3C2D300DEBCB3 /* AWSAppSyncConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88834421E3C2D300DEBCB3 /* AWSAppSyncConnection.swift */; };
 		FA88834721E3D05800DEBCB3 /* ReachabilityChangeNotifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88834621E3D05800DEBCB3 /* ReachabilityChangeNotifierTests.swift */; };
 		FA88834921E3D1DF00DEBCB3 /* MockReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA88834821E3D1DF00DEBCB3 /* MockReachability.swift */; };
@@ -505,6 +506,7 @@
 		17FD3F57225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncRetryStrategy.swift; sourceTree = "<group>"; };
 		1CC71FAD4E9B09922B42E040 /* Pods_AWSAppSync_AWSAppSyncIntegrationTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncIntegrationTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CDE7D0207B12E4A01B1241D /* Pods-AWSAppSyncTestHostApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestHostApp.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestHostApp/Pods-AWSAppSyncTestHostApp.release.xcconfig"; sourceTree = "<group>"; };
+		3D9BF114227836800079F52F /* NetworkReachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkReachability.swift; sourceTree = "<group>"; };
 		3EFDEC03028113885E64C3EF /* Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncUnitTests/Pods-AWSAppSync-AWSAppSyncUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		41C7F099AA45E55D08A8BA68 /* Pods-ApolloTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ApolloTests/Pods-ApolloTests.release.xcconfig"; sourceTree = "<group>"; };
 		43DE4437D9C5383591E2097D /* Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncUnitTests/Pods-AWSAppSync-AWSAppSyncUnitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -574,7 +576,7 @@
 		FA7204A221CDC04B00938B81 /* MockAuthProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthProviders.swift; sourceTree = "<group>"; };
 		FA7A9BF4220D010E004D613D /* AppSyncTestAPI+S3Object.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppSyncTestAPI+S3Object.swift"; sourceTree = "<group>"; };
 		FA88833B21DE824100DEBCB3 /* MockAWSAppSyncServiceConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAWSAppSyncServiceConfigProvider.swift; sourceTree = "<group>"; };
-		FA88834221E3B8BF00DEBCB3 /* NetworkReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkReachability.swift; sourceTree = "<group>"; };
+		FA88834221E3B8BF00DEBCB3 /* NetworkReachabilityNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkReachabilityNotifier.swift; sourceTree = "<group>"; };
 		FA88834421E3C2D300DEBCB3 /* AWSAppSyncConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncConnection.swift; sourceTree = "<group>"; };
 		FA88834621E3D05800DEBCB3 /* ReachabilityChangeNotifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReachabilityChangeNotifierTests.swift; sourceTree = "<group>"; };
 		FA88834821E3D1DF00DEBCB3 /* MockReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockReachability.swift; sourceTree = "<group>"; };
@@ -835,7 +837,7 @@
 				CC96F8A821BAF45600446EBD /* CachedMutationOperation.swift */,
 				FAE1E0EC21D3D61B005767C7 /* Foundation+Utils.swift */,
 				FAAACC2321DD7AC600D24B37 /* InternalS3ObjectDetails.swift */,
-				FA88834221E3B8BF00DEBCB3 /* NetworkReachability.swift */,
+				FA88834221E3B8BF00DEBCB3 /* NetworkReachabilityNotifier.swift */,
 				CC96F8A621BACA1C00446EBD /* SessionMutationOperation.swift */,
 				FABD706C2203C25600C99B47 /* SQLiteSerialization.swift */,
 				FAD17C6E21C1CDE6008D116C /* SubscriptionMessageQueue.swift */,
@@ -937,6 +939,7 @@
 				FA88834421E3C2D300DEBCB3 /* AWSAppSyncConnection.swift */,
 				17915B041F5F106600C4B73C /* AWSAppSyncHTTPNetworkTransport.swift */,
 				FAAACC2521DD7BC300D24B37 /* AWSAppSyncMutations.swift */,
+				17FD3F57225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift */,
 				FAF5D78C21D3F04E00FC04D2 /* AWSAppSyncServiceConfig.swift */,
 				FA3E128421D5297500F2D19A /* AWSAppSyncServiceConfigError.swift */,
 				FA0D82572230D0AF00E0EA82 /* AWSAppSyncSubscriptionError.swift */,
@@ -946,7 +949,7 @@
 				17A7F8C91FB8BCBC008D1393 /* AWSS3ObjectProtocol.swift */,
 				CCEF79E021DE7FF7004AD64D /* Deprecations+Removals.swift */,
 				17DECF621F59F5FF004B0512 /* Info.plist */,
-				17FD3F57225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift */,
+				3D9BF114227836800079F52F /* NetworkReachability.swift */,
 			);
 			path = AWSAppSyncClient;
 			sourceTree = "<group>";
@@ -1922,8 +1925,9 @@
 				178B31071FCDB34100EA4619 /* AWSAppSyncClientS3ObjectsExtensions.swift in Sources */,
 				174F80952107E74F00775D0D /* AWSMQTTMessage.m in Sources */,
 				17E009CF1FCAB234005031DB /* ResultOrPromise.swift in Sources */,
-				FA88834321E3B8BF00DEBCB3 /* NetworkReachability.swift in Sources */,
+				FA88834321E3B8BF00DEBCB3 /* NetworkReachabilityNotifier.swift in Sources */,
 				FA3E128521D5297500F2D19A /* AWSAppSyncServiceConfigError.swift in Sources */,
+				3D9BF115227836800079F52F /* NetworkReachability.swift in Sources */,
 				174F809B2107E75C00775D0D /* AWSIoTWebSocketOutputStream.m in Sources */,
 				17E009DB1FCAB234005031DB /* NormalizedCache.swift in Sources */,
 				17E009C41FCAB234005031DB /* AsynchronousOperation.swift in Sources */,
