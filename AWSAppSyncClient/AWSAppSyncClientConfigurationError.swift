@@ -8,6 +8,7 @@ import Foundation
 
 public enum AWSAppSyncClientConfigurationError {
     case invalidAuthConfiguration(String)
+    case invalidClientDatabasePrefixConfiguration(String)
 }
 
 extension AWSAppSyncClientConfigurationError: Error {
@@ -21,6 +22,8 @@ extension AWSAppSyncClientConfigurationError: LocalizedError {
         switch self {
         case .invalidAuthConfiguration(let message):
             return "Invalid Auth Configuration: \(message)"
+        case .invalidClientDatabasePrefixConfiguration(let message):
+            return "Invalid Client Database Prefix Configuration: \(message)"
         }
     }
 }

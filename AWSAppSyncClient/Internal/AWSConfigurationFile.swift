@@ -26,5 +26,9 @@ struct AWSConfigurationFile {
         /// If the `authMode` value is "API_KEY", this value should be filled in with a valid value. If not, then the AppSync
         /// constructors must be provided with an already-configured apiKeyProvider.
         static let apiKey = "ApiKey"
+
+        /// This prefix is used to partition the caches and on-disk stores used by the client. Changing this value will
+        /// orphan resources created by previous instances of the client.
+        static let clientDatabasePrefix = "ClientDatabasePrefix"
     }
 }

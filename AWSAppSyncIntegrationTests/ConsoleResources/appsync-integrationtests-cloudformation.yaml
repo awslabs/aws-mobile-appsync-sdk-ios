@@ -38,6 +38,9 @@ Resources:
     Properties:
       Name: !Sub ${ResourceNamePrefix}-${AuthType}
       AuthenticationType: !If [AuthTypeIsAPIKey, API_KEY, AWS_IAM]
+      AdditionalAuthenticationProviders:
+        -
+          AuthenticationType: "API_KEY"
 
   GraphQLSchema:
     Type: "AWS::AppSync::GraphQLSchema"
@@ -131,12 +134,12 @@ Resources:
           testMutationWithoutParameters: Boolean
         }
 
-        type Post {
+        type Post @aws_iam @aws_api_key {
           id: ID!
           author: String!
           title: String!
           content: String!
-          url: AWSURL
+          url: AWSURL @aws_iam
           ups: Int!
           downs: Int!
           file: S3Object
@@ -145,7 +148,7 @@ Resources:
         }
 
         type Query {
-          getPost(id: ID!): Post
+          getPost(id: ID!): Post @aws_iam @aws_api_key
           listPosts: [Post]
           listPostsDelta(lastSync: AWSTimestamp): [Post]
         }

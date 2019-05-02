@@ -27,6 +27,18 @@ struct MockAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
     }
 }
 
+struct MockAWSAPIKeyAuthProviderForIAMEndpoint: AWSAPIKeyAuthProvider {
+    var apiKey: String
+
+    init(with configuration: AppSyncClientTestConfiguration) {
+        apiKey = configuration.apiKeyForCognitoPoolEndpoint
+    }
+
+    func getAPIKey() -> String {
+        return apiKey
+    }
+}
+
 class MockAWSCredentialsProvider: NSObject, AWSCredentialsProvider {
     static let mockCredentials = AWSCredentials(accessKey: "THE_ACCESS_KEY",
                                                 secretKey: "THE_SECRET_KEY",

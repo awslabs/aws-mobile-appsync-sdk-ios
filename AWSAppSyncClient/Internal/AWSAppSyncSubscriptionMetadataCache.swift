@@ -56,4 +56,8 @@ final class AWSSubscriptionMetaDataCache {
         }
         return syncDate
     }
+
+    internal func clear() throws {
+        try db.run("DELETE FROM subscription_metadata")
+    }
 }

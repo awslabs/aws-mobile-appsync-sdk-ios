@@ -28,6 +28,8 @@ struct AppSyncClientTestConfigurationDefaults {
     // Equivalent to the JSON key "AppSyncEndpointAPIKeyRegion"
     static let apiKeyEndpointRegion = AWSRegionType.USEast1
 
+    static let apiKeyForCognitoPoolEndpoint = "YOUR_API_KEY"
+
     // MARK: - Values used for IAM-based tests
 
     // Equivalent to the JSON key "CognitoIdentityPoolId"
