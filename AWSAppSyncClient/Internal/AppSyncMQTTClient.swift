@@ -13,7 +13,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     private let concurrencyQueue = DispatchQueue(label: "com.amazonaws.AppSyncMQTTClient.concurrencyQueue", attributes: .concurrent)
 
     /// A set of subscriptions that have been requested to be stopped. Any future actions on them will be ignored.
-    private var cancelledSubscriptions = [Int: Bool]()
+    var cancelledSubscriptions = [Int: Bool]()
 
     /// A timer to start a subscription in the near future
     private var scheduledSubscription: DispatchSourceTimer?
@@ -25,7 +25,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     // Associations of topics to clients to watchers
 
     /// A map of MQTT clients to their associated topics
-    private var topicsByClient = [AWSIoTMQTTClient<AnyObject, AnyObject>: Set<String>]()
+    var topicsByClient = [AWSIoTMQTTClient<AnyObject, AnyObject>: Set<String>]()
 
     /// MQTT clients that have been flagged for cancellation due to a reconnect, but are waiting to be released pending
     /// a subscription acknowledgement from the service
@@ -158,7 +158,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
     ///
     /// - Parameters:
     ///   - watcher: The watcher for which to cancel subscriptions
-    func cancelSubscription(for watcher: MQTTSubscriptionWatcher) {
+    func cancelSubscription(for watcher: MQTTSubscriptionWatcher, userOriginatedDisconnect: Bool) {
         let watcherId = watcher.getIdentifier()
 
         AppSyncLog.debug("Stopping watcher \(watcherId)")
@@ -172,7 +172,14 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             self.cancelledSubscriptions[watcherId] = false
 
             let unwatchedTopics = self.subscribersByTopic.removeUnassociatedTopics()
-            unwatchedTopics.forEach(self.unsubscribeTopic)
+            // If the user issued disconnect on an active subscription, we notify the underlying
+            // MQTT client to unsubscribe from the topic which was getting the messages.
+            if userOriginatedDisconnect {
+                unwatchedTopics.forEach(self.unsubscribeTopic)
+            }
+            
+            // We clean up internal book keeping of topic-client since we do not need it anymore.
+            unwatchedTopics.forEach(self.cleanUpMQTTClientMetadata(for:))
 
             let clientsWithNoTopics = self.removeClientsWithNoTopics()
 
@@ -214,6 +221,16 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
             case .disconnected, .unknown:
                 break
             }
+        }
+    }
+    
+    
+    /// Cleans up internal book keeping where we hold the topic-client mapping.
+    /// This method must be called from `concurrencyQueue`.
+    ///
+    /// - Parameter topic: String
+    private func cleanUpMQTTClientMetadata(for topic: String) {
+        for (client, _) in topicsByClient.filter({ $0.value.contains(topic) }) {
             topicsByClient[client]?.remove(topic)
         }
     }
@@ -375,6 +392,7 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         }
 
         subscriptionsQueue.async {
+            subscribers.forEach { self.cancelSubscription(for: $0.self, userOriginatedDisconnect: false) }
             subscribers.forEach { $0.disconnectCallbackDelegate(error: error) }
         }
     }

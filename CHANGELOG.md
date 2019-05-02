@@ -9,6 +9,13 @@ also includes support for offline operations.
 
 * Make network reachability provider mockable See [PR #245](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/245). Thanks @gleue! 🎉
 
+### Bug Fixes
+
+* Improved internal handling of subscription cancellation and disconnect.
+  - With this update, the cancellation behavior for subscription is more robust in both cases - when developer issues `cancel` and when SDK notifies `connectionError` in the `statusChangeHandler` and `resultHandler`
+  - As a best practice, we recommend that if you do not want to receive any more callbacks on the `statusChangeHandler` and `resultHandler` for the subscription, issue a `cancel` which would immediately stop all communication to the watcher.
+  - Once `cancel` is issued, no notifications or error callbacks will be given to the watcher. If the watcher object is not reference from application code, it will internally issue a `cancel` and ensure that no callbacks are given. 
+
 ## 2.12.0
 
 ### Bug Fixes

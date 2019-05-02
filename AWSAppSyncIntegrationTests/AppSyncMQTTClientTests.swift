@@ -71,6 +71,50 @@ class AppSyncMQTTClientTests: XCTestCase {
         wait(for: [expectation], timeout: 2)
     }
     
+    func testDisconnectIssuedByMQTTClient() {
+        
+        let expectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
+        
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (client, _, _, _) -> Bool in
+            expectation.fulfill()
+            
+            // Schedule a disconnect status trigger as if MQTT client dropped connection
+            DispatchQueue.init(label: "appsync.test.disconnect").asyncAfter(deadline: .now() + .seconds(3), execute: {
+                client.clientDelegate.connectionStatusChanged(.connectionError, client: client)
+            })
+            
+            return true
+        }
+        
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
+        
+        let client = AppSyncMQTTClient()
+        
+        let watcher = MockSubscriptionWatcher(topics: ["1", "2"])
+        let topics = ["2", "3"]
+        
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: topics)], identifier: 1)
+        
+        wait(for: [expectation], timeout: 2)
+        
+        XCTAssert(client.cancelledSubscriptions.count == 0, "No subscriptions should be cancelled as the disconnect is invoked after 3 seconds and the timeout for tests is 2 seconds.")
+        
+        XCTAssert(client.topicsByClient.count == 1, "There should be 1 client mapped for the watcher as the disconnect is invoked after 3 seconds and the timeout for tests is 2 seconds.")
+        
+        // sleep till the dispatch queue "appsync.test.disconnect" fires a connection error event
+        sleep(5)
+        
+        // The connection error event would notify the watcher of connection error
+        // The AppSyncMQTTClient is then responsible for discarding terminated AppSyncIOTMQTT clients
+        // The AppSyncMQTTClient should not have any details of topics and MQTT clients after cleanup
+        
+        XCTAssert(client.cancelledSubscriptions.count == 1, "1 subscription should be cancelled due to disconnect error.")
+        
+        XCTAssert(client.topicsByClient.count == 0, "The topics by client dictionary should be cleaned up as there was a connection error received. The clean up should be done regardless of developer calling `cancel`.")
+        
+    }
+    
     func testIgnoreSubscriptionsWithoutInterestedTopics() {
         
         let expectation = XCTestExpectation(description: "No call to AWSIoTMQTTClient connect should be made")
@@ -139,7 +183,7 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         autoreleasepool {
             let deallocBlock: (MQTTSubscriptionWatcher) -> Void = { (object) in
-                client.cancelSubscription(for: object)
+                client.cancelSubscription(for: object, userOriginatedDisconnect: true)
             }
             
             let watcher = MockSubscriptionWatcher(topics: ["1", "2"], deallocBlock: deallocBlock)
@@ -299,9 +343,51 @@ class AppSyncMQTTClientTests: XCTestCase {
         
         wait(for: [expectation], timeout: 2)
         
-        client.cancelSubscription(for: watcher)
+        client.cancelSubscription(for: watcher, userOriginatedDisconnect: true)
         
         wait(for: [disconnectExpectation], timeout: 2)
+    }
+    
+    func testUserIssuedSubscriptionCancel() {
+        let expectation = XCTestExpectation(description: "AWSIoTMQTTClient should connect")
+        let disconnectExpectation = XCTestExpectation(description: "AWSIoTMQTTClient should disconnect")
+        
+        let connect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>, NSString, NSString, Any?) -> Bool = { (_, _, _, _) -> Bool in
+            expectation.fulfill()
+            return true
+        }
+        
+        let disconnect: @convention(block) (AWSIoTMQTTClient<AnyObject, AnyObject>) -> Void = { (_) in
+            disconnectExpectation.fulfill()
+        }
+        
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.connect(withClientId:presignedURL:statusCallback:)), withBlock: connect)
+        AWSIoTMQTTClient<AnyObject, AnyObject>.swizzle(selector: #selector(AWSIoTMQTTClient<AnyObject, AnyObject>.disconnect), withBlock: disconnect)
+        
+        let client = AppSyncMQTTClient()
+        
+        let watcher = MockSubscriptionWatcher(topics: ["1", "2"])
+        
+        client.add(watcher: watcher, forNewTopics: watcher.getTopics())
+        client.startSubscriptions(subscriptionInfos: [AWSSubscriptionInfo(clientId: "1", url: "url", topics: watcher.topics)], identifier: 1)
+        
+        wait(for: [expectation], timeout: 2)
+        
+        XCTAssert(client.cancelledSubscriptions.count == 0, "No subscriptions should be cancelled as the cancel opeartion is not yet performed.")
+        
+        XCTAssert(client.topicsByClient.count == 1, "There should be 1 client mapped for the watcher as the cancel operation is not yet performed.")
+        
+        client.cancelSubscription(for: watcher, userOriginatedDisconnect: true)
+        
+        wait(for: [disconnectExpectation], timeout: 2)
+        
+        // The test here is that when the developer invokes cancel, AppSyncMQTT client performs metadata cleanup
+        // The AppSyncMQTTClient is responsible for discarding terminated AppSyncIOTMQTT clients
+        // The AppSyncMQTTClient should not have any details of topics and MQTT clients after cleanup
+        
+        XCTAssert(client.cancelledSubscriptions.count == 1, "1 subscription should be cancelled due to developer invoking `cancelSubscription`.")
+        
+        XCTAssert(client.topicsByClient.count == 0, "The topics by client dictionary should be cleaned up as there was a cancel from developer received.")
     }
 
 }
