@@ -957,6 +957,10 @@ static const NSString *SDK_VERSION = @"2.6.19";
                                                                      object:nil];
                     self.reconnectThread.name = [NSString stringWithFormat:@"AWSIoTMQTTClient reconnect %@", self.clientId];
                     [self.reconnectThread start];
+                } else {
+                    //Clear all session state here as once disconnected, we do not retain any metadata.
+                    // This is done currently on `self.userDidIssueDisconnect`, but not when the error is from MQTT session error.
+                    [self.topicListeners removeAllObjects];
                 }
             }
             break;
@@ -986,6 +990,10 @@ static const NSString *SDK_VERSION = @"2.6.19";
                     self.reconnectThread = [[NSThread alloc] initWithTarget:self selector:@selector(initiateReconnectTimer:) object:nil];
                     self.reconnectThread.name = [NSString stringWithFormat:@"AWSIoTMQTTClient reconnect %@", self.clientId];
                     [self.reconnectThread start];
+                } else {
+                    // Clear all session state here as once errored out, we do not retain any metadata.
+                    // This is done currently on `self.userDidIssueDisconnect`, but not when the error is from MQTT session error.
+                    [self.topicListeners removeAllObjects];
                 }
             }
             break;

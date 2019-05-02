@@ -52,6 +52,10 @@ private class SubscriptionsOrderHelper {
     
 }
 
+enum CancellationSource {
+    case unknown, userInitiated, sdkInitiated, `deinit`
+}
+
 /// A `AWSAppSyncSubscriptionWatcher` is responsible for watching the subscription, and calling the result handler with a new result whenever any of the data is published on the MQTT topic. It also normalizes the cache before giving the callback to customer.
 public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscription>: MQTTSubscriptionWatcher, Cancellable {
 
@@ -65,6 +69,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     private let store: ApolloStore
     private var isCancelled: Bool = false
     private var subscriptionTopic: [String]?
+    private var cancellationSource: CancellationSource = .unknown
 
     public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
     private var status = AWSAppSyncSubscriptionWatcherStatus.connecting
@@ -183,7 +188,10 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
 
     deinit {
         // call cancel here before exiting
-        cancel()
+        if self.cancellationSource == .unknown {
+            self.cancellationSource = .deinit
+        }
+        _cancel()
     }    
     
     /// Cancel any in progress fetching operations and unsubscribe from the messages. After canceling, no updates will
@@ -196,14 +204,24 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     /// Specifically, this means that cancelling a subscription watcher will not invoke `statusChangeHandler` or
     /// `resultHandler`, although it will set the internal state of the watcher to `.disconnected`
     public func cancel() {
+        if self.cancellationSource == .unknown {
+            self.cancellationSource = .userInitiated
+        }
+        _cancel()
+    }
+    
+    internal func _cancel() {
         isCancelled = true
         status = .disconnected
-        client?.cancelSubscription(for: self)
-        client = nil
         httpClient = nil
         resultHandler = nil
         statusChangeHandler = nil
         subscriptionTopic = nil
+        if self.cancellationSource == .userInitiated ||
+            self.cancellationSource == .deinit {
+            client?.cancelSubscription(for: self, userOriginatedDisconnect: true)
+        }
+        client = nil
     }
 
     // MARK: - MQTTSubscriptionWatcher
@@ -267,6 +285,12 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     /// - Parameter status: The new AWSIoTMQTTStatus. This will be resolved to a AWSAppSyncSubscriptionStatus and trigger the notification handler
     func statusChangeDelegate(status: AWSIoTMQTTStatus) {
         let subscriptionWatcherStatus = status.toSubscriptionWatcherStatus
+        switch subscriptionWatcherStatus {
+        case .error:
+            self.cancellationSource = .sdkInitiated
+        default:
+            break
+        }
         statusChangeHandler?(subscriptionWatcherStatus)
     }
 
