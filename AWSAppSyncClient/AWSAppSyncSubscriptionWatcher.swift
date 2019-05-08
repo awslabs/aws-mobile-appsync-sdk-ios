@@ -225,7 +225,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         // We signal the semaphore here to ensure that if the subscription request is waiting for HTTP call to return,
         // we do not block on it. The subscription is already cancelled and we can release the wait for other
         // subscriptions to resume.
-        self.semaphore.signal()
+        semaphore.signal()
         httpClient = nil
         resultHandler = nil
         statusChangeHandler = nil
