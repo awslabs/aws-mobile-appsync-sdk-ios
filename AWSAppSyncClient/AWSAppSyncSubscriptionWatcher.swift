@@ -52,7 +52,6 @@ private class SubscriptionsOrderHelper {
     
 }
 
-
 /// Used to determine the reason why a subscription is being cancelled/ disconnected.
 ///
 /// - none: Indicates there is no source of cancellation yet.
@@ -77,6 +76,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     private var isCancelled: Bool = false
     private var subscriptionTopic: [String]?
     private var cancellationSource: CancellationSource = .none
+    private var semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
 
     public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
     private var status = AWSAppSyncSubscriptionWatcherStatus.connecting
@@ -116,15 +116,17 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     }
     
     private func startSubscription() {
-        let semaphore = DispatchSemaphore(value: 0)
-        
         performSubscriptionRequest(completionHandler: { [weak self] (success, error) in
             if let error = error {
                 self?.resultHandler?(nil, nil, error)
             }
-            semaphore.signal()
+            // We release the semaphore here since we know the subscription request round trip to AppSync service
+            // is now completed. The signal will allow the next subscription request to continue executing.
+            self?.semaphore.signal()
         })
-        
+        // We wait for the subscritption request to come back from AppSync service so that we can initiate
+        // the MQTT connection. If the developer calls cancel, the semaphore is released allowing the next
+        // subscription to continue executing.
         semaphore.wait()
     }
 
@@ -220,6 +222,10 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     internal func performCleanUpTasksOnCancel() {
         isCancelled = true
         status = .disconnected
+        // We signal the semaphore here to ensure that if the subscription request is waiting for HTTP call to return,
+        // we do not block on it. The subscription is already cancelled and we can release the wait for other
+        // subscriptions to resume.
+        self.semaphore.signal()
         httpClient = nil
         resultHandler = nil
         statusChangeHandler = nil
