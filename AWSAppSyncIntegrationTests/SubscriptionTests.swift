@@ -243,6 +243,67 @@ class SubscriptionTests: XCTestCase {
     func testSubscriptionResultHandlerCanOperateOnEmptyCacheWithoutBackingDatabase() throws {
         try doSubscriptionResultHandlerTesting(withCacheConfiguration: nil)
     }
+    
+    func testStartStopStartSubscriptions() throws {
+        let appSyncClient = try SubscriptionTests.makeAppSyncClient(authType: self.authType, cacheConfiguration: nil)
+        
+        let subscriptionWatchers = 5
+        let secondsToWait = 1
+        
+        // This expectation indicates that for amount of `subscriptionWatchers` we have, each of them should receive a connected status callback
+        let watchersWhichShouldReceiveCallbackExpectation = expectation(description: "HTTP block of subscription was received.")
+        watchersWhichShouldReceiveCallbackExpectation.expectedFulfillmentCount = subscriptionWatchers
+        // corresponding status change callback for a watcher
+        let statusChangeHandler: SubscriptionStatusChangeHandler = { status in
+            if case .connected = status {
+                watchersWhichShouldReceiveCallbackExpectation.fulfill()
+            }
+        }
+        
+        // This expectation indicates watchers which should not
+        let watchersWhichShouldNotReceiveCallbackExpectation = expectation(description: "HTTP block of subscription should not be received.")
+        watchersWhichShouldNotReceiveCallbackExpectation.isInverted = true
+        // corresponding status change callback for a watcher
+        let statusChangeHandlerNoUpdates: SubscriptionStatusChangeHandler = { status in
+            watchersWhichShouldNotReceiveCallbackExpectation.fulfill()
+        }
+        
+        
+        // we create a dictionary where we hold all the watchers; this mimicks app holding reference to watchers
+        var watchers: [String: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>] = [:]
+        
+        // create an array of object ids to be used in subscription
+        var subscriptionIds: [String] = []
+        for _ in 0 ..< subscriptionWatchers  {
+            subscriptionIds.append(UUID().uuidString)
+        }
+        
+        // Initiate subscription requests for the generated object ids
+        for uuid in subscriptionIds {
+            let watcher = try! appSyncClient.subscribe(subscription: OnUpvotePostSubscription(id: "123"),
+                                                       statusChangeHandler: statusChangeHandlerNoUpdates) { _, _, _ in }
+            watchers[uuid] = watcher
+        }
+        
+        // Immediately cancel all subscriptions (before delayed http callback which we implemented above can be executed.)
+        for uuid in subscriptionIds {
+            watchers[uuid]?.cancel()
+        }
+        // Remove references
+        watchers.removeAll()
+        
+        // Try starting the subscriptions again
+        for uuid in subscriptionIds {
+            
+            let watcher = try! appSyncClient.subscribe(subscription: OnUpvotePostSubscription(id: "123"),
+                                                       statusChangeHandler: statusChangeHandler) { _, _, _ in }
+            watchers[uuid] = watcher
+        }
+        
+        // Wait to ensure that correct callbacks are made and no subscription requests are frozen. Currently we give 2x the amount of time as to number of subscriptions to ensure we get the results back
+        wait(for: [watchersWhichShouldReceiveCallbackExpectation, watchersWhichShouldNotReceiveCallbackExpectation], timeout: Double(subscriptionWatchers) * Double(secondsToWait) * 2)
+        
+    }
 
     // MARK: - Utilities
 
