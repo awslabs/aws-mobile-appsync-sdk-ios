@@ -224,7 +224,6 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
         }
     }
     
-    
     /// Cleans up internal book keeping where we hold the topic-client mapping.
     /// This method must be called from `concurrencyQueue`.
     ///
