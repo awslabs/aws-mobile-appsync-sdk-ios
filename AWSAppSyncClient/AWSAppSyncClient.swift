@@ -29,7 +29,7 @@ public protocol AWSAppSyncOfflineMutationDelegate {
 /// The client for making `Mutation`, `Query` and `Subscription` requests.
 public class AWSAppSyncClient {
 
-    static var prefixTracker: [String:(String, Int)] = [:]
+    static var prefixTracker: [String: (String, Int)] = [:]
     static var prefixTrackerQueue: DispatchQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncClient.clientDatabasePrefixTrackerQueue")
 
     public let apolloClient: ApolloClient?
@@ -175,7 +175,7 @@ public class AWSAppSyncClient {
     /// - Parameters:
     ///   - options Fine-tune which caches are cleared when calling this method
     public func clearCaches(options: ClearCacheOptions = ClearCacheOptions(clearQueries: true, clearMutations: true, clearSubscriptions: true)) throws {
-        var map: [CacheType:Error] = [:]
+        var map: [CacheType: Error] = [:]
         do {
             if options.clearQueries {
                 try store?.clearCache().await()
