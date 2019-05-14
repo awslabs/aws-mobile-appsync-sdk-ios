@@ -162,9 +162,9 @@ final class AWSPerformMutationQueue {
             .catch { error in AppSyncLog.error("\(#function) failure: \(error)") }
     }
 
-    func clearQueue() {
+    func clearQueue() throws {
         operationQueue.cancelAllOperations()
-        _ = persistentCache?.clear()
+        try persistentCache?.clear().await()
     }
 
 }

@@ -30,7 +30,7 @@ public protocol AWSAppSyncOfflineMutationDelegate {
 public class AWSAppSyncClient {
 
     static var prefixTracker: [String:(String, Int)] = [:]
-    static var prefixTrackerQueue: DispatchQueue = DispatchQueue(label: "clientDatabasePrefixTrackerQueue")
+    static var prefixTrackerQueue: DispatchQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncClient.clientDatabasePrefixTrackerQueue")
 
     public let apolloClient: ApolloClient?
     public let store: ApolloStore?
@@ -126,7 +126,7 @@ public class AWSAppSyncClient {
                 let prefixTrackerValue = appSyncConfig.url.absoluteString + "_" + authTypeString
                 if let (clientString, clientCount) = AWSAppSyncClient.prefixTracker[prefixTrackerKey] {
                     if clientString != prefixTrackerValue {
-                        throw AWSAppSyncClientConfigurationError.invalidClientDatabasePrefixConfiguration("Configured two clients with the same database prefix")
+                        throw AWSAppSyncClientConfigurationError.clientDatabasePrefixAlreadyInUse("Configured two clients with the same database prefix")
                     } else {
                         AWSAppSyncClient.prefixTracker[prefixTrackerKey] = (prefixTrackerValue, clientCount + 1)
                     }
@@ -174,8 +174,7 @@ public class AWSAppSyncClient {
     ///
     /// - Parameters:
     ///   - options Fine-tune which caches are cleared when calling this method
-    /// - Returns: Promise
-    public func clearCaches(options: ClearCacheOptions = ClearCacheOptions(clearQueries: true, clearMutations: true, clearSubscriptions: true)) throws -> Bool {
+    public func clearCaches(options: ClearCacheOptions = ClearCacheOptions(clearQueries: true, clearMutations: true, clearSubscriptions: true)) throws {
         var map: [CacheType:Error] = [:]
         do {
             if options.clearQueries {
@@ -184,9 +183,12 @@ public class AWSAppSyncClient {
         } catch {
             map[.query] = error
         }
-        // Has no errors to be thrown
-        if options.clearMutations {
-            mutationQueue.clearQueue()
+        do {
+            if options.clearMutations {
+                try mutationQueue.clearQueue()
+            }
+        } catch {
+            map[.mutation] = error
         }
         do {
             if options.clearSubscriptions {
@@ -198,7 +200,6 @@ public class AWSAppSyncClient {
         if (map.keys.count > 0) {
             throw ClearCacheError.failedToClear(map)
         }
-        return true
     }
 
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the

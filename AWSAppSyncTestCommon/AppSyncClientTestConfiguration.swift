@@ -131,7 +131,7 @@ struct AppSyncClientTestConfiguration {
         }
         self.cognitoPoolEndpointRegion = cognitoPoolEndpointRegionString.aws_regionTypeValue()
 
-        guard let apiKeyForCognitoPoolEndpoint = jsonObject[JSONKeys.apiKey] as? String else {
+        guard let apiKeyForCognitoPoolEndpoint = jsonObject[JSONKeys.apiKeyForCognitoPoolEndpoint] as? String else {
             return nil
         }
         self.apiKeyForCognitoPoolEndpoint = apiKeyForCognitoPoolEndpoint

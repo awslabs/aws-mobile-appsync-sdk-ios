@@ -60,8 +60,8 @@ class AWSAppSyncCacheConfigurationTests: XCTestCase {
         do {
             _ = try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true, appSyncServiceConfig: serviceConfigWithEmptyPrefix)
             XCTFail("Expected error attempting to initialize AWSAppSyncCacheConfiguration with empty prefix")
-        } catch {
-            XCTAssertNotNil(error)
+        } catch AWSCacheConfigurationError.invalidClientDatabasePrefix {
+            // Caught a specific error
         }
 
 
@@ -69,8 +69,8 @@ class AWSAppSyncCacheConfigurationTests: XCTestCase {
         do {
             _ = try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true, appSyncServiceConfig: serviceConfigWithNilPrefix)
             XCTFail("Expected error attempting to initialize AWSAppSyncCacheConfiguration with nil prefix")
-        } catch {
-            XCTAssertNotNil(error)
+        } catch AWSCacheConfigurationError.missingClientDatabasePrefix {
+            // Caught a specific error
         }
 
     }
@@ -114,16 +114,17 @@ class AWSAppSyncCacheConfigurationTests: XCTestCase {
         )
         let cacheConfig = try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true, appSyncServiceConfig: serviceConfigWithFooPrefix)
         let clientConfig = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfigWithFooPrefix, cacheConfiguration: cacheConfig)
-        let client = try AWSAppSyncClient(appSyncConfig: clientConfig)
-        let clientb = try AWSAppSyncClient(appSyncConfig: clientConfig)
+        let clientA = try AWSAppSyncClient(appSyncConfig: clientConfig)
+        let clientB = try AWSAppSyncClient(appSyncConfig: clientConfig)
+        _ = [clientA, clientB] // Silence unused variable warning
 
         let cacheConfig2 = try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true, appSyncServiceConfig: serviceConfigWithFooPrefix2)
         let clientConfig2 = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfigWithFooPrefix2, cacheConfiguration: cacheConfig2)
 
         do {
-            let client2 = try AWSAppSyncClient(appSyncConfig: clientConfig2)
+            _ = try AWSAppSyncClient(appSyncConfig: clientConfig2)
             XCTFail("Expected error attempting to initialize client with same prefix, different endpoint")
-        } catch AWSAppSyncClientConfigurationError.invalidClientDatabasePrefixConfiguration(let error) {
+        } catch AWSAppSyncClientConfigurationError.clientDatabasePrefixAlreadyInUse(let error) {
             XCTAssertNotNil(error)
         }
     }
@@ -138,7 +139,7 @@ class AWSAppSyncCacheConfigurationTests: XCTestCase {
         )
 
         do {
-            try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true, appSyncServiceConfig: bad1)
+            _ = try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true, appSyncServiceConfig: bad1)
             XCTFail("Expected error because prefix does not match regex")
         } catch AWSCacheConfigurationError.invalidClientDatabasePrefix {
             // specifically catch this error

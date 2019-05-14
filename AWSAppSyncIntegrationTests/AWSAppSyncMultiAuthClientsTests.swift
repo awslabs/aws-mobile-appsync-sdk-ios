@@ -107,6 +107,7 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
                 upVoteEventTriggered.fulfill()
             }
         }
+        _ = [blockingSubscriptionWatcher, watcher] // Silence unused variable warning
 
         // Delay so that subscription setup is complete
         wait(for: [upVoteEventConnected], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
@@ -229,66 +230,76 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
         wait(for: [iamGetPostCachedAfterApiKeyClear], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
     }
 
-//    func testDeltaSyncMetadataClear() throws {
-//        let testBundle = Bundle(for: AWSAppSyncCognitoAuthTests.self)
-//
-//        // This tests needs a physical DB for the SubscriptionMetadataCache to properly return a "lastSynced" value.
-//        let rootDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("testSyncOperationAtSetupAndReconnect")
-//        try? FileManager.default.removeItem(at: rootDirectory)
-//        let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
-//
-//        // Create IAM based client
-//        let iamHelper = try AppSyncClientTestHelper(
-//            with: .cognitoIdentityPools,
-//            cacheConfiguration: cacheConfiguration,
-//            testBundle: testBundle
-//        )
-//        let iamAppSyncClient = iamHelper.appSyncClient
-//        _ = try iamAppSyncClient.clearCaches()
-//
-//        let listPostQuery = ListPostsQuery()
-//        let listPostDeltaQuery = ListPostsDeltaQuery()
-//        let queryCallbackExpect = expectation(description: "Query callback")
-//
-//        let handle = iamAppSyncClient.sync(baseQuery: listPostQuery
-//        , baseQueryResultHandler: { (result, error) in
-//            if let _ = result {
-//                queryCallbackExpect.fulfill()
-//            }
-//        }, deltaQuery: listPostDeltaQuery, deltaQueryResultHandler: { (result, transaction, error) in
-//            XCTFail("Not expecting a delta query result")
-//        })
-//
-//        wait(for: [queryCallbackExpect], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
-//        let deltaQueryCallbackExpect = expectation(description: "Delta query callback")
-//
-//        let handle3 = iamAppSyncClient.sync(baseQuery: listPostQuery
-//        , baseQueryResultHandler: { (result, error) in
-//            XCTFail("Not expecting a base query result")
-//        }, deltaQuery: listPostDeltaQuery, deltaQueryResultHandler: { (result, transaction, error) in
-//            if let _ = result {
-//                deltaQueryCallbackExpect.fulfill()
-//            }
-//        })
-//
-//        wait(for: [deltaQueryCallbackExpect], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
-//
-//        handle3.cancel()
-//
-//        handle.cancel()
-//
-//        let queryCallbackExpect2 = expectation(description: "Query callback 2")
-//
-//        let handle2 = iamAppSyncClient.sync(baseQuery: listPostQuery
-//        , baseQueryResultHandler: { (result, error) in
-//            queryCallbackExpect2.fulfill()
-//        }, deltaQuery: listPostDeltaQuery, deltaQueryResultHandler: { (result, transaction, error) in
-//            XCTFail("Not expecting a delta query result 2")
-//        })
-//
-//        wait(for: [queryCallbackExpect2], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
-//
-//        handle2.cancel()
-//    }
+    func testDeltaSyncMetadataClear() throws {
+        let testBundle = Bundle(for: AWSAppSyncCognitoAuthTests.self)
+
+        // This tests needs a physical DB for the SubscriptionMetadataCache to properly return a "lastSynced" value.
+        let rootDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("testDeltaSyncMetadataClear")
+        try? FileManager.default.removeItem(at: rootDirectory)
+        let cacheConfiguration = try AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
+
+        // Create IAM based client
+        let iamHelper = try AppSyncClientTestHelper(
+            with: .cognitoIdentityPools,
+            cacheConfiguration: cacheConfiguration,
+            testBundle: testBundle
+        )
+        let iamAppSyncClient = iamHelper.appSyncClient
+        _ = try iamAppSyncClient.clearCaches()
+
+        let listPostQuery = ListPostsQuery()
+        let listPostDeltaQuery = ListPostsDeltaQuery()
+        let queryCallbackExpect = expectation(description: "Query callback")
+
+        _ = iamAppSyncClient.sync(baseQuery: listPostQuery
+        , baseQueryResultHandler: { (result, error) in
+            if let _ = result,
+                result!.source == .server {
+                queryCallbackExpect.fulfill()
+            }
+        }, deltaQuery: listPostDeltaQuery, deltaQueryResultHandler: { (result, transaction, error) in
+            XCTFail("Not expecting a delta query result")
+        })
+
+        wait(for: [queryCallbackExpect], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
+
+        sleep(1) // Database has eventually consistent read on the lastSyncTime
+
+        // Phase 2
+
+        let deltaQueryCallbackExpect = expectation(description: "Delta query callback")
+
+        _ = iamAppSyncClient.sync(baseQuery: listPostQuery
+        , baseQueryResultHandler: { (result, error) in
+            if let result = result,
+                result.source == .server {
+                XCTFail("Not expecting a base query result")
+            }
+        }, deltaQuery: listPostDeltaQuery, deltaQueryResultHandler: { (result, transaction, error) in
+            if let _ = result {
+                deltaQueryCallbackExpect.fulfill()
+            }
+        })
+
+        wait(for: [deltaQueryCallbackExpect], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
+
+        // Reset
+
+        let _ = try iamAppSyncClient.clearCaches()
+
+        let queryCallbackExpect2 = expectation(description: "Query callback 2")
+
+        _ = iamAppSyncClient.sync(baseQuery: listPostQuery
+        , baseQueryResultHandler: { (result, error) in
+            if let result = result,
+                result.source == .server {
+                queryCallbackExpect2.fulfill()
+            }
+        }, deltaQuery: listPostDeltaQuery, deltaQueryResultHandler: { (result, transaction, error) in
+            XCTFail("Not expecting a delta query result 2")
+        })
+
+        wait(for: [queryCallbackExpect2], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
+    }
 
 }

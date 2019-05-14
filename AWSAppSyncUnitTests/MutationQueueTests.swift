@@ -666,6 +666,16 @@ class MutationQueueTests: XCTestCase {
         wait(for: [mutationPerformed], timeout: 6.0)
 
         XCTAssertEqual(appSyncClient.queuedMutationCount, 0)
+
+        mockHTTPTransport.operationResponseDelay = 0
+
+        let furtherMutationPerformed = expectation(description: "Further post added")
+        appSyncClient.perform(mutation: addPost) { result, error in
+            XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
+            furtherMutationPerformed.fulfill()
+        }
+
+        wait(for: [furtherMutationPerformed], timeout: 1.0)
     }
 
     // MARK: - Utility methods

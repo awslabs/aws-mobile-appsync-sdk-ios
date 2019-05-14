@@ -19,6 +19,8 @@ public enum AWSCacheConfigurationError: Error, LocalizedError {
     case couldNotResolveCachesDirectory
     /// Did not match requirements to be database prefix ^[_a-zA-Z]+$
     case invalidClientDatabasePrefix
+    /// The client database prefix was not found in the configuration
+    case missingClientDatabasePrefix
 
     public var errorDescription: String? {
         return String(describing: self)
@@ -82,14 +84,14 @@ public struct AWSAppSyncCacheConfiguration {
             }
             resolvedRootDirectory = cachesDirectory.appendingPathComponent("appsync")
         }
-        try FileManager.default.createDirectory(at: resolvedRootDirectory, withIntermediateDirectories: true)
 
         let resolvedClientDatabasePrefix: String
         if (useClientDatabasePrefix) {
-            guard
-                let clientDatabasePrefix = appSyncServiceConfig?.clientDatabasePrefix,
-                clientDatabasePrefix.range(of: "^[_a-zA-Z0-9]+$", options: .regularExpression) != nil else {
-                    throw AWSCacheConfigurationError.invalidClientDatabasePrefix
+            guard let clientDatabasePrefix = appSyncServiceConfig?.clientDatabasePrefix else {
+                throw AWSCacheConfigurationError.missingClientDatabasePrefix
+            }
+            guard clientDatabasePrefix.range(of: "^[_a-zA-Z0-9]+$", options: .regularExpression) != nil else {
+                throw AWSCacheConfigurationError.invalidClientDatabasePrefix
             }
             resolvedClientDatabasePrefix = clientDatabasePrefix + "_"
             prefix = resolvedClientDatabasePrefix
@@ -101,6 +103,8 @@ public struct AWSAppSyncCacheConfiguration {
             }
         }
         usePrefix = useClientDatabasePrefix
+
+        try FileManager.default.createDirectory(at: resolvedRootDirectory, withIntermediateDirectories: true)
 
         offlineMutations = resolvedRootDirectory.appendingPathComponent(resolvedClientDatabasePrefix + "offlineMutations.db")
         queries = resolvedRootDirectory.appendingPathComponent(resolvedClientDatabasePrefix + "queries.db")
@@ -126,18 +130,21 @@ public struct ClearCacheOptions {
     }
 }
 
+/// Used to differentiate the cache that was cleared using AWSAppSyncClient.clearCaches(options:)
 public enum CacheType: String {
     case query
     case mutation
     case subscription
 }
 
+/// Errors thrown trying to clear the client's caches
 public enum ClearCacheError: Error {
     case failedToClear([CacheType:Error])
 }
 
 // MARK: - LocalizedError
 
+/// More information from the cache clearing error
 extension ClearCacheError: LocalizedError {
 
     public var errorDescription: String? {
@@ -149,5 +156,15 @@ extension ClearCacheError: LocalizedError {
         }
 
         return message
+    }
+
+    /// A map of the errors the caches threw during clearing
+    public var failures: [CacheType:Error] {
+        var map: [CacheType:Error]
+        switch self {
+        case .failedToClear(let cacheErrorMap):
+            map = cacheErrorMap
+        }
+        return map
     }
 }
