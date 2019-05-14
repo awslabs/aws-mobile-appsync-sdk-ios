@@ -119,6 +119,9 @@ class MockAWSNetworkTransport: AWSNetworkTransport {
 
     // MARK: - send(operation:completionHandler:)
 
+    /// Delay to simulate slow network or otherwise block calls
+    var operationResponseDelay: UInt32 = 0
+
     /// Subsequent invocations of `send(operation:completionHandler:)` will respond using the next item in the queue, regardless
     /// of the values in `sendOperationHandlerResultData` or `sendOperationHandlerError`.
     ///
@@ -145,6 +148,8 @@ class MockAWSNetworkTransport: AWSNetworkTransport {
 
     /// When invoked, calls `completionHandler` asynchronously on the global queue
     func send<Operation: GraphQLOperation>(operation: Operation, completionHandler: @escaping SendOperationCompletionHandler<Operation>) -> Cancellable {
+
+        sleep(operationResponseDelay)
 
         if sendOperationResponseQueue.count > 0 {
             completeSendOperationWithResponseQueue(operation: operation, completionHandler: completionHandler)

@@ -641,6 +641,43 @@ class MutationQueueTests: XCTestCase {
         XCTAssertEqual(n0, n2)
     }
 
+    func testCancelAllMutations() throws {
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+
+        let mockHTTPTransport = MockAWSNetworkTransport()
+        mockHTTPTransport.operationResponseDelay = 5
+        mockHTTPTransport.sendOperationHandlerResponseBody = UnitTestHelpers.makeAddPostResponseBody(withId: "TestPostID", for: addPost)
+
+        let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: AWSAppSyncCacheConfiguration())
+
+        let mutationPerformed = expectation(description: "Post added")
+        appSyncClient.perform(mutation: addPost) { result, error in
+            XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
+            mutationPerformed.fulfill()
+        }
+        for _ in 0...9 {
+            appSyncClient.perform(mutation: addPost) { result, error in
+                XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
+            }
+        }
+
+        try appSyncClient.clearCaches(options: ClearCacheOptions(clearMutations: true))
+
+        wait(for: [mutationPerformed], timeout: 6.0)
+
+        XCTAssertEqual(appSyncClient.queuedMutationCount, 0)
+
+        mockHTTPTransport.operationResponseDelay = 0
+
+        let furtherMutationPerformed = expectation(description: "Further post added")
+        appSyncClient.perform(mutation: addPost) { result, error in
+            XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
+            furtherMutationPerformed.fulfill()
+        }
+
+        wait(for: [furtherMutationPerformed], timeout: 1.0)
+    }
+
     // MARK: - Utility methods
 
     func makeTestMutationWithoutParametersResponseBody(withValue value: Bool) -> JSONObject {

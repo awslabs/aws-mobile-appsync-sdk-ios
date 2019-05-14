@@ -21,6 +21,7 @@ public class AWSAppSyncClientConfiguration {
     private(set) var connectionStateChangeHandler: ConnectionStateChangeHandler? = nil
     private(set) var allowsCellularAccess: Bool = true
     private(set) var autoSubmitOfflineMutations: Bool = true
+    var authType: AWSAppSyncAuthType?
     // retry strategy is set during initializing the configuration object and cannot be changed on the fly.
     let retryStrategy: AWSAppSyncRetryStrategy
 
@@ -265,6 +266,7 @@ public class AWSAppSyncClientConfiguration {
         self.presignedURLClient = presignedURLClient
         self.s3ObjectManager = s3ObjectManager
         self.url = url
+        self.authType = authType
 
         // Initialized objects
         self.store = AWSAppSyncClientConfiguration.makeApolloStore(for: cacheConfiguration?.queries)

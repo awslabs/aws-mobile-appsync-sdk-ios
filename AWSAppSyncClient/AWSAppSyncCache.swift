@@ -17,6 +17,10 @@ public enum AWSAppSyncQueriesCacheError: Error {
 public enum AWSCacheConfigurationError: Error, LocalizedError {
     /// Could not resolve the default Caches directory
     case couldNotResolveCachesDirectory
+    /// Did not match requirements to be database prefix ^[_a-zA-Z]+$
+    case invalidClientDatabasePrefix
+    /// The client database prefix was not found in the configuration
+    case missingClientDatabasePrefix
 
     public var errorDescription: String? {
         return String(describing: self)
@@ -44,6 +48,10 @@ public struct AWSAppSyncCacheConfiguration {
     /// app is relaunched
     public let subscriptionMetadataCache: URL?
 
+    let prefix: String?
+
+    let usePrefix: Bool
+
     /// Creates a cache configuration with individually-specified cache paths. If a path is nil, the cache will
     /// be created in-memory. If specified, the directory portion of the file path must exist, and be writable by the
     /// hosting app. No attempt is made to validate the specified file paths until AppSync initializes the related
@@ -57,6 +65,8 @@ public struct AWSAppSyncCacheConfiguration {
         self.offlineMutations = offlineMutations
         self.queries = queries
         self.subscriptionMetadataCache = subscriptionMetadataCache
+        prefix = nil
+        usePrefix = false
     }
 
     /// Creates a cache configuration for caches at the specified workingDirectory. Attempts to create the directory
@@ -64,7 +74,7 @@ public struct AWSAppSyncCacheConfiguration {
     ///
     /// - Parameter url: The directory path at which to store persistent caches. Defaults to `<appCacheDirectory>/appsync`
     /// - Throws: Throws an error if `workingDirectory` is not a directory, or if it cannot be created.
-    public init(withRootDirectory url: URL? = nil) throws {
+    public init(withRootDirectory url: URL? = nil, useClientDatabasePrefix: Bool = false, appSyncServiceConfig: AWSAppSyncServiceConfigProvider? = nil) throws {
         let resolvedRootDirectory: URL
         if let rootDirectory = url {
             resolvedRootDirectory = rootDirectory
@@ -75,10 +85,86 @@ public struct AWSAppSyncCacheConfiguration {
             resolvedRootDirectory = cachesDirectory.appendingPathComponent("appsync")
         }
 
+        let resolvedClientDatabasePrefix: String
+        if (useClientDatabasePrefix) {
+            guard let clientDatabasePrefix = appSyncServiceConfig?.clientDatabasePrefix else {
+                throw AWSCacheConfigurationError.missingClientDatabasePrefix
+            }
+            guard clientDatabasePrefix.range(of: "^[_a-zA-Z0-9]+$", options: .regularExpression) != nil else {
+                throw AWSCacheConfigurationError.invalidClientDatabasePrefix
+            }
+            resolvedClientDatabasePrefix = clientDatabasePrefix + "_"
+            prefix = resolvedClientDatabasePrefix
+        } else {
+            resolvedClientDatabasePrefix = ""
+            prefix = nil
+            if appSyncServiceConfig?.clientDatabasePrefix != nil {
+                AppSyncLog.info("The client database prefix was specified even though useClientDatabasePrefix is false.")
+            }
+        }
+        usePrefix = useClientDatabasePrefix
+
         try FileManager.default.createDirectory(at: resolvedRootDirectory, withIntermediateDirectories: true)
 
-        offlineMutations = resolvedRootDirectory.appendingPathComponent("offlineMutations.db")
-        queries = resolvedRootDirectory.appendingPathComponent("queries.db")
-        subscriptionMetadataCache = resolvedRootDirectory.appendingPathComponent("subscriptionMetadataCache.db")
+        offlineMutations = resolvedRootDirectory.appendingPathComponent(resolvedClientDatabasePrefix + "offlineMutations.db")
+        queries = resolvedRootDirectory.appendingPathComponent(resolvedClientDatabasePrefix + "queries.db")
+        subscriptionMetadataCache = resolvedRootDirectory.appendingPathComponent(resolvedClientDatabasePrefix + "subscriptionMetadataCache.db")
+    }
+}
+
+/// Allows the developer to fine-tune which caches are cleared in the client.
+public struct ClearCacheOptions {
+    /// True if clears the query cache for this client
+    let clearQueries: Bool
+
+    /// True if clears the offline mutations for this client
+    let clearMutations: Bool
+
+    /// True if clears the subscription metadata for this client
+    let clearSubscriptions: Bool
+
+    public init(clearQueries: Bool = false, clearMutations: Bool = false, clearSubscriptions: Bool = false) {
+        self.clearQueries = clearQueries
+        self.clearMutations = clearMutations
+        self.clearSubscriptions = clearSubscriptions
+    }
+}
+
+/// Used to differentiate the cache that was cleared using AWSAppSyncClient.clearCaches(options:)
+public enum CacheType: String {
+    case query
+    case mutation
+    case subscription
+}
+
+/// Errors thrown trying to clear the client's caches
+public enum ClearCacheError: Error {
+    case failedToClear([CacheType:Error])
+}
+
+// MARK: - LocalizedError
+
+/// More information from the cache clearing error
+extension ClearCacheError: LocalizedError {
+
+    public var errorDescription: String? {
+        var message: String
+
+        switch self {
+        case .failedToClear(let cacheErrorMap):
+            message = "Failed to clear caches: " + cacheErrorMap.keys.flatMap { $0.rawValue }
+        }
+
+        return message
+    }
+
+    /// A map of the errors the caches threw during clearing
+    public var failures: [CacheType:Error] {
+        var map: [CacheType:Error]
+        switch self {
+        case .failedToClear(let cacheErrorMap):
+            map = cacheErrorMap
+        }
+        return map
     }
 }

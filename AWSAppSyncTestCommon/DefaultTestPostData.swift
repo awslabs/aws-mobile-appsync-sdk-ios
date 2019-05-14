@@ -10,7 +10,7 @@ struct DefaultTestPostData {
     static let author = "Test author"
     static let title = "Test title"
     static let content = "Test content"
-    static let url: String? = nil
+    static let url: String? = "https://aws.amazon.com/"
     static let ups = 0
     static let downs = 0
 

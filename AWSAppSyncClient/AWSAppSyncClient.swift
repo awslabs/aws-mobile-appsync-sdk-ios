@@ -29,6 +29,9 @@ public protocol AWSAppSyncOfflineMutationDelegate {
 /// The client for making `Mutation`, `Query` and `Subscription` requests.
 public class AWSAppSyncClient {
 
+    static var prefixTracker: [String:(String, Int)] = [:]
+    static var prefixTrackerQueue: DispatchQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncClient.clientDatabasePrefixTrackerQueue")
+
     public let apolloClient: ApolloClient?
     public let store: ApolloStore?
     public let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
@@ -39,6 +42,9 @@ public class AWSAppSyncClient {
     public var offlineMutationDelegate: AWSAppSyncOfflineMutationDelegate?
     private var mutationQueue: AWSPerformMutationQueue!
     internal var retryStrategy: AWSAppSyncRetryStrategy
+
+    var prefixTrackerKey: String?
+    var prefixTrackerValue: String?
 
     /// The count of Mutation operations queued for sending to the backend.
     ///
@@ -83,7 +89,6 @@ public class AWSAppSyncClient {
                 reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil) throws {
 
         AppSyncLog.info("Initializing AppSyncClient")
-
         self.autoSubmitOfflineMutations = appSyncConfig.autoSubmitOfflineMutations
         self.store = appSyncConfig.store
         self.presignedURLClient = appSyncConfig.presignedURLClient
@@ -113,11 +118,40 @@ public class AWSAppSyncClient {
             selector: #selector(appsyncReachabilityChanged(note:)),
             name: .appSyncReachabilityChanged,
             object: nil)
+
+        try AWSAppSyncClient.prefixTrackerQueue.sync {
+            if (appSyncConfig.cacheConfiguration?.usePrefix ?? false) {
+                let prefixTrackerKey = appSyncConfig.cacheConfiguration?.prefix ?? ""
+                let authTypeString = appSyncConfig.authType?.rawValue ?? "unknown_auth"
+                let prefixTrackerValue = appSyncConfig.url.absoluteString + "_" + authTypeString
+                if let (clientString, clientCount) = AWSAppSyncClient.prefixTracker[prefixTrackerKey] {
+                    if clientString != prefixTrackerValue {
+                        throw AWSAppSyncClientConfigurationError.cacheConfigurationAlreadyInUse("Configured two clients with the same database prefix")
+                    } else {
+                        AWSAppSyncClient.prefixTracker[prefixTrackerKey] = (prefixTrackerValue, clientCount + 1)
+                    }
+                } else {
+                    AWSAppSyncClient.prefixTracker[prefixTrackerKey] = (prefixTrackerValue, 1)
+                }
+                self.prefixTrackerKey = prefixTrackerKey
+                self.prefixTrackerValue = prefixTrackerValue
+            }
+        }
     }
 
     deinit {
         AppSyncLog.info("Releasing AppSyncClient")
         NetworkReachabilityNotifier.clearShared()
+        AWSAppSyncClient.prefixTrackerQueue.sync {
+            if let key = self.prefixTrackerKey,
+                let (value, count) = AWSAppSyncClient.prefixTracker[key] {
+                if count <= 1 {
+                    AWSAppSyncClient.prefixTracker[key] = nil
+                } else {
+                    AWSAppSyncClient.prefixTracker[key] = (value, count - 1)
+                }
+            }
+        }
     }
 
     @objc func appsyncReachabilityChanged(note: Notification) {
@@ -130,9 +164,42 @@ public class AWSAppSyncClient {
     /// Clears apollo cache
     ///
     /// - Returns: Promise
+    @available(*, deprecated, message: "Use the clearCaches method that optionally takes in ClearCacheOptions")
     public func clearCache() -> Promise<Void> {
         guard let store = store else { return Promise(fulfilled: ()) }
         return store.clearCache()
+    }
+
+    /// Clears the apollo cache, offline mutation queue, and delta sync subscription metadata
+    ///
+    /// - Parameters:
+    ///   - options Fine-tune which caches are cleared when calling this method
+    public func clearCaches(options: ClearCacheOptions = ClearCacheOptions(clearQueries: true, clearMutations: true, clearSubscriptions: true)) throws {
+        var map: [CacheType:Error] = [:]
+        do {
+            if options.clearQueries {
+                try store?.clearCache().await()
+            }
+        } catch {
+            map[.query] = error
+        }
+        do {
+            if options.clearMutations {
+                try mutationQueue.clearQueue()
+            }
+        } catch {
+            map[.mutation] = error
+        }
+        do {
+            if options.clearSubscriptions {
+                try subscriptionMetadataCache?.clear()
+            }
+        } catch {
+            map[.subscription] = error
+        }
+        if (map.keys.count > 0) {
+            throw ClearCacheError.failedToClear(map)
+        }
     }
 
     /// Fetches a query from the server or from the local cache, depending on the current contents of the cache and the

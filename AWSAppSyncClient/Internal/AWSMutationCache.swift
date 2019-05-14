@@ -94,6 +94,13 @@ public final class AWSMutationCache {
         }
     }
 
+    internal func clear() -> Promise<Void> {
+        return Promise {
+            AppSyncLog.verbose("Clearing entire mutation queue")
+            try db.run("DELETE FROM mutation_records")
+        }
+    }
+
     internal func getStoredMutationRecordsInQueue() -> Promise<[AWSAppSyncMutationRecord]> {
         return Promise {
             AppSyncLog.info("Retrieving stored mutation records")

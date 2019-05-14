@@ -20,6 +20,9 @@ public protocol AWSAppSyncServiceConfigProvider {
 
     /// If `authType` is `.apiKey`, this value must provided
     var apiKey: String? { get }
+
+    /// The prefix used to partition on-disk caches
+    var clientDatabasePrefix: String? { get }
 }
 
 /// Client-side configurations of an AWSAppSync service instance
@@ -28,6 +31,7 @@ public struct AWSAppSyncServiceConfig: AWSAppSyncServiceConfigProvider {
     public let region: AWSRegionType
     public let authType: AWSAppSyncAuthType
     public let apiKey: String?
+    public let clientDatabasePrefix: String?
 
     /// Reads configuration from `awsconfiguration.json` using the supplied key. If no key is supplied, reads configuration from
     /// "Default".
@@ -67,6 +71,9 @@ public struct AWSAppSyncServiceConfig: AWSAppSyncServiceConfigProvider {
                 throw AWSAppSyncServiceConfigError.invalidAuthMode
         }
         self.authType = authType
+
+        // Nil is validated at run-time
+        self.clientDatabasePrefix = configForKey[AWSConfigurationFile.Keys.clientDatabasePrefix] as? String
 
         apiKey = configForKey[AWSConfigurationFile.Keys.apiKey] as? String
 

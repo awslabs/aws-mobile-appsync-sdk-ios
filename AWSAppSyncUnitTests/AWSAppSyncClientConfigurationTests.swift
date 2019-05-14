@@ -454,21 +454,5 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.subscriptionMetadataCache)
         XCTAssertFalse(FileManager.default.fileExists(atPath: nonexistentDBPath.path))
     }
-}
 
-private struct MockAWSAppSyncServiceConfig: AWSAppSyncServiceConfigProvider {
-    let endpoint: URL
-    let region: AWSRegionType
-    let authType: AWSAppSyncAuthType
-    let apiKey: String?
-
-    init(endpoint: URL,
-         region: AWSRegionType,
-         authType: AWSAppSyncAuthType,
-         apiKey: String? = nil) {
-        self.endpoint = endpoint
-        self.region = region
-        self.authType = authType
-        self.apiKey = apiKey
-    }
 }
