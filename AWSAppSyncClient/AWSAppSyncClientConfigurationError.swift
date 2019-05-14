@@ -23,7 +23,7 @@ extension AWSAppSyncClientConfigurationError: LocalizedError {
         case .invalidAuthConfiguration(let message):
             return "Invalid Auth Configuration: \(message)"
         case .cacheConfigurationAlreadyInUse(let message):
-            return "Invalid Client Database Prefix Configuration: \(message)"
+            return "Cache Configuration Already In Use: \(message)"
         }
     }
 }
