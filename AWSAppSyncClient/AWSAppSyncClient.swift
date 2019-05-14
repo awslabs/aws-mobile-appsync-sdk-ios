@@ -126,7 +126,7 @@ public class AWSAppSyncClient {
                 let prefixTrackerValue = appSyncConfig.url.absoluteString + "_" + authTypeString
                 if let (clientString, clientCount) = AWSAppSyncClient.prefixTracker[prefixTrackerKey] {
                     if clientString != prefixTrackerValue {
-                        throw AWSAppSyncClientConfigurationError.clientDatabasePrefixAlreadyInUse("Configured two clients with the same database prefix")
+                        throw AWSAppSyncClientConfigurationError.cacheConfigurationAlreadyInUse("Configured two clients with the same database prefix")
                     } else {
                         AWSAppSyncClient.prefixTracker[prefixTrackerKey] = (prefixTrackerValue, clientCount + 1)
                     }

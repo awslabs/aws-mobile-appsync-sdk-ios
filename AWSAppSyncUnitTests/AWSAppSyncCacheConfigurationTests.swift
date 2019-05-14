@@ -124,7 +124,7 @@ class AWSAppSyncCacheConfigurationTests: XCTestCase {
         do {
             _ = try AWSAppSyncClient(appSyncConfig: clientConfig2)
             XCTFail("Expected error attempting to initialize client with same prefix, different endpoint")
-        } catch AWSAppSyncClientConfigurationError.clientDatabasePrefixAlreadyInUse(let error) {
+        } catch AWSAppSyncClientConfigurationError.cacheConfigurationAlreadyInUse(let error) {
             XCTAssertNotNil(error)
         }
     }
