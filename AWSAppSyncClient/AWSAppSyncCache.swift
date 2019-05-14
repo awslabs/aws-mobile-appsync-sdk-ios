@@ -159,8 +159,8 @@ extension ClearCacheError: LocalizedError {
     }
 
     /// A map of the errors the caches threw during clearing
-    public var failures: [CacheType:Error] {
-        var map: [CacheType:Error]
+    public var failures: [CacheType: Error] {
+        var map: [CacheType: Error]
         switch self {
         case .failedToClear(let cacheErrorMap):
             map = cacheErrorMap
