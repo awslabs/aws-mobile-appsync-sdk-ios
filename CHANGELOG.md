@@ -33,10 +33,12 @@ Subscriptions metadata for Delta Sync | `subscriptionMetadataCache.db` | `<Clien
       ```swift
       let serviceConfigAPIKey = try AWSAppSyncServiceConfig()
       let cacheConfigAPIKey = try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true,
-                                                                  appSyncServiceConfig: serviceConfigAPIKey)
-      let clientConfigAPIKey = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfigAPIKey,
-                                                               cacheConfiguration: cacheConfigAPIKey)
+                                                                  appSyncServiceConfig: serviceConfigAPIKey!)
+      let clientConfigAPIKey = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfigAPIKey!,
+                                                               cacheConfiguration: cacheConfigAPIKey!)
+      let clientAPIKey = try AWSAppSyncClient(appSyncConfig: clientConfigAPIKey!)
        ```
+* Deprecated `clearCache()` please use `clearCaches(options:)` instead. This new method will clear the query responses, offline mutations and subscriptions metadata by default and the options parameter can be used to fine-tune the operation.
 
 ## 2.12.2
 
