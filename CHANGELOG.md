@@ -3,6 +3,40 @@
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK
 also includes support for offline operations.
 
+## 2.13.0
+
+### New Features
+
+* Support multiple authorization modes for a single AWS AppSync GraphQL endpoint.
+* Introduced `clientDatabasePrefix` in the `AWSAppSyncServiceConfigProvider` that accepts a prefix that will be used in the construction of database name for caching query responses, offline mutations and subscriptions metadata. The usage of the prefix can be enabled by the flag `useClientDatabasePrefix: true` as part of the `AWSAppSyncCacheConfiguration`. When the prefix is used, the name of the database would look as follows:
+
+Purpose of cache | No prefix | Valid prefix
+--- | --- | ---
+Query responses | `queries.db` | `<ClientDatabasePrefix>_queries.db`
+Offline Mutations | `offlineMutations.db` | `<ClientDatabasePrefix>_offlineMutations.db`
+Subscriptions metadata for Delta Sync | `subscriptionMetadataCache.db` | `<ClientDatabasePrefix>_subscriptionMetadataCache.db`
+
+  * The `ClientDatabasePrefix` can be passed via `awsconfiguration.json` that is generated from the AWS AppSync Console and Amplify CLI.
+      ```
+       "AppSync": {
+        "Default": {
+          "ApiUrl": "https://xyz.appsync-api.us-east-2.amazonaws.com/graphql",
+          "Region": "us-east-2",
+          "AuthMode": "API_KEY",
+          "ApiKey": "da2-xyz",
+          "ClientDatabasePrefix": "MyAppSyncAPIName_API_KEY"
+        }
+      }
+      ```
+
+      The `AWSAppSyncClient` object can be constructed as follows:
+      ```swift
+      let serviceConfigAPIKey = try AWSAppSyncServiceConfig()
+      let cacheConfigAPIKey = try AWSAppSyncCacheConfiguration(useClientDatabasePrefix: true,
+                                                                  appSyncServiceConfig: serviceConfigAPIKey)
+      let clientConfigAPIKey = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfigAPIKey,
+                                                               cacheConfiguration: cacheConfigAPIKey)
+       ```
 
 ## 2.12.2
 
