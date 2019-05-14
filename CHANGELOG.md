@@ -8,7 +8,7 @@ also includes support for offline operations.
 ### New Features
 
 * Support multiple authorization modes for a single AWS AppSync GraphQL endpoint.
-* Introduced `clientDatabasePrefix` in the `AWSAppSyncServiceConfigProvider` that accepts a prefix that will be used in the construction of database name for caching query responses, offline mutations and subscriptions metadata. The usage of the prefix can be enabled by the flag `useClientDatabasePrefix: true` as part of the `AWSAppSyncCacheConfiguration`. When the prefix is used, the name of the database would look as follows:
+* **Breaking API Change** Introduced `clientDatabasePrefix` in the `AWSAppSyncServiceConfigProvider` that accepts a prefix that will be used in the construction of database name for caching query responses, offline mutations and subscriptions metadata. The usage of the prefix can be enabled by the flag `useClientDatabasePrefix: true` as part of the `AWSAppSyncCacheConfiguration`. When the prefix is used, the name of the database would look as follows:
 
   Purpose of cache | No prefix | Valid prefix
   --- | --- | ---
