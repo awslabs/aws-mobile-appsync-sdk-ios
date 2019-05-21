@@ -127,7 +127,7 @@
 		17E009DA1FCAB234005031DB /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B81FCAB233005031DB /* Result.swift */; };
 		17E009DB1FCAB234005031DB /* NormalizedCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009B91FCAB234005031DB /* NormalizedCache.swift */; };
 		17E009DC1FCAB234005031DB /* ApolloClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E009BA1FCAB234005031DB /* ApolloClient.swift */; };
-		17E4F27D2282835A00E92474 /* SubscriptionCancelAndRestartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E4F27C2282835A00E92474 /* SubscriptionCancelAndRestartTests.swift */; };
+		17E4F27D2282835A00E92474 /* SubscriptionMiscTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E4F27C2282835A00E92474 /* SubscriptionMiscTests.swift */; };
 		17FD3F58225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17FD3F57225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift */; };
 		3D9BF115227836800079F52F /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9BF114227836800079F52F /* NetworkReachability.swift */; };
 		70C68E4D132FE62623DB8C07 /* Pods_AWSAppSyncTestHostApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C707001F57B091A8A001CAB /* Pods_AWSAppSyncTestHostApp.framework */; };
@@ -506,7 +506,7 @@
 		17E009B81FCAB233005031DB /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Result.swift; path = Apollo/Sources/Apollo/Result.swift; sourceTree = "<group>"; };
 		17E009B91FCAB234005031DB /* NormalizedCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NormalizedCache.swift; path = Apollo/Sources/Apollo/NormalizedCache.swift; sourceTree = "<group>"; };
 		17E009BA1FCAB234005031DB /* ApolloClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ApolloClient.swift; path = Apollo/Sources/Apollo/ApolloClient.swift; sourceTree = "<group>"; };
-		17E4F27C2282835A00E92474 /* SubscriptionCancelAndRestartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionCancelAndRestartTests.swift; sourceTree = "<group>"; };
+		17E4F27C2282835A00E92474 /* SubscriptionMiscTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionMiscTests.swift; sourceTree = "<group>"; };
 		17FD3F57225BAE9A00BD12F8 /* AWSAppSyncRetryStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncRetryStrategy.swift; sourceTree = "<group>"; };
 		1CC71FAD4E9B09922B42E040 /* Pods_AWSAppSync_AWSAppSyncIntegrationTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncIntegrationTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CDE7D0207B12E4A01B1241D /* Pods-AWSAppSyncTestHostApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestHostApp.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestHostApp/Pods-AWSAppSyncTestHostApp.release.xcconfig"; sourceTree = "<group>"; };
@@ -1049,7 +1049,7 @@
 				FA88834621E3D05800DEBCB3 /* ReachabilityChangeNotifierTests.swift */,
 				FAD17C7021C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift */,
 				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
-				17E4F27C2282835A00E92474 /* SubscriptionCancelAndRestartTests.swift */,
+				17E4F27C2282835A00E92474 /* SubscriptionMiscTests.swift */,
 				E47789582284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift */,
 			);
 			path = AWSAppSyncUnitTests;
@@ -2014,7 +2014,7 @@
 				FABD70752205101600C99B47 /* AWSAppSyncClientInfoTests.swift in Sources */,
 				FA00595A221222D800BFBD13 /* MutationOptimisticUpdateTests.swift in Sources */,
 				FA1A620C21E6533A00AA54D0 /* AWSAppSyncRetryHandlerTests.swift in Sources */,
-				17E4F27D2282835A00E92474 /* SubscriptionCancelAndRestartTests.swift in Sources */,
+				17E4F27D2282835A00E92474 /* SubscriptionMiscTests.swift in Sources */,
 				FA38636E21DD8FF200DBA2BC /* MutationQueueTests.swift in Sources */,
 				FA4F0D9821D6EDA50099D165 /* SyncStrategyTests.swift in Sources */,
 				FA4F0D9721D6EDA20099D165 /* AWSAppSyncServiceConfigTests.swift in Sources */,

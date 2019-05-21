@@ -10,7 +10,44 @@ import XCTest
 @testable import AWSCore
 @testable import AWSAppSyncTestCommon
 
-class SubscriptionCancelAndRestartTests: XCTestCase {
+class SubscriptionMiscTests: XCTestCase {
+    
+    func testSubscriptionUniqueIdentifiers() {
+        var uniqueIdSet: Set<Int> = Set()
+        let expectation1 = expectation(description: "operations on queue1 did not encounter duplicate IDs")
+        let expectation2 = expectation(description: "operations on queue2 did not encounter duplicate IDs")
+        let syncDispatchQueueForSet = DispatchQueue(label: "dispatch.queue.for.set")
+
+        DispatchQueue(label: "testSubscriptionUniqueIdentifiers.queue1").async {
+            for _ in 0...1000 {
+                let uniqueID = SubscriptionsOrderHelper.getNextUniqueIdentifier()
+                syncDispatchQueueForSet.sync {
+                    if uniqueIdSet.contains(uniqueID) {
+                        XCTFail("Found a unique id which was already generated previously.")
+                    } else {
+                        uniqueIdSet.insert(uniqueID)
+                    }
+                }
+            }
+            expectation1.fulfill()
+        }
+        
+        DispatchQueue(label: "testSubscriptionUniqueIdentifiers.queue2").async {
+            for _ in 0...1000 {
+                let uniqueID = SubscriptionsOrderHelper.getNextUniqueIdentifier()
+                syncDispatchQueueForSet.sync {
+                    if uniqueIdSet.contains(uniqueID) {
+                        XCTFail("Found a unique id which was already generated previously.")
+                    } else {
+                        uniqueIdSet.insert(uniqueID)
+                    }
+                }
+            }
+            expectation2.fulfill()
+        }
+        
+        wait(for: [expectation1, expectation2], timeout: 5.0)
+    }
     
     func testStartStopStartSubscriptions() {
         let secondsToWait = 1

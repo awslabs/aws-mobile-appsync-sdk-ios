@@ -25,31 +25,18 @@ import os.log
     func subscriptionAcknowledgementDelegate()
 }
 
-private class SubscriptionsOrderHelper {
-    var count = 0
-    var previousCall = Date()
-    var pendingCount = 0
-    var dispatchLock = DispatchQueue(label: "SubscriptionsQueue")
-    var waitDictionary = [0: true]
-    static let sharedInstance = SubscriptionsOrderHelper()
+internal class SubscriptionsOrderHelper {
+    private static var count = 0
+    static let serialQueue = DispatchQueue(label: "com.amazonaws.appsync.subscriptionsOrderHelper")
     
-    func getLatestCount() -> Int {
-        count += 1
-        waitDictionary[count] = false
-        return count
-    }
+    private init() {}
     
-    func markDone(id: Int) {
-        waitDictionary[id] = true
-    }
-    
-    func shouldWait(id: Int) -> Bool {
-        for i in 0..<id where waitDictionary[i] == false {
-            return true
+    static func getNextUniqueIdentifier() -> Int {
+        return serialQueue.sync {
+            count += 1
+            return count
         }
-        return false
     }
-    
 }
 
 /// Used to determine the reason why a subscription is being cancelled/ disconnected.
@@ -78,7 +65,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     private var cancellationSource: CancellationSource = .none
     private var semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
 
-    public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.getLatestCount()
+    public let uniqueIdentifier = SubscriptionsOrderHelper.getNextUniqueIdentifier()
     private var status = AWSAppSyncSubscriptionWatcherStatus.connecting
 
     init(client: AppSyncMQTTClient,
