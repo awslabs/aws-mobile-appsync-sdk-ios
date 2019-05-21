@@ -7,7 +7,7 @@ also includes support for offline operations.
 
 ### Bug Fixes
 
-* Fixed a bug where calling multiple subscriptionsi in a burst could result in a crash.
+* Fixed a bug where calling multiple subscriptions in a burst could result in a crash.
 
 ## 2.13.0
 
