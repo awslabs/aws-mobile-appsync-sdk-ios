@@ -25,13 +25,13 @@ import os.log
     func subscriptionAcknowledgementDelegate()
 }
 
-private class SubscriptionsOrderHelper {
-    private var count = 0
-    let serialQueue = DispatchQueue(label: "com.amazonaws.appsync.subscriptionsOrderHelper")
+internal class SubscriptionsOrderHelper {
+    private static var count = 0
+    static let serialQueue = DispatchQueue(label: "com.amazonaws.appsync.subscriptionsOrderHelper")
     
-    static let sharedInstance = SubscriptionsOrderHelper()
+    private init() {}
     
-    var uniqueIdentifier: Int {
+    static func getNextUniqueIdentifier() -> Int {
         return serialQueue.sync {
             count += 1
             return count
@@ -65,7 +65,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     private var cancellationSource: CancellationSource = .none
     private var semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
 
-    public let uniqueIdentifier = SubscriptionsOrderHelper.sharedInstance.uniqueIdentifier
+    public let uniqueIdentifier = SubscriptionsOrderHelper.getNextUniqueIdentifier()
     private var status = AWSAppSyncSubscriptionWatcherStatus.connecting
 
     init(client: AppSyncMQTTClient,
