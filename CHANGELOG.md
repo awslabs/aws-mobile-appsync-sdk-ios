@@ -3,6 +3,13 @@
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK
 also includes support for offline operations.
 
+## 2.14.0
+
+### Bug Fixes
+
+* Fix bug where delta sync was not working as intended. See [issue #232](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/232)
+* **Breaking API Change** To fix the delta sync logic, there was a change in the hashing function used internally. This change can cause the existing app to ignore the cache for the first sync and fetch data using basequery. Subsequent sync operaton shoudl work as normal.
+
 ## 2.13.1
 
 ### Bug Fixes
