@@ -1035,6 +1035,7 @@
 			children = (
 				CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */,
 				FAEC08E021CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift */,
+				B48056BB22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift */,
 				FAC3E711220900A20037813E /* AWSAppSyncCacheConfigurationMigrationTests.swift */,
 				FAFB258822051D9600068B38 /* AWSAppSyncCacheConfigurationTests.swift */,
 				FA0C12C721CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift */,
@@ -1046,14 +1047,13 @@
 				FAC28D3A221B0F09000F84CD /* CacheKeyTests.swift */,
 				FAE1E0EE21D3DC9A005767C7 /* Foundation+UtilsTests.swift */,
 				FA8C62B521D6E3AA00FF9924 /* Info.plist */,
+				E47789582284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift */,
 				FA005959221222D800BFBD13 /* MutationOptimisticUpdateTests.swift */,
 				FA38636D21DD8FF200DBA2BC /* MutationQueueTests.swift */,
 				FA88834621E3D05800DEBCB3 /* ReachabilityChangeNotifierTests.swift */,
 				FAD17C7021C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift */,
-				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
 				17E4F27C2282835A00E92474 /* SubscriptionMiscTests.swift */,
-				E47789582284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift */,
-				B48056BB22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift */,
+				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
 			);
 			path = AWSAppSyncUnitTests;
 			sourceTree = "<group>";

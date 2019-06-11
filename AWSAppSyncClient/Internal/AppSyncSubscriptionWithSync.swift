@@ -490,22 +490,22 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
     /// supplied GraphQL operations. The hash is always same for the same set of operations.
     /// - Returns: The unique hash for the specified queries & subscription.
     internal func getOperationHash() -> String {
-        
+
         var baseString = ""
-        
+
         let variables = baseQuery.variables?.sorted(by: { $0.0 < $1.0 }).description ?? ""
         baseString += type(of: baseQuery).requestString + variables
-        
+
         if let subscription = subscription {
-            let variables = subscription.variables?.sorted(by: { $0.0 < $1.0 }).description  ?? ""
+            let variables = subscription.variables?.sorted(by: { $0.0 < $1.0 }).description ?? ""
             baseString += type(of: subscription).requestString + variables
         }
-        
+
         if let deltaQuery = deltaQuery {
             let variables = deltaQuery.variables?.sorted(by: { $0.0 < $1.0 }).description ?? ""
             baseString += type(of: deltaQuery).requestString + variables
         }
-        
+
         return AWSSignatureSignerUtility.hash(baseString.data(using: .utf8)!)!.base64EncodedString()
     }
     
