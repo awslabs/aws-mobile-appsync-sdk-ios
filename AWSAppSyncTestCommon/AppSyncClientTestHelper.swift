@@ -65,7 +65,8 @@ public class AppSyncClientTestHelper: NSObject {
        "AppSyncEndpointAPIKeyRegion": "us-east-1",
        "AppSyncAPIKey": "da2-sad3lkh23422",
        "BucketName": "appsynctest201804100630-iam-s3bucket-abcdefghijk",
-       "BucketRegion": "us-east-1"
+       "BucketRegion": "us-east-1",
+       "AppSyncMultiAuthAPIKey": "da2-sd34s5ffxz"
     }
 
     The test uses 2 different backend setups (one for IAM (Cognito Identity) auth, and one for API Key

@@ -147,6 +147,7 @@ You can get the backend setup by following the steps below:
         - `CognitoIdentityPoolRegion`
         - `BucketName`
         - `BucketRegion`
+        - `AppSyncMultiAuthAPIKey`
 
 > Note: You must either provide all values in the `AppSyncIntegrationTests/appsync_test_credentials.json` or in code. There is no mechanism to handle partial overrides of one source with the other. All values must be specified before running the integration tests.
 
@@ -164,7 +165,8 @@ Add a file `appsync_test_credentials.json` (see sample below) in the `AWSAppSync
   "AppSyncEndpointAPIKeyRegion": "us-east-1",
   "AppSyncAPIKey": "da2-sad3lkh23422",
   "BucketName": "bucketName",
-  "BucketRegion": "us-east-1"
+  "BucketRegion": "us-east-1",
+  "AppSyncMultiAuthAPIKey": "da2-sd34s5ffxz"
 }
 ```
 

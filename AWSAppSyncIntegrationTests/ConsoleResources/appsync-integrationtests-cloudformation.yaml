@@ -39,8 +39,10 @@ Resources:
       Name: !Sub ${ResourceNamePrefix}-${AuthType}
       AuthenticationType: !If [AuthTypeIsAPIKey, API_KEY, AWS_IAM]
       AdditionalAuthenticationProviders:
-        -
-          AuthenticationType: "API_KEY"
+        - !If 
+          - AuthTypeIsIAM
+          - AuthenticationType: "API_KEY"
+          - !Ref AWS::NoValue
 
   GraphQLSchema:
     Type: "AWS::AppSync::GraphQLSchema"
@@ -211,7 +213,6 @@ Resources:
 
   AppSyncApiKey:
     Type: AWS::AppSync::ApiKey
-    Condition: AuthTypeIsAPIKey
     Properties:
       ApiId: !GetAtt GraphQLApi.ApiId
       # Hardcoded, since we don't have an easy way of deriving
@@ -1260,7 +1261,10 @@ Outputs:
     Condition: AuthTypeIsIAM
     Description: The role created to allow authenticated users to connect to the AppSync API.
     Value: !GetAtt AppSyncAuthenticatedRole.Arn
-
+  AppSyncMultiAuthAPIKey:
+    Condition: AuthTypeIsIAM
+    Description: The API Key to authenticate with the AppSync API using multi auth. This value should be included in your appsync_test_credentials.json file.
+    Value: !GetAtt AppSyncApiKey.ApiKey
   # General values (not used in appsync_test_credentials.json, but useful for reference)
   AppSyncApiId:
     Description: The ID of the AppSync API, useful for code generation with `amplify codegen --apiId <id>`
