@@ -9,20 +9,22 @@ import XCTest
 @testable import AWSAppSyncTestCommon
 import SQLite
 
-// This class only tests a few high-level operations like database setup. For more
-// detailed behavior tests, see appropriate tests in the ApolloTests suites.
 class AWSSQLiteNormalizedCacheTests: XCTestCase {
-    static let fetchQueue = DispatchQueue(label: "AWSSQLiteNormalizedCacheTests.fetch")
-    static let mutationQueue = DispatchQueue(label: "AWSSQLiteNormalizedCacheTests.mutations")
 
-    var cacheConfiguration: AWSAppSyncCacheConfiguration!
-    let mockHTTPTransport = MockAWSNetworkTransport()
+    var dbUri: URL!
+    var cache: AWSSQLiteNormalizedCache!
 
-    // Set up a new DB for each test
+    let records: RecordSet = [
+        "QUERY_ROOT": ["hero": Reference(key: "hero")],
+        "hero": [
+            "name": "R2-D2",
+        ]
+    ]
+
     override func setUp() {
         let tempDir = FileManager.default.temporaryDirectory
-        let rootDirectory = tempDir.appendingPathComponent("AWSSQLiteNormalizedCacheTests-\(UUID().uuidString)")
-        cacheConfiguration = try! AWSAppSyncCacheConfiguration(withRootDirectory: rootDirectory)
+        dbUri = tempDir.appendingPathComponent("AWSSQLiteNormalizedCacheTests-\(UUID().uuidString)")
+        cache = try! AWSSQLiteNormalizedCache(fileURL: dbUri)
     }
 
     /// Xcode 10.2 introduced a behavior change in the #function expression that broke SQLite.swift. That
@@ -31,13 +33,33 @@ class AWSSQLiteNormalizedCacheTests: XCTestCase {
     /// public API, but it's the simplest test that asserts the correct SQLite.swift behavior.
     /// See [Issue #211](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/211)
     func testInitializedDatabaseHasQueryRoot() throws {
-        _ = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport,
-                                                  cacheConfiguration: cacheConfiguration)
-
-        let queriesDB = try Connection(.uri(cacheConfiguration.queries!.absoluteString),
-                                       readonly: false)
+        let queriesDB = try Connection(.uri(dbUri.absoluteString), readonly: false)
 
         let queryRootCount = try queriesDB.scalar("SELECT count(*) FROM records WHERE key='QUERY_ROOT'") as! Int64
         XCTAssertEqual(queryRootCount, 1)
+    }
+
+
+    func testMergeRecordsReturnsCacheKeys() {
+        let cacheKeys = try! cache.merge(records: records).await()
+        XCTAssertEqual(cacheKeys, ["hero.name", "QUERY_ROOT.hero"])
+    }
+
+    func testMergeRecordsSavesThem() {
+        _ = try! cache.merge(records: records).await()
+        let loadedRecords = try! cache.loadRecords(forKeys: ["QUERY_ROOT", "hero"]).await()
+        XCTAssertEqual(loadedRecords.count, 2)
+        XCTAssertEqual(loadedRecords[0]?.key, "QUERY_ROOT")
+        XCTAssertEqual(loadedRecords[1]?.key, "hero")
+        XCTAssertEqual(loadedRecords[1]?.fields["name"] as? String, "R2-D2")
+    }
+
+    func testMergeRecordsPerformance() {
+        var lotsOfRecords : RecordSet = [:]
+        for index in (0...1000) {
+            let record = Record(key: "\(index)", ["x": 1])
+            lotsOfRecords.merge(record: record)
+        }
+        measure { _ = try! cache.merge(records: lotsOfRecords).await() }
     }
 }
