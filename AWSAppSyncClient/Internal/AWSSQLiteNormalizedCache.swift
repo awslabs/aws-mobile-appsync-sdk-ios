@@ -114,14 +114,16 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
                 .map { recordCacheKeyCandidates(forFieldCacheKey: $0) }
                 .flatMap { $0 }
 
-            for recordKey in Set(changedRecordKeys) {
-                if let recordFields = recordSet[recordKey]?.fields {
-                    let recordData = try SQLiteSerialization.serialize(fields: recordFields)
-                    guard let recordString = String(data: recordData, encoding: .utf8) else {
-                        assertionFailure("Serialization should yield UTF-8 data")
-                        continue
+            try db.transaction {
+                for recordKey in Set(changedRecordKeys) {
+                    if let recordFields = recordSet[recordKey]?.fields {
+                        let recordData = try SQLiteSerialization.serialize(fields: recordFields)
+                        guard let recordString = String(data: recordData, encoding: .utf8) else {
+                            assertionFailure("Serialization should yield UTF-8 data")
+                            continue
+                        }
+                        try db.run(self.records.insert(or: .replace, self.key <- recordKey, self.record <- recordString))
                     }
-                    try db.run(self.records.insert(or: .replace, self.key <- recordKey, self.record <- recordString))
                 }
             }
             return Set(changedFieldKeys)
