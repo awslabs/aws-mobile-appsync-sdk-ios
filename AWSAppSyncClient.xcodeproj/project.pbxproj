@@ -133,6 +133,7 @@
 		70C68E4D132FE62623DB8C07 /* Pods_AWSAppSyncTestHostApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C707001F57B091A8A001CAB /* Pods_AWSAppSyncTestHostApp.framework */; };
 		8032C5415EF414C038394D69 /* Pods_AWSAppSyncTestCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */; };
 		A70604C0C722923A70C937A1 /* Pods_AWSAppSyncTestApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57F5A94352E1ABE35159489D /* Pods_AWSAppSyncTestApp.framework */; };
+		B48056BC22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B48056BB22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift */; };
 		C4980354FE541C9D8DC01364 /* Pods_ApolloTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF13D1596371E9B5875900A8 /* Pods_ApolloTests.framework */; };
 		CC96F8A521BABE5600446EBD /* AWSPerformMutationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A421BABE5600446EBD /* AWSPerformMutationQueue.swift */; };
 		CC96F8A721BACA1C00446EBD /* SessionMutationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC96F8A621BACA1C00446EBD /* SessionMutationOperation.swift */; };
@@ -532,6 +533,7 @@
 		AC900D19F2ADD7D9AA202420 /* Pods-AWSAppSyncTestApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestApp/Pods-AWSAppSyncTestApp.debug.xcconfig"; sourceTree = "<group>"; };
 		AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.debug.xcconfig"; sourceTree = "<group>"; };
 		AE7015F188184AE5B561E7F0 /* Pods_AWSAppSync_AWSAppSyncUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSync_AWSAppSyncUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B48056BB22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncSubscriptionWithSyncTests.swift; sourceTree = "<group>"; };
 		C38567A6FD373D3EE5D7EBC1 /* Pods-AWSAppSync-AWSAppSyncIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync-AWSAppSyncIntegrationTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync-AWSAppSyncIntegrationTests/Pods-AWSAppSync-AWSAppSyncIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
 		C6767DE816922ABC0E53CF4C /* Pods-AWSAppSyncTestCommon.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestCommon.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestCommon/Pods-AWSAppSyncTestCommon.debug.xcconfig"; sourceTree = "<group>"; };
 		C830ED8003E746C4C6799F8E /* Pods-AWSAppSync.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.release.xcconfig"; sourceTree = "<group>"; };
@@ -1033,6 +1035,7 @@
 			children = (
 				CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */,
 				FAEC08E021CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift */,
+				B48056BB22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift */,
 				FAC3E711220900A20037813E /* AWSAppSyncCacheConfigurationMigrationTests.swift */,
 				FAFB258822051D9600068B38 /* AWSAppSyncCacheConfigurationTests.swift */,
 				FA0C12C721CD96BF00B438CB /* AWSAppSyncClientConfigurationTests.swift */,
@@ -1044,13 +1047,13 @@
 				FAC28D3A221B0F09000F84CD /* CacheKeyTests.swift */,
 				FAE1E0EE21D3DC9A005767C7 /* Foundation+UtilsTests.swift */,
 				FA8C62B521D6E3AA00FF9924 /* Info.plist */,
+				E47789582284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift */,
 				FA005959221222D800BFBD13 /* MutationOptimisticUpdateTests.swift */,
 				FA38636D21DD8FF200DBA2BC /* MutationQueueTests.swift */,
 				FA88834621E3D05800DEBCB3 /* ReachabilityChangeNotifierTests.swift */,
 				FAD17C7021C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift */,
-				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
 				17E4F27C2282835A00E92474 /* SubscriptionMiscTests.swift */,
-				E47789582284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift */,
+				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
 			);
 			path = AWSAppSyncUnitTests;
 			sourceTree = "<group>";
@@ -2018,6 +2021,7 @@
 				FA38636E21DD8FF200DBA2BC /* MutationQueueTests.swift in Sources */,
 				FA4F0D9821D6EDA50099D165 /* SyncStrategyTests.swift in Sources */,
 				FA4F0D9721D6EDA20099D165 /* AWSAppSyncServiceConfigTests.swift in Sources */,
+				B48056BC22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift in Sources */,
 				FAC28D3B221B0F09000F84CD /* CacheKeyTests.swift in Sources */,
 				E47789592284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift in Sources */,
 				FA4F0D9521D6ED9E0099D165 /* AppSyncClientComplexObjectMutationUnitTests.swift in Sources */,
