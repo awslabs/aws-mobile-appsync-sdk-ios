@@ -62,29 +62,15 @@
  The current MQTT connection status to AWS IoT
  */
 @property(atomic, assign, readonly) AWSIoTMQTTStatus mqttStatus;
-/**
- These properties control the reconnect behavior of the MQTT Client.  If the MQTT
- client becomes disconnected, it will attempt to reconnect after a quiet period;
- this quiet period doubles with each reconnection attempt, e.g. 1 seconds, 2
- seconds, 2, 8, 16, 32, etc... up until a maximum reconnection time is reached.
- If a connection is active for the minimum connection time, the quiet period
- is reset to the initial value.
- 
- baseReconnectTime: the time in seconds to wait before the first reconnect attempt
- minimumConnectionTime: the time in seconds that a connection must be active before
-     resetting the current reconnection time to the base reconnection time
- maximumReconnectTime: the maximum time in seconds to wait between reconnect
-     attempts
- 
- The defaults for these values are:
- 
- baseReconnectTime: 1 seconds
- minimumConnectionTime: 20 seconds
- maximumReconnectTime: 128 seconds
- */
-@property(atomic, assign) NSTimeInterval baseReconnectTime;
-@property(atomic, assign) NSTimeInterval minimumConnectionTime;
-@property(atomic, assign) NSTimeInterval maximumReconnectTime;
+
+@property(atomic, assign) NSTimeInterval baseReconnectTime
+    DEPRECATED_MSG_ATTRIBUTE("Reconnect functionality has been removed from AWSIoTMQTTClient and is now managed by AWSAppSync.");
+
+@property(atomic, assign) NSTimeInterval minimumConnectionTime
+    DEPRECATED_MSG_ATTRIBUTE("Reconnect functionality has been removed from AWSIoTMQTTClient and is now managed by AWSAppSync.");
+
+@property(atomic, assign) NSTimeInterval maximumReconnectTime
+    DEPRECATED_MSG_ATTRIBUTE("Reconnect functionality has been removed from AWSIoTMQTTClient and is now managed by AWSAppSync.");
 
 @property(atomic, assign) BOOL isMetricsEnabled;
 @property(atomic, assign) NSUInteger publishRetryThrottle;
