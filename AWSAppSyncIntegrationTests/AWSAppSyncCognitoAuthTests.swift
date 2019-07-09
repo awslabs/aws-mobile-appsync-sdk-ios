@@ -18,12 +18,14 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
     /// than you think, to account for CI systems running in shared environments
     private static let networkOperationTimeout = 180.0
 
-    private static let s3TransferUtilityKey = "AWSAppSyncCognitoAuthTestsTransferUtility"
+    // This is used to construct the NSURLSession background identifier, so we want it to be
+    // unique per test
+    private var s3TransferUtilityKey = "AWSAppSyncCognitoAuthTestsTransferUtility.\(UUID().uuidString)"
 
     private static let mutationQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncCognitoAuthTests.mutationQueue")
 
     override func tearDown() {
-        AWSS3TransferUtility.remove(forKey: AWSAppSyncCognitoAuthTests.s3TransferUtilityKey)
+        AWSS3TransferUtility.remove(forKey: s3TransferUtilityKey)
     }
 
     func testIAMAuthCanPerformMutation() throws {
@@ -60,9 +62,7 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
         let objectKey = "public/testS3Object-\(UUID().uuidString).jpg"
         let localURL = testBundle.url(forResource: "testS3Object", withExtension: ".jpg")!
 
-        // TODO: Replace the hardcoded line below once AWSCore 2.9.1 is released
-        // let region = AWSEndpoint.regionName(from: testConfiguration.bucketRegion)!
-        let region = "eu-central-2"
+        let region = AWSEndpoint.regionName(from: testConfiguration.bucketRegion)!
 
         let postCreated = expectation(description: "Post created successfully.")
 
@@ -174,15 +174,16 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
     // MARK: - Utilities
 
     func makeS3EnabledAppSyncClient(testConfiguration: AppSyncClientTestConfiguration,
-                                    testBundle: Bundle) throws -> AWSAppSyncClient {
+                                    testBundle: Bundle,
+                                    with backgroundSessionIdentifier: String? = nil) throws -> AWSAppSyncClient {
         let credentialsProvider = BasicAWSCognitoCredentialsProviderFactory.makeCredentialsProvider(with: testConfiguration)
 
         let serviceConfiguration = AWSServiceConfiguration(
             region: testConfiguration.bucketRegion,
             credentialsProvider: credentialsProvider)!
 
-        AWSS3TransferUtility.register(with: serviceConfiguration, forKey: AWSAppSyncCognitoAuthTests.s3TransferUtilityKey)
-        let transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: AWSAppSyncCognitoAuthTests.s3TransferUtilityKey)
+        AWSS3TransferUtility.register(with: serviceConfiguration, forKey: s3TransferUtilityKey)
+        let transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: s3TransferUtilityKey)
 
         let helper = try AppSyncClientTestHelper(
             with: .cognitoIdentityPools,
