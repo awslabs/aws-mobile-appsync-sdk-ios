@@ -120,9 +120,7 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
         let objectKey = "public/testS3Object-\(UUID().uuidString).jpg"
         let localURL = testBundle.url(forResource: "testS3Object", withExtension: ".jpg")!
 
-        // TODO: Replace the hardcoded line below once AWSCore 2.9.1 is released
-        // let region = AWSEndpoint.regionName(from: testConfiguration.bucketRegion)!
-        let region = "eu-central-2"
+        let region = AWSEndpoint.regionName(from: testConfiguration.bucketRegion)!
 
         let postCreated = expectation(description: "Post created successfully.")
 

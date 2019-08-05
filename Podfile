@@ -4,7 +4,7 @@ platform :ios, '9.0'
 use_frameworks!
 
 target 'AWSAppSync' do
-  pod 'AWSCore', '~> 2.9.0'
+  pod 'AWSCore', '~> 2.10.2'
   pod 'SQLite.swift', '0.11.6'
 
   # We are pinning to this version as 4.3.1 updates XCode requirements to Xcode
@@ -14,8 +14,8 @@ target 'AWSAppSync' do
 end
 
 target 'AWSAppSyncTestCommon' do
-  pod 'AWSCore', '~> 2.9.0'
-  pod 'AWSS3', '~> 2.9.0'
+  pod 'AWSCore', '~> 2.10.2'
+  pod 'AWSS3', '~> 2.10.2'
   pod 'ReachabilitySwift', '4.3.0'
   # We directly access a database connection to verify certain initialization
   # setups
@@ -23,8 +23,8 @@ target 'AWSAppSyncTestCommon' do
 end
 
 target 'AWSAppSyncTestApp' do
-  pod 'AWSS3', '~> 2.9.0'
-  pod 'AWSMobileClient', '~> 2.9.0'
+  pod 'AWSS3', '~> 2.10.2'
+  pod 'AWSMobileClient', '~> 2.10.2'
 end
 
 target 'AWSAppSyncTestHostApp' do
@@ -37,5 +37,5 @@ target 'AWSAppSyncIntegrationTests' do
 end
 
 target 'ApolloTests' do
-  pod 'AWSCore', '~> 2.9.0'
+  pod 'AWSCore', '~> 2.10.2'
 end
