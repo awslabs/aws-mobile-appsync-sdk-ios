@@ -1,25 +1,25 @@
 PODS:
-  - AWSAuthCore (2.9.6):
-    - AWSCore (= 2.9.6)
-  - AWSCognitoIdentityProvider (2.9.6):
+  - AWSAuthCore (2.10.2):
+    - AWSCore (= 2.10.2)
+  - AWSCognitoIdentityProvider (2.10.2):
     - AWSCognitoIdentityProviderASF (= 1.0.1)
-    - AWSCore (= 2.9.6)
+    - AWSCore (= 2.10.2)
   - AWSCognitoIdentityProviderASF (1.0.1)
-  - AWSCore (2.9.6)
-  - AWSMobileClient (2.9.6):
-    - AWSAuthCore (= 2.9.6)
-    - AWSCognitoIdentityProvider (= 2.9.6)
-  - AWSS3 (2.9.6):
-    - AWSCore (= 2.9.6)
+  - AWSCore (2.10.2)
+  - AWSMobileClient (2.10.2):
+    - AWSAuthCore (= 2.10.2)
+    - AWSCognitoIdentityProvider (= 2.10.2)
+  - AWSS3 (2.10.2):
+    - AWSCore (= 2.10.2)
   - ReachabilitySwift (4.3.0)
   - SQLite.swift (0.11.6):
     - SQLite.swift/standard (= 0.11.6)
   - SQLite.swift/standard (0.11.6)
 
 DEPENDENCIES:
-  - AWSCore (~> 2.9.0)
-  - AWSMobileClient (~> 2.9.0)
-  - AWSS3 (~> 2.9.0)
+  - AWSCore (~> 2.10.2)
+  - AWSMobileClient (~> 2.10.2)
+  - AWSS3 (~> 2.10.2)
   - ReachabilitySwift (= 4.3.0)
   - SQLite.swift (= 0.11.6)
 
@@ -35,15 +35,15 @@ SPEC REPOS:
     - SQLite.swift
 
 SPEC CHECKSUMS:
-  AWSAuthCore: 53c04ee27416dff0382fffec644e2cb15b24fcc0
-  AWSCognitoIdentityProvider: 5f2d07cad68cd9e1b7d05b7dbb7d2676cc5d487d
+  AWSAuthCore: 7cfb4ff7af9733834408c2e8fb1168db5baa4129
+  AWSCognitoIdentityProvider: a817152e73569b3a5a1d06253ea2b9d9e4d68734
   AWSCognitoIdentityProviderASF: f94f1a502e72ef3d0a1de93e10bf7a79c8698118
-  AWSCore: dd24895a435764c4a8b0bcc4bb2f0c78f55b0e11
-  AWSMobileClient: 5806fa54854b921924df4a5567c9d27d9cf52434
-  AWSS3: d0189247c6af0da4d96f997bc36cf7075e83ad24
+  AWSCore: 2e91f89187d1238be35ce8c57aac98c42def640f
+  AWSMobileClient: 659f78d2a653fb423977b373f1b1f002eac65594
+  AWSS3: f0f81ee725de69f631051cead12791ff5dfbba14
   ReachabilitySwift: 408477d1b6ed9779dba301953171e017c31241f3
   SQLite.swift: 46d890be8601964454bd3392527f863d1b802d45
 
-PODFILE CHECKSUM: db0eb65c27f5c9c31bf446be2ddb31fb2444b11d
+PODFILE CHECKSUM: 83eeef3643c2c629847d75195a87b4f1187c20f6
 
-COCOAPODS: 1.6.1
+COCOAPODS: 1.7.4

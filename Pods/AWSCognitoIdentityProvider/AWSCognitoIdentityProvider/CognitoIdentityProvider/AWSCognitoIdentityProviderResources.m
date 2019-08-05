@@ -494,6 +494,24 @@
       ],\
       \"documentation\":\"<p>Sets the user's multi-factor authentication (MFA) preference.</p>\"\
     },\
+    \"AdminSetUserPassword\":{\
+      \"name\":\"AdminSetUserPassword\",\
+      \"http\":{\
+        \"method\":\"POST\",\
+        \"requestUri\":\"/\"\
+      },\
+      \"input\":{\"shape\":\"AdminSetUserPasswordRequest\"},\
+      \"output\":{\"shape\":\"AdminSetUserPasswordResponse\"},\
+      \"errors\":[\
+        {\"shape\":\"ResourceNotFoundException\"},\
+        {\"shape\":\"NotAuthorizedException\"},\
+        {\"shape\":\"UserNotFoundException\"},\
+        {\"shape\":\"InternalErrorException\"},\
+        {\"shape\":\"TooManyRequestsException\"},\
+        {\"shape\":\"InvalidParameterException\"},\
+        {\"shape\":\"InvalidPasswordException\"}\
+      ]\
+    },\
     \"AdminSetUserSettings\":{\
       \"name\":\"AdminSetUserSettings\",\
       \"http\":{\
@@ -2447,7 +2465,7 @@
         },\
         \"UserStatus\":{\
           \"shape\":\"UserStatusType\",\
-          \"documentation\":\"<p>The user status. Can be one of the following:</p> <ul> <li> <p>UNCONFIRMED - User has been created but not confirmed.</p> </li> <li> <p>CONFIRMED - User has been confirmed.</p> </li> <li> <p>ARCHIVED - User is no longer active.</p> </li> <li> <p>COMPROMISED - User is disabled due to a potential security threat.</p> </li> <li> <p>UNKNOWN - User status is not known.</p> </li> </ul>\"\
+          \"documentation\":\"<p>The user status. Can be one of the following:</p> <ul> <li> <p>UNCONFIRMED - User has been created but not confirmed.</p> </li> <li> <p>CONFIRMED - User has been confirmed.</p> </li> <li> <p>ARCHIVED - User is no longer active.</p> </li> <li> <p>COMPROMISED - User is disabled due to a potential security threat.</p> </li> <li> <p>UNKNOWN - User status is not known.</p> </li> <li> <p>RESET_REQUIRED - User is confirmed, but the user must request a code and reset his or her password before he or she can sign in.</p> </li> <li> <p>FORCE_CHANGE_PASSWORD - The user is confirmed and the user can sign in using a temporary password, but on first sign-in, the user must change his or her password to a new value before doing anything else. </p> </li> </ul>\"\
         },\
         \"MFAOptions\":{\
           \"shape\":\"MFAOptionListType\",\
@@ -2801,6 +2819,25 @@
       }\
     },\
     \"AdminSetUserMFAPreferenceResponse\":{\
+      \"type\":\"structure\",\
+      \"members\":{\
+      }\
+    },\
+    \"AdminSetUserPasswordRequest\":{\
+      \"type\":\"structure\",\
+      \"required\":[\
+        \"UserPoolId\",\
+        \"Username\",\
+        \"Password\"\
+      ],\
+      \"members\":{\
+        \"UserPoolId\":{\"shape\":\"UserPoolIdType\"},\
+        \"Username\":{\"shape\":\"UsernameType\"},\
+        \"Password\":{\"shape\":\"PasswordType\"},\
+        \"Permanent\":{\"shape\":\"BooleanType\"}\
+      }\
+    },\
+    \"AdminSetUserPasswordResponse\":{\
       \"type\":\"structure\",\
       \"members\":{\
       }\
@@ -3775,7 +3812,7 @@
         },\
         \"SupportedIdentityProviders\":{\
           \"shape\":\"SupportedIdentityProvidersListType\",\
-          \"documentation\":\"<p>A list of provider names for the identity providers that are supported on this client.</p>\"\
+          \"documentation\":\"<p>A list of provider names for the identity providers that are supported on this client. The following are supported: <code>COGNITO</code>, <code>Facebook</code>, <code>Google</code> and <code>LoginWithAmazon</code>.</p>\"\
         },\
         \"CallbackURLs\":{\
           \"shape\":\"CallbackURLsListType\",\
@@ -5845,7 +5882,8 @@
         \"RequireSymbols\":{\
           \"shape\":\"BooleanType\",\
           \"documentation\":\"<p>In the password policy that you have set, refers to whether you have required users to use at least one symbol in their password.</p>\"\
-        }\
+        },\
+        \"TemporaryPasswordValidityDays\":{\"shape\":\"TemporaryPasswordValidityDaysType\"}\
       },\
       \"documentation\":\"<p>The password policy type.</p>\"\
     },\
@@ -6732,6 +6770,11 @@
       \"max\":256,\
       \"min\":0\
     },\
+    \"TemporaryPasswordValidityDaysType\":{\
+      \"type\":\"integer\",\
+      \"max\":365,\
+      \"min\":0\
+    },\
     \"TokenModelType\":{\
       \"type\":\"string\",\
       \"pattern\":\"[A-Za-z0-9-_=.]+\",\
@@ -7101,7 +7144,7 @@
         },\
         \"AllowedOAuthFlows\":{\
           \"shape\":\"OAuthFlowsType\",\
-          \"documentation\":\"<p>Set to <code>code</code> to initiate a code grant flow, which provides an authorization code as the response. This code can be exchanged for access tokens with the token endpoint.</p> <p>Set to <code>token</code> to specify that the client should get the access token (and, optionally, ID token, based on scopes) directly.</p>\"\
+          \"documentation\":\"<p>Set to <code>code</code> to initiate a code grant flow, which provides an authorization code as the response. This code can be exchanged for access tokens with the token endpoint.</p>\"\
         },\
         \"AllowedOAuthScopes\":{\
           \"shape\":\"ScopeListType\",\
@@ -7749,7 +7792,7 @@
         },\
         \"UserStatus\":{\
           \"shape\":\"UserStatusType\",\
-          \"documentation\":\"<p>The user status. Can be one of the following:</p> <ul> <li> <p>UNCONFIRMED - User has been created but not confirmed.</p> </li> <li> <p>CONFIRMED - User has been confirmed.</p> </li> <li> <p>ARCHIVED - User is no longer active.</p> </li> <li> <p>COMPROMISED - User is disabled due to a potential security threat.</p> </li> <li> <p>UNKNOWN - User status is not known.</p> </li> </ul>\"\
+          \"documentation\":\"<p>The user status. Can be one of the following:</p> <ul> <li> <p>UNCONFIRMED - User has been created but not confirmed.</p> </li> <li> <p>CONFIRMED - User has been confirmed.</p> </li> <li> <p>ARCHIVED - User is no longer active.</p> </li> <li> <p>COMPROMISED - User is disabled due to a potential security threat.</p> </li> <li> <p>UNKNOWN - User status is not known.</p> </li> <li> <p>RESET_REQUIRED - User is confirmed, but the user must request a code and reset his or her password before he or she can sign in.</p> </li> <li> <p>FORCE_CHANGE_PASSWORD - The user is confirmed and the user can sign in using a temporary password, but on first sign-in, the user must change his or her password to a new value before doing anything else. </p> </li> </ul>\"\
         },\
         \"MFAOptions\":{\
           \"shape\":\"MFAOptionListType\",\

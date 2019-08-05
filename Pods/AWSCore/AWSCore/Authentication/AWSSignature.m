@@ -149,7 +149,7 @@ NSString *const AWSSignatureV4Terminator = @"aws4_request";
 }
 
 - (AWSTask *)interceptRequest:(NSMutableURLRequest *)request {
-    [request addValue:request.URL.host forHTTPHeaderField:@"Host"];
+    [request setValue:request.URL.host forHTTPHeaderField:@"Host"];
     return [[self.credentialsProvider credentials] continueWithSuccessBlock:^id _Nullable(AWSTask<AWSCredentials *> * _Nonnull task) {
         AWSCredentials *credentials = task.result;
         // clear authorization header if set
@@ -499,8 +499,8 @@ NSString *const AWSSignatureV4Terminator = @"aws4_request";
         // ============  generate v4 signature string (END) ===================
         
         [queryString appendFormat:@"%@=%@", @"X-Amz-Signature", signatureString];
-        
-        NSString *urlString = [NSString stringWithFormat:@"%@://%@/%@?%@", endpoint.URL.scheme, endpoint.hostName, keyPath, queryString];
+        NSString *portNumber = endpoint.portNumber != nil ? [NSString stringWithFormat:@":%@", endpoint.portNumber.stringValue]: @"";
+        NSString *urlString = [NSString stringWithFormat:@"%@://%@%@/%@?%@", endpoint.URL.scheme, endpoint.hostName, portNumber, keyPath, queryString];
         
         return [NSURL URLWithString:urlString];
     }];
