@@ -242,7 +242,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     func messageCallbackDelegate(data: Data) {
         do {
             AppSyncLog.debug("Received message")
-            AppSyncLog.verbose("First 128 bytes of message data is [\(data.prefix(upTo: 128))]")
+            AppSyncLog.verbose("First \(min(data.count, 128)) bytes of message data is [\(data.prefix(upTo: min(data.count, 128)))]")
 
             guard String(data: data, encoding: .utf8) != nil else {
                 let error = AWSAppSyncSubscriptionError.messageCallbackError("Unable to convert message data to String using UTF8 encoding")
