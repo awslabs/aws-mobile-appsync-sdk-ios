@@ -10,6 +10,7 @@ final class AWSAppSyncMutationRecord {
     var jsonRecord: JSONObject?
     var data: Data?
     var contentMap: GraphQLMap?
+    var priority: Operation.QueuePriority?
     var recordIdentifier: String
     var recordState: MutationRecordState = .inQueue
     var timestamp: Date
@@ -36,6 +37,7 @@ extension AWSAppSyncMutationRecord: CustomStringConvertible {
         desc.append("\tID: \(recordIdentifier)")
         desc.append("\ttimestamp: \(timestamp)")
         desc.append("\thasS3Object: \(s3ObjectInput != nil ? true : false)")
+        desc.append("\tpriority: \(priority ?? .normal)")
         desc.append(">")
 
         return desc

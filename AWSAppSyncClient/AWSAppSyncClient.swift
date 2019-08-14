@@ -277,10 +277,14 @@ public class AWSAppSyncClient {
     @discardableResult
     public func perform<Mutation: GraphQLMutation>(
         mutation: Mutation,
+        mutationPriority: Operation.QueuePriority = .normal,
         queue: DispatchQueue = .main,
         optimisticUpdate: OptimisticResponseBlock? = nil,
         conflictResolutionBlock: MutationConflictHandler<Mutation>? = nil,
         resultHandler: OperationResultHandler<Mutation>? = nil) -> Cancellable {
+        
+        let nc = NotificationCenter.default
+        nc.post(name: .mutationPerformed, object: nil)
 
         if let optimisticUpdate = optimisticUpdate {
             do {
@@ -294,6 +298,7 @@ public class AWSAppSyncClient {
 
         return mutationQueue.add(
             mutation,
+            mutationPriority: mutationPriority,
             mutationConflictHandler: conflictResolutionBlock,
             mutationResultHandler: resultHandler,
             handlerQueue: queue
