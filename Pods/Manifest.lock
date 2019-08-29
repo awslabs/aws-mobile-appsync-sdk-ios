@@ -1,16 +1,16 @@
 PODS:
-  - AWSAuthCore (2.10.2):
-    - AWSCore (= 2.10.2)
-  - AWSCognitoIdentityProvider (2.10.2):
+  - AWSAuthCore (2.10.3):
+    - AWSCore (= 2.10.3)
+  - AWSCognitoIdentityProvider (2.10.3):
     - AWSCognitoIdentityProviderASF (= 1.0.1)
-    - AWSCore (= 2.10.2)
+    - AWSCore (= 2.10.3)
   - AWSCognitoIdentityProviderASF (1.0.1)
-  - AWSCore (2.10.2)
-  - AWSMobileClient (2.10.2):
-    - AWSAuthCore (= 2.10.2)
-    - AWSCognitoIdentityProvider (= 2.10.2)
-  - AWSS3 (2.10.2):
-    - AWSCore (= 2.10.2)
+  - AWSCore (2.10.3)
+  - AWSMobileClient (2.10.3):
+    - AWSAuthCore (= 2.10.3)
+    - AWSCognitoIdentityProvider (= 2.10.3)
+  - AWSS3 (2.10.3):
+    - AWSCore (= 2.10.3)
   - ReachabilitySwift (4.3.0)
   - SQLite.swift (0.11.6):
     - SQLite.swift/standard (= 0.11.6)
@@ -35,15 +35,15 @@ SPEC REPOS:
     - SQLite.swift
 
 SPEC CHECKSUMS:
-  AWSAuthCore: 7cfb4ff7af9733834408c2e8fb1168db5baa4129
-  AWSCognitoIdentityProvider: a817152e73569b3a5a1d06253ea2b9d9e4d68734
+  AWSAuthCore: 2d776cbff5768148842502234fd6ba04697e4fe4
+  AWSCognitoIdentityProvider: 70cfc80901b1b66bd68ef06893cb0ec3c6213510
   AWSCognitoIdentityProviderASF: f94f1a502e72ef3d0a1de93e10bf7a79c8698118
-  AWSCore: 2e91f89187d1238be35ce8c57aac98c42def640f
-  AWSMobileClient: 659f78d2a653fb423977b373f1b1f002eac65594
-  AWSS3: f0f81ee725de69f631051cead12791ff5dfbba14
+  AWSCore: f9b8a30d9e8ec07d1a6dd8f0ec5fe84b6a215041
+  AWSMobileClient: 0043e0b2768b85ff92859152f5037d28d2b05131
+  AWSS3: c6f0f7a49a74384b9d0fe055c822d1fa5c633905
   ReachabilitySwift: 408477d1b6ed9779dba301953171e017c31241f3
   SQLite.swift: 46d890be8601964454bd3392527f863d1b802d45
 
-PODFILE CHECKSUM: 83eeef3643c2c629847d75195a87b4f1187c20f6
+PODFILE CHECKSUM: 050b6f8d989ce7349fdc96c38fc45742cf4cceab
 
 COCOAPODS: 1.7.4
