@@ -54,16 +54,18 @@
 @property UInt8 lastWillAndTestamentQoS;
 @property BOOL lastWillAndTestamentRetainFlag;
 
-//
-// Two bound pairs of streams are used to connect the MQTT
-// client to the WebSocket: one for the encoder, and one for
-// the decoder.
-//
-@property(nonatomic, assign) CFReadStreamRef  decoderReadStreamRef;
-@property(nonatomic, assign) CFWriteStreamRef decoderWriteStreamRef;
-@property(nonatomic, strong) NSOutputStream *encoderStream;      // MQTT encoder writes to this one
-@property(nonatomic, strong) NSInputStream  *decoderStream;      // MQTT decoder reads from this one
-@property(nonatomic, strong) NSOutputStream *toDecoderStream;    // We write to this one
+// When AWSIoTMQTTClient receives data from the web socket (via `-[webSocket:didReceiveMessage:]`), it writes data to
+// this stream, which is bound to `decoderStream`.
+@property(nonatomic, strong) NSOutputStream *toDecoderStream;
+
+// The AWSMQTTSession passes this stream to AWSMQTTDecoder. AWSMQTTDecoder reads from this stream, decodes data, and
+// invokes `AWSMQTTDecoderDelegate` methods on its delegate (the AWSMQTTSession).
+@property(nonatomic, strong) NSInputStream  *decoderStream;
+
+// The AWSMQTTSession passes this stream to AWSMQTTEncoder. When AWSMQTTSession invokes
+// `-[AWSMQTTEncoder encodeMessage:]`, the encoder writes encoded data to this stream, which is a dummy stream that
+// actually invokes `-[AWSSRWebSocket send:]`.
+@property(nonatomic, strong) NSOutputStream *toWebSocketStream;
 
 @property (nonatomic, copy) void (^connectStatusCallback)(AWSIoTMQTTStatus status);
 
@@ -76,13 +78,14 @@
 @implementation AWSIoTMQTTClient
 
 /*
-This version is for metrics collection for AWS IoT purpose only. It may be different
+ This version is for metrics collection for AWS IoT purpose only. It may be different
  than the version of AWS SDK for iOS. Update this version when there's a change in AWSIoT.
  */
 static const NSString *SDK_VERSION = @"2.6.19";
 
 
 #pragma mark Intialitalizers
+
 - (instancetype)init {
     if (self = [super init]) {
         _topicListeners = [NSMutableDictionary dictionary];
@@ -111,6 +114,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
 }
 
 #pragma mark signer methods
+
 - (NSData *)getDerivedKeyForSecretKey:(NSString *)secretKey
                             dateStamp:(NSString *)dateStamp
                            regionName:(NSString *)regionName
@@ -208,132 +212,22 @@ static const NSString *SDK_VERSION = @"2.6.19";
                              serviceName,
                              now];
 
-    return [self signWebSocketUrlForMethod:@"GET" scheme:@"wss://" hostName:hostName path:path  queryParams:queryParams accessKey:accessKey secretKey:secretKey regionName:regionName serviceName:serviceName payload:@"" today:today now:now sessionKey:sessionKey];
+    return [self signWebSocketUrlForMethod:@"GET"
+                                    scheme:@"wss://"
+                                  hostName:hostName
+                                      path:path
+                               queryParams:queryParams
+                                 accessKey:accessKey
+                                 secretKey:secretKey
+                                regionName:regionName
+                               serviceName:serviceName
+                                   payload:@""
+                                     today:today
+                                       now:now
+                                sessionKey:sessionKey];
 }
 
 #pragma mark connect lifecycle methods
-
-- (BOOL)connectWithClientId:(NSString*)clientId
-                     toHost:(NSString*)host
-                       port:(UInt32)port
-               cleanSession:(BOOL)cleanSession
-              certificateId:(NSString*)certificateId
-                  keepAlive:(UInt16)theKeepAliveInterval
-                  willTopic:(NSString*)willTopic
-                    willMsg:(NSData*)willMsg
-                    willQoS:(UInt8)willQoS
-             willRetainFlag:(BOOL)willRetainFlag
-             statusCallback:(void (^)(AWSIoTMQTTStatus status))callback {
-    
-    if (self.userDidIssueConnect ) {
-        //Issuing connect multiple times. Not allowed.
-        return NO;
-    }
-    //Intialize connection state
-    self.userDidIssueDisconnect = NO;
-    self.userDidIssueConnect = YES;
-    self.session = nil;
-    
-    SecIdentityRef identityRef = [AWSIoTKeychain getIdentityRef:[NSString stringWithFormat:@"%@%@",[AWSIoTKeychain privateKeyTag], certificateId ]];
-    if (identityRef == NULL) {
-        AWSDDLogError(@"Could not find SecIdentityRef");
-        return NO;
-    };
-    self.mqttStatus = AWSIoTMQTTStatusConnecting;
-    self.clientCerts = [[NSArray alloc] initWithObjects:(__bridge id)identityRef, nil];
-    self.host = host;
-    self.port = port;
-    self.cleanSession = cleanSession;
-    self.connectStatusCallback = callback;
-    self.clientId = clientId;
-    self.keepAliveInterval = theKeepAliveInterval;
-    self.lastWillAndTestamentTopic = willTopic;
-    self.lastWillAndTestamentMessage = willMsg;
-    self.lastWillAndTestamentQoS = willQoS;
-    self.lastWillAndTestamentRetainFlag = willRetainFlag;
-    
-    return [self connectWithCert];
-}
-
-- (BOOL) connectWithCert {
-    self.mqttStatus = AWSIoTMQTTStatusConnecting;
-    
-    if (self.cleanSession) {
-        [self.topicListeners removeAllObjects];
-    }
-    
-    NSString *username;
-    if (self.isMetricsEnabled) {
-        username = [NSString stringWithFormat:@"%@%@", @"?SDK=iOS&Version=", SDK_VERSION];
-        AWSDDLogInfo(@"username is : %@", username);
-    }
-    AWSDDLogInfo(@"Metrics collection is: %@", self.isMetricsEnabled ? @"Enabled" : @"Disabled");
-    
-    //Create Session
-    if (self.session == nil ) {
-        self.session = [[AWSMQTTSession alloc] initWithClientId:self.clientId
-                                                      userName:username
-                                                      password:@""
-                                                     keepAlive:self.keepAliveInterval
-                                                  cleanSession:self.cleanSession
-                                                     willTopic:self.lastWillAndTestamentTopic
-                                                       willMsg:self.lastWillAndTestamentMessage
-                                                       willQoS:self.lastWillAndTestamentQoS
-                                                willRetainFlag:self.lastWillAndTestamentRetainFlag
-                                          publishRetryThrottle:self.publishRetryThrottle];
-        self.session.delegate = self;
-    }
-    
-    //Notify connection status
-    [self notifyConnectionStatus];
-    
-    //Create CFStream variable to hold the streams connected to the ip
-    CFReadStreamRef readStream;
-    CFWriteStreamRef writeStream;
-    
-    //Creates readable and writable streams connected to ip and port. The socket will not be created or a
-    //connection established with the server until one of the streams is opened.
-    CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)_host, _port, &readStream, &writeStream);
-    self.decoderStream = (__bridge_transfer NSInputStream *) readStream;
-    self.encoderStream = (__bridge_transfer NSOutputStream *) writeStream;
-    
-    CFDictionaryRef sslSettings;
-    if (_clientCerts.count) {
-        const void *keys[] = { kCFStreamSSLLevel,
-            kCFStreamSSLCertificates };
-        
-        const void *vals[] = { kCFStreamSocketSecurityLevelNegotiatedSSL,
-            (__bridge const void *)(_clientCerts) };
-        
-        sslSettings = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2,
-                                         &kCFTypeDictionaryKeyCallBacks,
-                                         &kCFTypeDictionaryValueCallBacks);
-        
-    } else {
-        const void *keys[] = { kCFStreamSSLLevel,
-            kCFStreamSSLPeerName };
-        
-        const void *vals[] = { kCFStreamSocketSecurityLevelNegotiatedSSL,
-            kCFNull };
-        
-        sslSettings = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2,
-                                         &kCFTypeDictionaryKeyCallBacks,
-                                         &kCFTypeDictionaryValueCallBacks);
-    }
-    CFReadStreamSetProperty(readStream, kCFStreamPropertySSLSettings, sslSettings);
-    CFWriteStreamSetProperty(writeStream, kCFStreamPropertySSLSettings, sslSettings);
-    CFRelease(sslSettings);
-    
-    //Create Thread and start with "openStreams" being the entry point.
-    if (self.streamsThread) {
-        AWSDDLogVerbose(@"Issued Cancel on thread [%@]", self.streamsThread);
-        [self.streamsThread cancel];
-    }
-    self.streamsThread = [[NSThread alloc] initWithTarget:self selector:@selector(openStreams:) object:nil];
-    self.streamsThread.name = [NSString stringWithFormat:@"AWSIoTMQTTClient streamsThread %@", self.clientId];
-    [self.streamsThread start];
-    return YES;
-}
 
 - (BOOL) connectWithClientId:(NSString *)clientId
                cleanSession:(BOOL)cleanSession
@@ -365,7 +259,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
     self.keepAliveInterval = theKeepAliveInterval;
     self.connectStatusCallback = callback;
     
-    return [ self webSocketConnectWithClientId];
+    return [self webSocketConnectWithClientId];
 }
 
 - (BOOL)connectWithClientId:(NSString *)clientId
@@ -455,8 +349,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
         AWSDDLogInfo(@"username is : %@", username);
     }
     AWSDDLogInfo(@"Metrics collection is: %@", self.isMetricsEnabled ? @"Enabled" : @"Disabled");
-    
-    
+
     //create Session if one doesn't already exist
     if (self.session == nil ) {
         self.session = [[AWSMQTTSession alloc] initWithClientId:self.clientId
@@ -506,9 +399,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
     self.runLoopShouldContinue = NO;
     
     [self.webSocket close];
-    self.decoderReadStreamRef = nil;
-    self.decoderWriteStreamRef = nil;
-    [self.encoderStream close];
+    [self.toWebSocketStream close];
     [self.streamsThread cancel];
 
     self.clientDelegate = nil;
@@ -550,7 +441,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
     [self.toDecoderStream open];
     
     //Update the runLoop and runLoopMode in session.
-    [self.session connectToInputStream:self.decoderStream outputStream:self.encoderStream];
+    [self.session connectToInputStream:self.decoderStream outputStream:self.toWebSocketStream];
     
     while (self.runLoopShouldContinue && NSThread.currentThread.isCancelled == NO) {
         //This will continue to run until runLoopShouldContinue is set to NO during "disconnect" or
@@ -922,26 +813,30 @@ static const NSString *SDK_VERSION = @"2.6.19";
 
 - (void)webSocketDidOpen:(AWSSRWebSocket *)webSocket {
     AWSDDLogInfo(@"(%@) Websocket did open and is connected", self.clientId);
-    
+
     // The WebSocket is connected; at this point we need to create streams
     // for MQTT encode/decode and then instantiate the MQTT client.
-    self.decoderReadStreamRef = nil;
-    self.decoderWriteStreamRef = nil;
-    
-    // CFStreamCreateBoundPair() requires addresses, so use the ivars for
-    // these properties.  128KB is the maximum message size for AWS IoT (see https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html).
+    NSInputStream *inputStreamRef;
+    NSOutputStream *outputStreamRef;
+
+    // 128KB is the maximum message size for AWS IoT
+    // (see https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html).
     // The streams should be able to buffer an entire maximum-sized message
     // since the MQTT client isn't capable of dealing with partial reads.
-    
-    //Create a bound pair of read and write streams. Any data written to the write stream is received by the read stream.
-    // i.e., whatever is written to the "toDecoderStream" is received by the "decoderStream".
-    CFStreamCreateBoundPair( nil, &_decoderReadStreamRef, &_decoderWriteStreamRef, 128*1024 );    // 128KB buffer size
-    self.decoderStream = (__bridge_transfer NSInputStream *)_decoderReadStreamRef;
-    self.toDecoderStream     = (__bridge_transfer NSOutputStream *)_decoderWriteStreamRef;
+    [NSStream getBoundStreamsWithBufferSize:128*1024
+                                inputStream:&inputStreamRef
+                               outputStream:&outputStreamRef];
+
+    // This will be passed to the decoder as its input stream
+    self.decoderStream = inputStreamRef;
+
+    // This will be written to by webSocket:didReceiveMessage:
+    self.toDecoderStream = outputStreamRef;
     [self.toDecoderStream setDelegate:self];
 
-    //Create write stream to write to the WebSocket.
-    self.encoderStream = [AWSIoTWebSocketOutputStreamFactory createAWSIoTWebSocketOutputStreamWithWebSocket:webSocket];
+    // MQTT encoder writes to this one, which is bound at the other end to the WebSocket send method
+    self.toWebSocketStream = [AWSIoTWebSocketOutputStreamFactory
+                              createAWSIoTWebSocketOutputStreamWithWebSocket:webSocket];
     
     // Create Thread and start with "openStreams" being the entry point.
     if (self.streamsThread) {
@@ -954,7 +849,6 @@ static const NSString *SDK_VERSION = @"2.6.19";
     [self.streamsThread start];
 }
 
-
 - (void)webSocket:(AWSSRWebSocket *)webSocket didFailWithError:(NSError *)error;
 {
     AWSDDLogError(@"(%@) WebsocketdidFailWithError:%@", self.clientId, error);
@@ -962,12 +856,11 @@ static const NSString *SDK_VERSION = @"2.6.19";
     // The WebSocket has failed.The input/output streams can be closed here.
     // Also, the webSocket can be set to nil
     [self.toDecoderStream close];
-    [self.encoderStream  close];
+    [self.toWebSocketStream  close];
     [self.webSocket close];
     self.webSocket = nil;
     
-    // If this is not because of user initated disconnect, setup timer to retry.
-    if (!self.userDidIssueDisconnect ) {
+    if (!self.userDidIssueDisconnect) {
         self.mqttStatus = AWSIoTMQTTStatusConnectionError;
         // Indicate an error to the connection status callback.
         [self notifyConnectionStatus];
@@ -997,7 +890,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
     // The WebSocket has closed. The input/output streams can be closed here.
     // Also, the webSocket can be set to nil
     [self.toDecoderStream close];
-    [self.encoderStream  close];
+    [self.toWebSocketStream  close];
     [self.webSocket close];
     self.webSocket = nil;
     
