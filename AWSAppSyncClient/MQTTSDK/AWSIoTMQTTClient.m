@@ -420,10 +420,11 @@ static const NSString *SDK_VERSION = @"2.6.19";
     });
 }
 
+// This is the entry point for `streamsThread`. Since we're manipulating the thread's runLoop, we want to assign all
+// the runLoop's sources on its thread thread
 - (void)openStreams:(id)sender {
     AWSDDLogVerbose(@"(%@) Opening streams", self.clientId);
 
-    //This is invoked in a new thread by the webSocketDidOpen method or by the Connect method. Get the runLoop from the thread.
     NSRunLoop *runLoopForStreamsThread = [NSRunLoop currentRunLoop];
     
     //Setup a default timer to ensure that the RunLoop always has at least one timer on it. This is to prevent the while loop
@@ -442,7 +443,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
     
     //Update the runLoop and runLoopMode in session.
     [self.session connectToInputStream:self.decoderStream outputStream:self.toWebSocketStream];
-    
+
     while (self.runLoopShouldContinue && NSThread.currentThread.isCancelled == NO) {
         //This will continue to run until runLoopShouldContinue is set to NO during "disconnect" or
         //"websocketDidFail"
@@ -451,7 +452,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
         NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:10];
         [runLoopForStreamsThread runMode:NSDefaultRunLoopMode beforeDate:[deadline copy]];
     }
-    
+
     // clean up the defaultRunLoopTimer.
     [defaultRunLoopTimer invalidate];
     
@@ -468,7 +469,10 @@ static const NSString *SDK_VERSION = @"2.6.19";
 }
 
 - (void)timerHandler:(NSTimer*)theTimer {
-    AWSDDLogVerbose(@"ThreadID: [%@] Default run loop timer executed: runLoopShouldContinue is [%d] and Cancelled is [%d]", [NSThread currentThread], self.runLoopShouldContinue, [[NSThread currentThread] isCancelled]);
+    AWSDDLogVerbose(@"ThreadID: [%@] Default run loop timer executed: runLoopShouldContinue is [%d] and Cancelled is [%d]",
+                    [NSThread currentThread],
+                    self.runLoopShouldContinue,
+                    [[NSThread currentThread] isCancelled]);
 }
 
 #pragma mark publish methods
@@ -811,6 +815,9 @@ static const NSString *SDK_VERSION = @"2.6.19";
 
 #pragma mark AWSSRWebSocketDelegate
 
+// Once webSocket is open, we can prepare the streams and get them hooked up to the socket. However, do not schedule
+// them on the `streamThread` runloop from this method; do it from `openStreams` so manipulation of the runloop and its
+// input sources happens on the runloop's thread.
 - (void)webSocketDidOpen:(AWSSRWebSocket *)webSocket {
     AWSDDLogInfo(@"(%@) Websocket did open and is connected", self.clientId);
 
@@ -853,7 +860,7 @@ static const NSString *SDK_VERSION = @"2.6.19";
 {
     AWSDDLogError(@"(%@) WebsocketdidFailWithError:%@", self.clientId, error);
 
-    // The WebSocket has failed.The input/output streams can be closed here.
+    // The WebSocket has failed. The input/output streams can be closed here.
     // Also, the webSocket can be set to nil
     [self.toDecoderStream close];
     [self.toWebSocketStream  close];

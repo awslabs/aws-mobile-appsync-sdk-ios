@@ -217,7 +217,8 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         resultHandler = nil
         statusChangeHandler = nil
         subscriptionTopic = nil
-        // Cancel subscription notifies the itnernal AppSyncMQTT client to update it's
+
+        // `cancelSubscription` notifies the internal AppSyncMQTT client to update its
         // metadata and state since this subscription is not active any more.
         // We currently __do not__ invoke `cancelSubscription` for cases where the disconnect was
         // due to error in service/ protocol or network level.
