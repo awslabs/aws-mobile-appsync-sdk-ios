@@ -38,7 +38,6 @@
     
     NSMutableDictionary* txFlows; //Required for QOS1. Outbound publishes will be stored in txFlows until a PubAck is received
     NSMutableDictionary* rxFlows; //Required for handling QOS 2. Not in use currently
-    unsigned int         retryThreshold; //used to throtttle retries. Overloading the publishes beyond service limit will result in message loss.
 }
 
 // private methods & properties
