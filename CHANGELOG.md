@@ -12,6 +12,10 @@ also includes support for offline operations.
   [#216](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/216), and 
   [PR #259](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/259). Thanks @johnmurphy01! 🎉
 
+### Misc. Updates
+
+- Updated AWS SDK dependencies to 2.11.0
+
 ## 2.14.1
 
 ### Misc. Updates
