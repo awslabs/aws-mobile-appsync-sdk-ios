@@ -6,7 +6,7 @@ AWS AppSync SDK for iOS
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![Build Status](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios.svg?branch=master)](https://travis-ci.org/awslabs/aws-mobile-appsync-sdk-ios)
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://aws-amplify.github.io/docs/ios/api/)
-[![Swift](https://img.shields.io/badge/swift-4.2-orange.svg?style=flat)](https://developer.apple.com/swift/)
+[![Swift](https://img.shields.io/badge/swift-5-orange.svg?style=flat)](https://developer.apple.com/swift/)
 [![Twitter Follow](https://img.shields.io/twitter/follow/AWSforMobile.svg?style=social&label=Follow)](https://twitter.com/AWSforMobile)
 
 
@@ -14,7 +14,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ## Setup
 
-> Note: AWS AppSync uses Swift 4.2.1. Use Xcode 10.2 or greater to build.
+> Note: AWS AppSync uses Swift 5.1. Use Xcode 11.0 or greater to build.
 
 ### Installing the SDK
 
@@ -23,7 +23,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
     ```ruby
-    pod 'AWSAppSync', '~> 2.14.0'
+    pod 'AWSAppSync', '~> 2.15.0'
     ```
 
     Example:
@@ -37,7 +37,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
       use_frameworks!
 
       # Pods for EventsApp
-      pod 'AWSAppSync', '~> 2.14.0'
+      pod 'AWSAppSync', '~> 2.15.0'
     end
     ```
 

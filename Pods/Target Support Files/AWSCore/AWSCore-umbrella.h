@@ -64,6 +64,7 @@
 #import "NSValueTransformer+AWSMTLInversionAdditions.h"
 #import "NSValueTransformer+AWSMTLPredefinedTransformerAdditions.h"
 #import "AWSNetworking.h"
+#import "AWSNetworkingHelpers.h"
 #import "AWSURLSessionManager.h"
 #import "AWSSerialization.h"
 #import "AWSURLRequestRetryHandler.h"

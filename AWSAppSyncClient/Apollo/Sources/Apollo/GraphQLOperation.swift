@@ -45,7 +45,7 @@ public protocol GraphQLFragment: GraphQLSelectionSet {
 }
 
 public extension GraphQLOperation {
-    public static func getResponseGraphQLSelections() -> [GraphQLSelection] {
+    static func getResponseGraphQLSelections() -> [GraphQLSelection] {
         return Data.selections
     }
 }
