@@ -641,34 +641,57 @@ class MutationQueueTests: XCTestCase {
         XCTAssertEqual(n0, n2)
     }
 
+    /// This test asserts two behaviors:
+    ///
+    /// Test 1
+    /// - Given: A queue of in-process mutations
+    /// - When: I invoke `clearCaches` with the option set to clear the mutation queue
+    /// - Then: The mutation queue is emptied
+    ///
+    /// Test 2
+    /// - Given: A queue of in-process mutations
+    /// - When: I clear the cache, then perform another mutation
+    /// - Then: The new mutation is performed as expected
     func testCancelAllMutations() throws {
+        // Test 1, which is also setup for Test 2
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         let mockHTTPTransport = MockAWSNetworkTransport()
-        mockHTTPTransport.operationResponseDelay = 5
+        mockHTTPTransport.operationResponseDelay = 2
         mockHTTPTransport.sendOperationHandlerResponseBody = UnitTestHelpers.makeAddPostResponseBody(withId: "TestPostID", for: addPost)
 
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: AWSAppSyncCacheConfiguration())
 
+        var mutationExpectations = [XCTestExpectation]()
+
+        // The first mutation will begin immediately, but since the mock HTTP transport has a 2 second delay, we'll have
+        // time to queue up more mutations behind it, which we will then cancel.
         let mutationPerformed = expectation(description: "Post added")
+        mutationExpectations.append(mutationPerformed)
         appSyncClient.perform(mutation: addPost) { result, error in
             XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
             mutationPerformed.fulfill()
         }
-        for _ in 0...9 {
+
+
+        for i in 0...9 {
+            let queuedMutationShouldNotBeInvoked = expectation(description: "Queued mutation \(i) should not be invoked")
+            queuedMutationShouldNotBeInvoked.isInverted = true
+            mutationExpectations.append(queuedMutationShouldNotBeInvoked)
             appSyncClient.perform(mutation: addPost) { result, error in
-                XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
+                queuedMutationShouldNotBeInvoked.fulfill()
             }
         }
 
         try appSyncClient.clearCaches(options: ClearCacheOptions(clearMutations: true))
 
-        wait(for: [mutationPerformed], timeout: 6.0)
+        wait(for: mutationExpectations, timeout: 3.0)
 
         XCTAssertEqual(appSyncClient.queuedMutationCount, 0)
 
         mockHTTPTransport.operationResponseDelay = 0
 
+        // Test 2
         let furtherMutationPerformed = expectation(description: "Further post added")
         appSyncClient.perform(mutation: addPost) { result, error in
             XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
