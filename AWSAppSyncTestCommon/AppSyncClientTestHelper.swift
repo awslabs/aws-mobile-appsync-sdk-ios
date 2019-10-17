@@ -48,7 +48,7 @@ public class AppSyncClientTestHelper: NSObject {
         case invalidAPIKey
         case invalidOIDC
         case invalidStaticCredentials
-        /// Delay set at 999 seconds
+        /// Delay set at 120 seconds
         case delayedInvalidOIDC
     }
 
@@ -99,7 +99,8 @@ public class AppSyncClientTestHelper: NSObject {
          httpTransport: AWSNetworkTransport? = nil,
          s3ObjectManager: AWSS3ObjectManager? = nil,
          testBundle: Bundle = Bundle(for: AppSyncClientTestHelper.self),
-         reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil) throws {
+         reachabilityFactory: NetworkReachabilityProvidingFactory.Type? = nil,
+         subscriptionFactory: SubscriptionConnectionFactory? = nil) throws {
 
         // Read credentials from appsync_test_credentials.json or hardcoded values
         let resolvedTestConfiguration = testConfiguration ?? AppSyncClientTestConfiguration(with: testBundle) ?? AppSyncClientTestConfiguration()
@@ -115,7 +116,8 @@ public class AppSyncClientTestHelper: NSObject {
             testConfiguration: resolvedTestConfiguration,
             cacheConfiguration: cacheConfiguration,
             httpTransport: httpTransport,
-            s3ObjectManager: s3ObjectManager
+            s3ObjectManager: s3ObjectManager,
+            subscriptionFactory: subscriptionFactory
         )
 
         appSyncClient = try DeinitNotifiableAppSyncClient(appSyncConfig: appSyncConfig, reachabilityFactory: reachabilityFactory)
@@ -139,7 +141,8 @@ public class AppSyncClientTestHelper: NSObject {
         testConfiguration: AppSyncClientTestConfiguration,
         cacheConfiguration: AWSAppSyncCacheConfiguration?,
         httpTransport: AWSNetworkTransport?,
-        s3ObjectManager: AWSS3ObjectManager?
+        s3ObjectManager: AWSS3ObjectManager?,
+        subscriptionFactory: SubscriptionConnectionFactory?
     ) throws -> AWSAppSyncClientConfiguration {
 
         if let httpTransport = httpTransport {
@@ -148,6 +151,7 @@ public class AppSyncClientTestHelper: NSObject {
                                                               networkTransport: httpTransport,
                                                               cacheConfiguration: cacheConfiguration,
                                                               s3ObjectManager: s3ObjectManager)
+            appSyncConfig.subscriptionConnectionFactory = subscriptionFactory
             return appSyncConfig
         }
 
@@ -216,7 +220,7 @@ public class AppSyncClientTestHelper: NSObject {
         case .delayedInvalidOIDC:
             class DelayedCredentials : AWSOIDCAuthProvider {
                 func getLatestAuthToken() -> String {
-                    sleep(999)
+                    sleep(120) // Wait 2 minutes
                     return ""
                 }
             }

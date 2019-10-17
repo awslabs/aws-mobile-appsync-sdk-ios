@@ -1,3 +1,4 @@
 github "aws/aws-sdk-ios" ~> 2.12.0
 github "stephencelis/SQLite.swift" ~> 0.12.2
 github "ashleymills/Reachability.swift" ~> 5.0.0
+github "daltoniam/starscream" ~> 3.0.2

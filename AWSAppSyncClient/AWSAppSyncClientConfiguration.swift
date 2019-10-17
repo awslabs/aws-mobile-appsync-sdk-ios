@@ -21,6 +21,8 @@ public class AWSAppSyncClientConfiguration {
     private(set) var connectionStateChangeHandler: ConnectionStateChangeHandler? = nil
     private(set) var allowsCellularAccess: Bool = true
     private(set) var autoSubmitOfflineMutations: Bool = true
+    var subscriptionConnectionFactory: SubscriptionConnectionFactory?
+
     var authType: AWSAppSyncAuthType?
     // retry strategy is set during initializing the configuration object and cannot be changed on the fly.
     let retryStrategy: AWSAppSyncRetryStrategy
@@ -273,6 +275,20 @@ public class AWSAppSyncClientConfiguration {
         self.subscriptionMetadataCache = AWSAppSyncClientConfiguration
             .makeSubscriptionMetadataCache(for: cacheConfiguration?.subscriptionMetadataCache)
 
+        var apikeyProvider: AWSAPIKeyAuthProvider?
+        if let apiKeyConfigured = apiKey {
+            apikeyProvider = BasicAWSAPIKeyAuthProvider(key: apiKeyConfigured)
+        } else {
+            apikeyProvider = apiKeyAuthProvider
+        }
+        self.subscriptionConnectionFactory = BasicSubscriptionConnectionFactory(url: url,
+                                                                           authType: authType,
+                                                                           retryStrategy: retryStrategy,
+                                                                           region: serviceRegion,
+                                                                           apiKeyProvider: apikeyProvider,
+                                                                           cognitoUserPoolProvider: userPoolsAuthProvider,
+                                                                           oidcAuthProvider: oidcAuthProvider,
+                                                                           iamAuthProvider: credentialsProvider)
         self.networkTransport = try AWSAppSyncClientConfiguration.getNetworkTransport(
             url: url,
             urlSessionConfiguration: urlSessionConfiguration,
