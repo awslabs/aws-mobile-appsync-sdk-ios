@@ -16,7 +16,7 @@ before_deploy:
 - carthage build --no-skip-current
 - carthage archive $FRAMEWORK_NAME
 script:
-- xcodebuild -quiet -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync build test -destination 'platform=iOS Simulator,name=iPhone 6,OS=latest'
+- xcodebuild -quiet -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync build test -destination 'platform=iOS Simulator,name=iPhone 11,OS=latest'
 deploy:
 - provider: releases
   api_key:
