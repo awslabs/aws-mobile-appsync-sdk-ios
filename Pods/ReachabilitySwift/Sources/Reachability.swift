@@ -41,6 +41,7 @@ public let ReachabilityChangedNotification = NSNotification.Name("ReachabilityCh
 
 public extension Notification.Name {
     static let reachabilityChanged = Notification.Name("reachabilityChanged")
+    static let mutationPerformed = Notification.Name("mutationPerformed")
 }
 
 public class Reachability {
