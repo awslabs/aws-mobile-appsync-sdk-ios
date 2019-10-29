@@ -38,6 +38,8 @@ extension AWSIoTMQTTStatus: CustomStringConvertible {
             return "protocolError"
         case .unknown:
             return "unknown"
+        @unknown default:
+            return "unknown"
         }
     }
 
@@ -58,6 +60,8 @@ extension AWSIoTMQTTStatus: CustomStringConvertible {
         case .protocolError:
             return .error(.protocolError)
         case .unknown:
+            return .error(.unknownMQTTConnectionStatus)
+        @unknown default:
             return .error(.unknownMQTTConnectionStatus)
         }
 

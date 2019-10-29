@@ -151,7 +151,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         wait(for: [listPostsCompleted], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         do {
-            try appSyncClient?.clearCache().await()
+            try appSyncClient?.clearCaches()
         } catch {
             XCTFail()
         }

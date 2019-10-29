@@ -3,6 +3,50 @@
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK
 also includes support for offline operations.
 
+## Unreleased
+
+### Misc. Updates
+
+- Updated Reachability dependency to 5.0.0
+
+## 2.15.0
+
+### Misc. Updates
+
+- **General SDK improvements**
+  - **Breaking Build Change** Removed deprecated APIs for
+    - `AWSAppSyncSubscriptionError`
+    - `AWSAppSyncClientError`
+    - `AWSSQLLiteNormalizedCacheError`
+    - `MutationCache`
+    - `AWSAppSyncClientConfiguration`
+    - `AWSAppSyncCacheConfiguration`
+  - **Breaking Build Change** The AWS AppSync SDK for iOS now requires Xcode 11 or above to build
+  - AppSync is now built targeting Swift 5.1
+- Updated AWS SDK dependencies to 2.12.0
+- Updated Reachability dependency to 4.3.1
+- Updated SQLite.Swift dependency to 0.12.2
+
+## 2.14.3
+
+### Bug Fixes
+
+- Fixed a bug where data less than 128 bytes would cause a crash if logging were enabled.
+  See issues [#258](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/258) and
+  [#216](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/216), and 
+  [PR #259](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/259). Thanks @johnmurphy01! 🎉
+
+### Misc. Updates
+
+- Updated AWS SDK dependencies to 2.11.0
+
+## 2.14.2
+
+### Deprecated Release
+
+This release has invalid dependency declaration in the AWSAppSync.podspec. Please use release 2.14.3 instead.
+
+
 ## 2.14.1
 
 ### Misc. Updates

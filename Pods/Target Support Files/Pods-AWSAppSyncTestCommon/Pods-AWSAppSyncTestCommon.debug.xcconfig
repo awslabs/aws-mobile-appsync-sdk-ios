@@ -2,7 +2,8 @@ FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/AWSCore" 
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
 HEADER_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/AWSCore/AWSCore.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/AWSS3/AWSS3.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/ReachabilitySwift/Reachability.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.framework/Headers"
 LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/Frameworks' '@loader_path/Frameworks' '@executable_path/../../Frameworks'
-OTHER_LDFLAGS = $(inherited) -l"sqlite3" -l"z" -framework "AWSCore" -framework "AWSS3" -framework "CoreGraphics" -framework "Foundation" -framework "Reachability" -framework "SQLite" -framework "Security" -framework "SystemConfiguration" -framework "UIKit"
+OTHER_CFLAGS = $(inherited) -isystem "${PODS_CONFIGURATION_BUILD_DIR}/AWSCore/AWSCore.framework/Headers" -isystem "${PODS_CONFIGURATION_BUILD_DIR}/ReachabilitySwift/Reachability.framework/Headers" -isystem "${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.framework/Headers" -isystem "${PODS_CONFIGURATION_BUILD_DIR}/AWSS3/AWSS3.framework/Headers" -iframework "${PODS_CONFIGURATION_BUILD_DIR}/AWSCore" -iframework "${PODS_CONFIGURATION_BUILD_DIR}/ReachabilitySwift" -iframework "${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift" -iframework "${PODS_CONFIGURATION_BUILD_DIR}/AWSS3"
+OTHER_LDFLAGS = $(inherited) -l"sqlite3" -l"z" -framework "AWSCore" -framework "AWSS3" -framework "CoreGraphics" -framework "CoreTelephony" -framework "Foundation" -framework "Reachability" -framework "SQLite" -framework "Security" -framework "SystemConfiguration" -framework "UIKit"
 OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS
 PODS_BUILD_DIR = ${BUILD_DIR}
 PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)

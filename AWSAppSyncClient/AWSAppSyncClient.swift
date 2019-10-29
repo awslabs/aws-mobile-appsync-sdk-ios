@@ -120,7 +120,7 @@ public class AWSAppSyncClient {
             object: nil)
 
         try AWSAppSyncClient.prefixTrackerQueue.sync {
-            if (appSyncConfig.cacheConfiguration?.usePrefix ?? false) {
+            if appSyncConfig.cacheConfiguration?.usePrefix ?? false {
                 let prefixTrackerKey = appSyncConfig.cacheConfiguration?.prefix ?? ""
                 let authTypeString = appSyncConfig.authType?.rawValue ?? "unknown_auth"
                 let prefixTrackerValue = appSyncConfig.url.absoluteString + "_" + authTypeString
@@ -197,7 +197,7 @@ public class AWSAppSyncClient {
         } catch {
             map[.subscription] = error
         }
-        if (map.keys.count > 0) {
+        if map.keys.count > 0 {
             throw ClearCacheError.failedToClear(map)
         }
     }

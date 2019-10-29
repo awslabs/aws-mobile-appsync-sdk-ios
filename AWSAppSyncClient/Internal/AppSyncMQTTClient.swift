@@ -220,6 +220,8 @@ class AppSyncMQTTClient: AWSIoTMQTTClientDelegate {
                 client.unsubscribeTopic(topic)
             case .disconnected, .unknown:
                 break
+            @unknown default:
+                break
             }
         }
     }

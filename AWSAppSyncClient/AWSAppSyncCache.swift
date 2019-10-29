@@ -86,7 +86,7 @@ public struct AWSAppSyncCacheConfiguration {
         }
 
         let resolvedClientDatabasePrefix: String
-        if (useClientDatabasePrefix) {
+        if useClientDatabasePrefix {
             guard let clientDatabasePrefix = appSyncServiceConfig?.clientDatabasePrefix else {
                 throw AWSCacheConfigurationError.missingClientDatabasePrefix
             }

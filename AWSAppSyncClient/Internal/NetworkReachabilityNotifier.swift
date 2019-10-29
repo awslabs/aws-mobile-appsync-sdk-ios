@@ -94,12 +94,12 @@ class NetworkReachabilityNotifier {
         }
 
         switch reachability.connection {
-        case .none:
-            return false
         case .wifi:
             return true
         case .cellular:
             return allowsCellularAccess
+        case .none, .unavailable:
+            return false
         }
     }
 
@@ -138,7 +138,7 @@ class NetworkReachabilityNotifier {
             isReachable = true
         case .cellular:
             isReachable = allowsCellularAccess
-        case .none:
+        case .none, .unavailable:
             isReachable = false
         }
 
@@ -156,7 +156,7 @@ class NetworkReachabilityNotifier {
 
 extension Reachability: NetworkReachabilityProvidingFactory {
     public static func make(for hostname: String) -> NetworkReachabilityProviding? {
-        return Reachability(hostname: hostname)
+        return try? Reachability(hostname: hostname)
     }
 }
 
