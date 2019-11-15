@@ -24,8 +24,8 @@ won’t apply for pure WebSockets. The subscription selection set is essential w
 not explicitly defined in the subscription it won't be returned by AWS AppSync.
 
 - * **Breaking Build Changes**
-    - Adopted Sematic versioning
-        - Starting with version 3.0.0 AppSync AWS iOS SDK will follow [sematic versioning](https://semver.org/).
+    - Adopted Semantic versioning
+        - Starting with version 3.0.0 AppSync AWS iOS SDK will follow [semantic versioning](https://semver.org/).
 
 ### Misc. Updates
 
