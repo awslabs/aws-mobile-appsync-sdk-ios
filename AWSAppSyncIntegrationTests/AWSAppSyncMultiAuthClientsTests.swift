@@ -27,30 +27,32 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
         )
         let iamAppSyncClient = iamHelper.appSyncClient
 
-        // Create User Pools based client. This client waits 999 seconds before returning authorization.
+        // Create User Pools based client. This client waits 120 seconds before returning authorization.
         let userPoolsHelper = try AppSyncClientTestHelper(
             with: .delayedInvalidOIDC,
             testBundle: testBundle
         )
         let userPoolsAppSyncClient = userPoolsHelper.appSyncClient
 
-        let postCreated = expectation(description: "Post created successfully.")
+        let iamPostCreated = expectation(description: "IAM auth based post created successfully.")
+        let userpoolPostCreated = expectation(description: "User pool based post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        userPoolsAppSyncClient.perform(mutation: addPost, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
+        userPoolsAppSyncClient.perform(mutation: addPost,
+                                       queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
             // The result is disregarded.
-            XCTFail("API Key based client should have finished first")
+            userpoolPostCreated.fulfill()
         }
 
-        // Delay next call to exaggerate any
-        sleep(2)
-
-        iamAppSyncClient.perform(mutation: addPost, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
+        iamAppSyncClient.perform(mutation: addPost,
+                                 queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
             // The result is disregarded.
-            postCreated.fulfill()
+            iamPostCreated.fulfill()
         }
 
-        wait(for: [postCreated], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
+        wait(for: [iamPostCreated, userpoolPostCreated],
+             timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout,
+             enforceOrder: true)
     }
 
     func testMultiClientSubscriptions() throws {

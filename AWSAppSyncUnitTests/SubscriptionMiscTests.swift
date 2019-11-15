@@ -12,68 +12,34 @@ import XCTest
 
 class SubscriptionMiscTests: XCTestCase {
     
-    func testSubscriptionUniqueIdentifiers() {
-        var uniqueIdSet: Set<Int> = Set()
-        let expectation1 = expectation(description: "operations on queue1 did not encounter duplicate IDs")
-        let expectation2 = expectation(description: "operations on queue2 did not encounter duplicate IDs")
-        let syncDispatchQueueForSet = DispatchQueue(label: "dispatch.queue.for.set")
-
-        DispatchQueue(label: "testSubscriptionUniqueIdentifiers.queue1").async {
-            for _ in 0...1000 {
-                let uniqueID = SubscriptionsOrderHelper.getNextUniqueIdentifier()
-                syncDispatchQueueForSet.sync {
-                    if uniqueIdSet.contains(uniqueID) {
-                        XCTFail("Found a unique id which was already generated previously.")
-                    } else {
-                        uniqueIdSet.insert(uniqueID)
-                    }
-                }
-            }
-            expectation1.fulfill()
-        }
-        
-        DispatchQueue(label: "testSubscriptionUniqueIdentifiers.queue2").async {
-            for _ in 0...1000 {
-                let uniqueID = SubscriptionsOrderHelper.getNextUniqueIdentifier()
-                syncDispatchQueueForSet.sync {
-                    if uniqueIdSet.contains(uniqueID) {
-                        XCTFail("Found a unique id which was already generated previously.")
-                    } else {
-                        uniqueIdSet.insert(uniqueID)
-                    }
-                }
-            }
-            expectation2.fulfill()
-        }
-        
-        wait(for: [expectation1, expectation2], timeout: 5.0)
-    }
-    
+    /// Test whether calling start / stop subscription is working correctly
+    ///
+    /// To test this case, we'll set up a mock connection which has a delay before responding back to the caller
+    /// This ensures that the subscription watchers can call `cancel` before the response comes back and thus allowing
+    /// to mimick cases where calling cancel / start rapidly for subscriptions does not cause issues.
+    ///
+    /// - Given: A valid appsync client
+    /// - When:
+    ///    - I invoke cancel just after subscription
+    ///    - Subscribe again
+    /// - Then:
+    ///    - When I call cancel just after subscription I should not get back any subscribed message
+    ///    - But for the second subscription I should get subscribed messages.
+    ///
     func testStartStopStartSubscriptions() {
         let secondsToWait = 1
         let subscriptionWatchers = 5
-        
-        // To test this case, we'll set up a mock http transport which has a delay before responding back to the caller
-        // This ensures that the subscription watchers can call `cancel` before the response comes back and thus allowing
-        // to mimick cases where calling cancel / start rapidly for subscriptions does not cause issues.
+
         let mockHTTPTransport = MockAWSNetworkTransport()
+        let appSyncClient: AWSAppSyncClient = try! UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport,
+                                                                                     cacheConfiguration: nil,
+                                                                                     subscriptionFactory: MockDelayedSubscriptionFactory(secondsToWait))
         
-        // First add a response block that delays response to subscription request
-        let delayedResponseBlock: SendOperationResponseBlock<OnUpvotePostSubscription> = {
-            operation, completionHandler in
-            DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + .seconds(secondsToWait)) {
-                completionHandler(nil, AWSAppSyncSubscriptionError.connectionError)
-            }
-        }
+        let shouldReceiveCallbackExpectation = expectation(description: "HTTP block of subscription was received.")
+        shouldReceiveCallbackExpectation.expectedFulfillmentCount  =  subscriptionWatchers
         
-        // Create client without any persistent cache but using our mock http transport
-        let appSyncClient: AWSAppSyncClient = try! UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: nil)
-        
-        let watchersWhichShouldReceiveCallbackExpectation = expectation(description: "HTTP block of subscription was received.")
-        watchersWhichShouldReceiveCallbackExpectation.expectedFulfillmentCount  =  subscriptionWatchers
-        
-        let watchersWhichShouldNotReceiveCallbackExpectation = expectation(description: "HTTP block of subscription should not be received.")
-        watchersWhichShouldNotReceiveCallbackExpectation.isInverted = true
+        let shouldNotReceiveCallbackExpectation = expectation(description: "HTTP block of subscription should not be received.")
+        shouldNotReceiveCallbackExpectation.isInverted = true
         
         // we create a dictionary where we hold all the watchers; this mimicks app holding reference to watchers
         var watchers: [String: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>] = [:]
@@ -86,11 +52,11 @@ class SubscriptionMiscTests: XCTestCase {
         
         // Initiate subscription requests for the generated object ids
         for uuid in subscriptionIds {
-            mockHTTPTransport.sendOperationResponseQueue.append(delayedResponseBlock)
+
             let watcher = try! appSyncClient.subscribe(subscription: OnUpvotePostSubscription(id: uuid)) { (_, _, error) in
                 if error != nil {
                     // No callbacks are expected here since the subscriptions are cancelled immediately
-                    watchersWhichShouldNotReceiveCallbackExpectation.fulfill()
+                    shouldNotReceiveCallbackExpectation.fulfill()
                 }
             }
             watchers[uuid] = watcher
@@ -104,17 +70,62 @@ class SubscriptionMiscTests: XCTestCase {
         
         // Try starting the subscriptions again
         for uuid in subscriptionIds {
-            mockHTTPTransport.sendOperationResponseQueue.append(delayedResponseBlock)
+
             let watcher = try! appSyncClient.subscribe(subscription: OnUpvotePostSubscription(id: uuid)) { (_, _, error) in
                 // All 5 subscriptions should receive callbacks. They should not be stuck in a frozen state.
                 if error != nil {
-                    watchersWhichShouldReceiveCallbackExpectation.fulfill()
+                    shouldReceiveCallbackExpectation.fulfill()
                 }
             }
             watchers[uuid] = watcher
         }
         
         // Wait to ensure that correct callbacks are made and no subscription requests are frozen.
-        wait(for: [watchersWhichShouldReceiveCallbackExpectation, watchersWhichShouldNotReceiveCallbackExpectation], timeout: Double(subscriptionWatchers) * Double(secondsToWait) + 1.0)
+        wait(for: [shouldReceiveCallbackExpectation, shouldNotReceiveCallbackExpectation], timeout: Double(subscriptionWatchers) * Double(secondsToWait) + 1.0)
     }
+}
+
+class MockDelayedSubscriptionFactory: SubscriptionConnectionFactory {
+
+    let secondsToWait: Int
+
+    init(_ delay: Int){
+        self.secondsToWait = delay
+    }
+
+    func connection(connectionType: SubscriptionConnectionType) -> SubscriptionConnection? {
+        return MockDelayedConnection(secondsToWait)
+    }
+}
+
+class MockDelayedConnection: SubscriptionConnection {
+
+    let secondsToWait: Int
+
+    init(_ delay: Int){
+        self.secondsToWait = delay
+    }
+
+    /// Current item that is subscriped
+    var subscriptionItem: SubscriptionItem!
+
+    func subscribe(requestString: String,
+                   variables: [String : Any]?,
+                   eventHandler: @escaping SubscriptionEventHandler) -> SubscriptionItem {
+        subscriptionItem = SubscriptionItem(requestString: requestString,
+                                            variables: variables,
+                                            eventHandler: eventHandler)
+        DispatchQueue.global().asyncAfter(deadline:  DispatchTime.now() + .seconds(secondsToWait)) {
+
+            self.subscriptionItem.subscriptionEventHandler(.failed(ConnectionProviderError.other),
+                                                           self.subscriptionItem)
+        }
+        return subscriptionItem
+    }
+
+    func unsubscribe(item: SubscriptionItem) {
+        subscriptionItem.subscriptionEventHandler(.connection(.disconnected) , subscriptionItem)
+    }
+
+
 }

@@ -11,13 +11,15 @@ import Foundation
 struct UnitTestHelpers {
 
     static func makeAppSyncClient(using httpTransport: AWSNetworkTransport,
-                                  cacheConfiguration: AWSAppSyncCacheConfiguration?) throws -> DeinitNotifiableAppSyncClient {
+                                  cacheConfiguration: AWSAppSyncCacheConfiguration?,
+                                  subscriptionFactory: SubscriptionConnectionFactory? = MockSubscriptionFactory()) throws -> DeinitNotifiableAppSyncClient {
         let helper = try AppSyncClientTestHelper(
             with: .apiKey,
             testConfiguration: AppSyncClientTestConfiguration.forUnitTests,
             cacheConfiguration: cacheConfiguration,
             httpTransport: httpTransport,
-            reachabilityFactory: MockReachabilityProvidingFactory.self
+            reachabilityFactory: MockReachabilityProvidingFactory.self,
+            subscriptionFactory: subscriptionFactory
         )
 
         if let cacheConfiguration = cacheConfiguration {

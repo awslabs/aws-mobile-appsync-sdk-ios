@@ -7,13 +7,13 @@
 import Foundation
 
 public enum AWSAppSyncSubscriptionError: Error, LocalizedError {
-    /// The underlying MQTT client reported a status of "connectionError"
+    /// The underlying connection reported a status of "connectionError"
     case connectionError
 
-    /// The underlying MQTT client reported a status of "connectionRefused"
+    /// The underlying connection reported a status of "connectionRefused"
     case connectionRefused
 
-    /// The underlying MQTT client reported a status of "disconnected"
+    /// The underlying connection reported a status of "disconnected"
     case disconnected
 
     /// An error occurred parsing the subscription message received from the service
@@ -25,7 +25,7 @@ public enum AWSAppSyncSubscriptionError: Error, LocalizedError {
     /// An error occurred parsing the published subscription message
     case parseError(Error)
 
-    /// The underlying MQTT client reported a status of "protocolError"
+    /// The underlying connection reported a status of "protocolError"
     case protocolError
 
     /// An error occurred while making the initial subscription request to AppSync, parsing its response, or
@@ -33,6 +33,7 @@ public enum AWSAppSyncSubscriptionError: Error, LocalizedError {
     case setupError(String)
 
     /// The underlying MQTT client reported a status of "unknown"
+    @available(*, deprecated, message: "Subscription is not tied with mqtt connection anymore")
     case unknownMQTTConnectionStatus
 
     public var errorDescription: String? {
@@ -73,25 +74,6 @@ public enum AWSAppSyncSubscriptionError: Error, LocalizedError {
             return message
         default:
             return "Disconnected from service."
-        }
-    }
-}
-
-extension AWSAppSyncSubscriptionError {
-    static func from(status: AWSIoTMQTTStatus) -> AWSAppSyncSubscriptionError? {
-        switch status {
-        case .connectionError:
-            return .connectionError
-        case .connectionRefused:
-            return .connectionRefused
-        case .disconnected:
-            return .disconnected
-        case .protocolError:
-            return .protocolError
-        case .unknown:
-            return .unknownMQTTConnectionStatus
-        default:
-            return nil
         }
     }
 }
