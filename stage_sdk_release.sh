@@ -8,6 +8,7 @@ echo "Bumping version from $1 to $2"
 find . -name 'AWSAppSync.podspec' -print0 | xargs -0 sed -i '' -e "s/$1/$2/g"
 find . -path '*AWSAppSyncClient/*.plist' -print0 | xargs -0 sed -i '' -e "s/$1/$2/g"
 find . -path '*AWSAppSyncClient/AWSAppSyncHTTPNetworkTransport.swift' -print0 | xargs -0 sed -i '' -e "s/$1/$2/g"
+sed -i '' -e "s/$1/$2/g" README.md
 
 echo "SDK version replaced in podspec, info.plist, network transport.\n\n"
 
