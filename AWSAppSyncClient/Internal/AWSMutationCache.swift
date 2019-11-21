@@ -24,11 +24,17 @@ public final class AWSMutationCache {
     private let s3LocalUri = Expression<String?>("s3LocalUri")
     private let s3MimeType = Expression<String?>("s3MimeType")
     private let operationString = Expression<String>("operationString")
+    private let priority = Expression<Int?>("priority")
 
     public init(fileURL: URL) throws {
         AppSyncLog.verbose("Initializing mutation cache at \(fileURL.absoluteString)")
         db = try Connection(.uri(fileURL.absoluteString), readonly: false)
         db.busyTimeout = sqlBusyTimeoutConstant
+        
+        do {
+            try db.run(mutationRecords.addColumn(priority))
+        } catch {}
+        
         try createTableIfNeeded()
     }
 
@@ -59,6 +65,7 @@ public final class AWSMutationCache {
                     data <- record.data!,
                     recordState <- record.recordState.rawValue,
                     timestamp <- record.timestamp,
+                    priority <- record.priority?.rawValue,
                     s3Bucket <- s3Object.bucket,
                     s3Key <- s3Object.key,
                     s3Region <- s3Object.region,
@@ -72,6 +79,7 @@ public final class AWSMutationCache {
                     data <- record.data!,
                     recordState <- record.recordState.rawValue,
                     timestamp <- record.timestamp,
+                    priority <- record.priority?.rawValue,
                     operationString <- record.operationString!)
                 try db.run(insert)
             }
@@ -112,6 +120,8 @@ public final class AWSMutationCache {
                         recordIdentifier: try record.get(recordIdentifier),
                         timestamp: try record.get(timestamp))
                     mutationRecord.data = try record.get(data)
+                    mutationRecord.priority = try record.get(priority)
+                        .flatMap { Operation.QueuePriority(rawValue: $0) }
                     mutationRecord.recordState = .inQueue
                     mutationRecord.operationString = try record.get(operationString)
 
