@@ -455,7 +455,8 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
             interval = syncStrategy.baseRefreshIntervalInSeconds.asDispatchTimeInterval
         } else {
             AppSyncLog.debug("Setting up retry timer")
-            let delayForCurrentAttempt = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: currentSyncAttempts, retryStrategy: appSyncClient!.retryStrategy)
+            let retryStrategy = appSyncClient?.retryStrategy ?? .exponential
+            let delayForCurrentAttempt = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: currentSyncAttempts, retryStrategy: retryStrategy)
             let delay = min(delayForCurrentAttempt, AWSAppSyncRetryHandler.maxWaitMilliseconds)
             interval = .milliseconds(delay)
         }
