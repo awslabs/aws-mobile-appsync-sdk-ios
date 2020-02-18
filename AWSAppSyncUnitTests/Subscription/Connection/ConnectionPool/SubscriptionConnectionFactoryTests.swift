@@ -10,20 +10,8 @@ import XCTest
 
 class SubscriptionConnectionFactoryTests: XCTestCase {
 
-    var connectionFactory: BasicSubscriptionConnectionFactory!
     let url = URL(string: "http://appsyncendpoint.com/graphql")!
-    
-    override func setUp() {
-        connectionFactory = BasicSubscriptionConnectionFactory(url: url,
-                                                          authType: .apiKey,
-                                                          retryStrategy: .aggressive,
-                                                          region: .USWest2,
-                                                          apiKeyProvider: MockAPIKeyAuthProvider(),
-                                                          cognitoUserPoolProvider: MockUserPoolsAuthProvider(),
-                                                          oidcAuthProvider: MockUserPoolsAuthProvider(),
-                                                          iamAuthProvider: MockIAMAuthProvider())
-    }
-    
+
     /// Test the initial state of the factory
     ///
     /// - Given: An initiated factory object
@@ -33,9 +21,15 @@ class SubscriptionConnectionFactoryTests: XCTestCase {
     ///    - States should be consistent
     ///
     func testInitialState() {
-        XCTAssertNotNil(connectionFactory.apiKeyBasedPool)
-        XCTAssertNotNil(connectionFactory.iamBasedPool)
-        XCTAssertNotNil(connectionFactory.userpoolsBasedPool)
+        let connectionFactory = BasicSubscriptionConnectionFactory(url: url,
+                                                                   authType: .apiKey,
+                                                                   retryStrategy: .aggressive,
+                                                                   region: .USWest2,
+                                                                   apiKeyProvider: MockAPIKeyAuthProvider(),
+                                                                   cognitoUserPoolProvider: MockUserPoolsAuthProvider(),
+                                                                   oidcAuthProvider: MockUserPoolsAuthProvider(),
+                                                                   iamAuthProvider: MockIAMAuthProvider())
+        XCTAssertNotNil(connectionFactory.authInterceptor)
     }
     
     /// Test succesfull retrieval of IAM subscription connections
@@ -47,6 +41,14 @@ class SubscriptionConnectionFactoryTests: XCTestCase {
     ///    - I should get a non-nil connection
     ///
     func testRetrieveIAMConnection() {
+        let connectionFactory = BasicSubscriptionConnectionFactory(url: url,
+                                                                   authType: .apiKey,
+                                                                   retryStrategy: .aggressive,
+                                                                   region: .USWest2,
+                                                                   apiKeyProvider: nil,
+                                                                   cognitoUserPoolProvider: nil,
+                                                                   oidcAuthProvider: nil,
+                                                                   iamAuthProvider: MockIAMAuthProvider())
         let connection = connectionFactory.connection(for: url,
                                                       authType: .awsIAM,
                                                       connectionType: .appSyncRealtime)
@@ -62,6 +64,14 @@ class SubscriptionConnectionFactoryTests: XCTestCase {
     ///    - I should get a non-nil connection
     ///
     func testRetrieveUserPoolConnection() {
+        let connectionFactory = BasicSubscriptionConnectionFactory(url: url,
+                                                                   authType: .apiKey,
+                                                                   retryStrategy: .aggressive,
+                                                                   region: .USWest2,
+                                                                   apiKeyProvider: nil,
+                                                                   cognitoUserPoolProvider: nil,
+                                                                   oidcAuthProvider: nil,
+                                                                   iamAuthProvider: MockIAMAuthProvider())
         let connection = connectionFactory.connection(for: url,
                                                       authType: .amazonCognitoUserPools,
                                                       connectionType: .appSyncRealtime)
@@ -77,6 +87,14 @@ class SubscriptionConnectionFactoryTests: XCTestCase {
     ///    - I should get a non-nil connection
     ///
     func testRetrieveAPIKeyConnection() {
+        let connectionFactory = BasicSubscriptionConnectionFactory(url: url,
+        authType: .apiKey,
+        retryStrategy: .aggressive,
+        region: .USWest2,
+        apiKeyProvider: MockAPIKeyAuthProvider(),
+        cognitoUserPoolProvider: MockUserPoolsAuthProvider(),
+        oidcAuthProvider: MockUserPoolsAuthProvider(),
+        iamAuthProvider: MockIAMAuthProvider())
         let connection = connectionFactory.connection(for: url,
                                                       authType: .apiKey,
                                                       connectionType: .appSyncRealtime)
@@ -92,6 +110,14 @@ class SubscriptionConnectionFactoryTests: XCTestCase {
     ///    - I should get a non-nil connection
     ///
     func testRetrieveOIDCConnection() {
+        let connectionFactory = BasicSubscriptionConnectionFactory(url: url,
+        authType: .apiKey,
+        retryStrategy: .aggressive,
+        region: .USWest2,
+        apiKeyProvider: MockAPIKeyAuthProvider(),
+        cognitoUserPoolProvider: MockUserPoolsAuthProvider(),
+        oidcAuthProvider: MockUserPoolsAuthProvider(),
+        iamAuthProvider: MockIAMAuthProvider())
         let connection = connectionFactory.connection(for: url,
                                                       authType: .oidcToken,
                                                       connectionType: .appSyncRealtime)
@@ -107,6 +133,14 @@ class SubscriptionConnectionFactoryTests: XCTestCase {
     ///    - I should get a non-nil connections for each invocation
     ///
     func testRetrieveMultipleConnections() {
+        let connectionFactory = BasicSubscriptionConnectionFactory(url: url,
+                                                                   authType: .apiKey,
+                                                                   retryStrategy: .aggressive,
+                                                                   region: .USWest2,
+                                                                   apiKeyProvider: MockAPIKeyAuthProvider(),
+                                                                   cognitoUserPoolProvider: MockUserPoolsAuthProvider(),
+                                                                   oidcAuthProvider: MockUserPoolsAuthProvider(),
+                                                                   iamAuthProvider: MockIAMAuthProvider())
         let iamConnection = connectionFactory.connection(for: url,
                                                          authType: .awsIAM,
                                                          connectionType: .appSyncRealtime)

@@ -1029,6 +1029,13 @@
 			path = Support;
 			sourceTree = "<group>";
 		};
+		214BD45823FC60A50059A286 /* SubscriptionConnectionFactoryTests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = SubscriptionConnectionFactoryTests;
+			sourceTree = "<group>";
+		};
 		B40D1C7D2359148B0069BD4E /* Subscription */ = {
 			isa = PBXGroup;
 			children = (
@@ -1234,6 +1241,7 @@
 		FA8C62B221D6E3AA00FF9924 /* AWSAppSyncUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				214BD45823FC60A50059A286 /* SubscriptionConnectionFactoryTests */,
 				B489D133235A6F54008DDAC9 /* Subscription */,
 				CCEF79DA21DE7CA6004AD64D /* AppSyncApolloCustomizationTests.swift */,
 				FAEC08E021CBE8B900A816DE /* AppSyncClientComplexObjectMutationUnitTests.swift */,

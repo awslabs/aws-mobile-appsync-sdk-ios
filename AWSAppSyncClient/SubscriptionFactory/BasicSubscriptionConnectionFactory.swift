@@ -9,7 +9,7 @@ import Foundation
 class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
 
     var endPointToProvider: [String: ConnectionProvider] = [:]
-    var authInterceptor: AuthInterceptor?
+    var authTypeToInterceptor: [AWSAppSyncAuthType: AuthInterceptor] = [:]
 
     let url: URL
     let retryStrategy: AWSAppSyncRetryStrategy
@@ -29,21 +29,21 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
         self.retryStrategy = retryStrategy
 
         if let apiKeyProvider = apiKeyProvider {
-            self.authInterceptor = APIKeyAuthInterceptor(apiKeyProvider)
+            self.authTypeToInterceptor[.apiKey] = APIKeyAuthInterceptor(apiKeyProvider)
         }
         if let cognitoUserPoolProvider = cognitoUserPoolProvider {
-            self.authInterceptor = CognitoUserPoolsAuthInterceptor(cognitoUserPoolProvider)
+            self.authTypeToInterceptor[.amazonCognitoUserPools] = CognitoUserPoolsAuthInterceptor(cognitoUserPoolProvider)
         }
         if let iamAuthProvider = iamAuthProvider, let awsRegion = region {
-            self.authInterceptor = IAMAuthInterceptor(iamAuthProvider, region: awsRegion)
+            self.authTypeToInterceptor[.awsIAM] = IAMAuthInterceptor(iamAuthProvider, region: awsRegion)
         }
         if let oidcAuthProvider = oidcAuthProvider {
-            self.authInterceptor = CognitoUserPoolsAuthInterceptor(oidcAuthProvider)
+            self.authTypeToInterceptor[.oidcToken] = CognitoUserPoolsAuthInterceptor(oidcAuthProvider)
         }
     }
 
     func connection(connectionType: SubscriptionConnectionType) -> SubscriptionConnection? {
-        guard let authInterceptor = self.authInterceptor else {
+        guard let authInterceptor = authTypeToInterceptor[authType] else {
             return nil
         }
 
@@ -59,7 +59,7 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
     }
 
     func connection(for url: URL, authType: AWSAppSyncAuthType, connectionType: SubscriptionConnectionType) -> SubscriptionConnection? {
-        guard let authInterceptor = self.authInterceptor else {
+        guard let authInterceptor = authTypeToInterceptor[authType] else {
             return nil
         }
         let connectionProvider = endPointToProvider[url.absoluteString] ??
