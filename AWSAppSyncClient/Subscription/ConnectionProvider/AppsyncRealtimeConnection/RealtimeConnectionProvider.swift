@@ -66,7 +66,7 @@ class RealtimeConnectionProvider: ConnectionProvider {
             }
             self.websocket.write(message: jsonString)
         } catch {
-            AppSyncLog.error(error)
+            AppSyncLogger.error(error)
             switch message.messageType {
             case .connectionInit:
                 serialConnectionQueue.async {[weak self] in

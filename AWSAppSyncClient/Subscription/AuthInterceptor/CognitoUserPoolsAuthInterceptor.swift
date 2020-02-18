@@ -34,7 +34,7 @@ class CognitoUserPoolsAuthInterceptor: MessageInterceptor, ConnectionInterceptor
                                                type: message.messageType)
             return signedMessage
         default:
-            AppSyncLog.debug("Message type does not need signing - \(message.messageType)")
+            AppSyncLogger.debug("Message type does not need signing - \(message.messageType)")
         }
         return message
     }

@@ -13,7 +13,7 @@ class StarscreamAdapter: AppSyncWebsocketProvider {
     weak var delegate: AppSyncWebsocketDelegate?
 
     func connect(url: URL, protocols: [String], delegate: AppSyncWebsocketDelegate?) {
-        AppSyncLog.verbose("Connecting to url ...")
+        AppSyncLogger.verbose("Connecting to url ...")
         socket = WebSocket(url: url, protocols: protocols)
         self.delegate = delegate
         socket?.delegate = self
@@ -25,7 +25,7 @@ class StarscreamAdapter: AppSyncWebsocketProvider {
     }
 
     func write(message: String) {
-        AppSyncLog.verbose("Websocket write - \(message)")
+        AppSyncLogger.verbose("Websocket write - \(message)")
         socket?.write(string: message)
     }
 

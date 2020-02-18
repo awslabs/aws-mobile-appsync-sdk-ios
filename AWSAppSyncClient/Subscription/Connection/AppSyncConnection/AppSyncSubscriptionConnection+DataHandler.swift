@@ -20,7 +20,7 @@ extension AppSyncSubscriptionConnection {
                 let jsonData = try jsonEncode.encode(resultData)
                 subscriptionItem.subscriptionEventHandler(.data(jsonData), subscriptionItem)
             } catch {
-                AppSyncLog.error(error)
+                AppSyncLogger.error(error)
                 let jsonParserError = ConnectionProviderError.jsonParse(response.id, error)
                 subscriptionItem.subscriptionEventHandler(.failed(jsonParserError), subscriptionItem)
             }

@@ -18,7 +18,7 @@ extension AppSyncSubscriptionConnection {
             return
         }
         if connectionState == .connected {
-            AppSyncLog.debug("Start subscription")
+            AppSyncLogger.debug("Start subscription")
             startSubscription()
         }
     }
@@ -46,7 +46,7 @@ extension AppSyncSubscriptionConnection {
             let jsonData = try JSONSerialization.data(withJSONObject: dataDict)
             payload.data = String(data: jsonData, encoding: .utf8)
         } catch {
-            AppSyncLog.error(error)
+            AppSyncLogger.error(error)
             let jsonError = ConnectionProviderError.jsonParse(nil, error)
             subscriptionItem.subscriptionEventHandler(.failed(jsonError), subscriptionItem)
         }

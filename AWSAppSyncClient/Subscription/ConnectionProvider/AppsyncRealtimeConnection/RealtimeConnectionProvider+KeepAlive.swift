@@ -16,7 +16,7 @@ extension RealtimeConnectionProvider {
         guard status != .notConnected else {
             return
         }
-        AppSyncLog.verbose("Validating connection")
+        AppSyncLogger.verbose("Validating connection")
         let staleThreshold = lastKeepAliveTime + staleConnectionTimeout
         let currentTime = DispatchTime.now()
         if staleThreshold < currentTime {
@@ -27,7 +27,7 @@ extension RealtimeConnectionProvider {
                 }
                 self.status = .notConnected
                 self.websocket.disconnect()
-                AppSyncLog.error("Realtime connection is stale, disconnected.")
+                AppSyncLogger.error("Realtime connection is stale, disconnected.")
                 self.updateCallback(event: .error(ConnectionProviderError.connection))
             }
 

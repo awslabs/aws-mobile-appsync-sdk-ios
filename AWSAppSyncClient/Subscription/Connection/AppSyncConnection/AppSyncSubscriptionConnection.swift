@@ -46,7 +46,7 @@ class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableConnection
     }
     
     func unsubscribe(item: SubscriptionItem) {
-        AppSyncLog.debug("Unsubscribe - \(item.identifier)")
+        AppSyncLogger.debug("Unsubscribe - \(item.identifier)")
         let message = AppSyncMessage(id: item.identifier,
                                      type: .unsubscribe("stop"))
         connectionProvider?.write(message)
@@ -56,7 +56,7 @@ class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableConnection
     private func addListener() {
         connectionProvider?.addListener(identifier: subscriptionItem.identifier) { [weak self] (event) in
             guard let self = self else {
-                AppSyncLog.debug("Self is nil, listener is not called.")
+                AppSyncLogger.debug("Self is nil, listener is not called.")
                 return
             }
             switch event {

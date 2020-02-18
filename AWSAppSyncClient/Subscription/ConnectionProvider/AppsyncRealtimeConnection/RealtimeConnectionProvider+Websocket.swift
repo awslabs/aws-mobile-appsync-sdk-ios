@@ -11,7 +11,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
     func websocketDidConnect(provider: AppSyncWebsocketProvider) {
         // Call the ack to finish the connection handshake
         // Inform the callback when ack gives back a response.
-        AppSyncLog.debug("WebsocketDidConnect, sending init message...")
+        AppSyncLogger.debug("WebsocketDidConnect, sending init message...")
         sendConnectionInitMessage()
         disconnectIfStale()
     }
@@ -35,7 +35,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
             let response = try JSONDecoder().decode(RealtimeConnectionProviderResponse.self, from: data)
             handleResponse(response)
         } catch {
-            AppSyncLog.error(error)
+            AppSyncLogger.error(error)
             updateCallback(event: .error(ConnectionProviderError.jsonParse(nil, error)))
         }
     }
