@@ -8,10 +8,8 @@ import Foundation
 
 class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
 
-    var apiKeyBasedPool: APIKeyBasedConnectionPool?
-    var userpoolsBasedPool: UserPoolsBasedConnectionPool?
-    var iamBasedPool: IAMBasedConnectionPool?
-    var oidcBasedPool: OIDCBasedConnectionPool?
+    var endPointToProvider: [String: ConnectionProvider] = [:]
+    var authInterceptor: AuthInterceptor?
 
     let url: URL
     let retryStrategy: AWSAppSyncRetryStrategy
@@ -31,47 +29,57 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
         self.retryStrategy = retryStrategy
 
         if let apiKeyProvider = apiKeyProvider {
-            let authInterceptor = APIKeyAuthInterceptor(apiKeyProvider)
-            self.apiKeyBasedPool = APIKeyBasedConnectionPool(authInterceptor)
+            self.authInterceptor = APIKeyAuthInterceptor(apiKeyProvider)
         }
         if let cognitoUserPoolProvider = cognitoUserPoolProvider {
-            let authInterceptor = CognitoUserPoolsAuthInterceptor(cognitoUserPoolProvider)
-            self.userpoolsBasedPool = UserPoolsBasedConnectionPool(authInterceptor)
+            self.authInterceptor = CognitoUserPoolsAuthInterceptor(cognitoUserPoolProvider)
         }
         if let iamAuthProvider = iamAuthProvider, let awsRegion = region {
-            let authInterceptor = IAMAuthInterceptor(iamAuthProvider, region: awsRegion)
-            self.iamBasedPool = IAMBasedConnectionPool(authInterceptor)
+            self.authInterceptor = IAMAuthInterceptor(iamAuthProvider, region: awsRegion)
         }
         if let oidcAuthProvider = oidcAuthProvider {
-            let authInterceptor = CognitoUserPoolsAuthInterceptor(oidcAuthProvider)
-            self.oidcBasedPool = OIDCBasedConnectionPool(authInterceptor)
+            self.authInterceptor = CognitoUserPoolsAuthInterceptor(oidcAuthProvider)
         }
     }
 
     func connection(connectionType: SubscriptionConnectionType) -> SubscriptionConnection? {
-        let connection = connectionPool(for: authType)?.connection(for: url, connectionType: connectionType)
-        if let retryableConnection = connection as? RetryableConnection {
-            let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
-            retryableConnection.addRetryHandler(handler: retryHandler)
+        guard let authInterceptor = self.authInterceptor else {
+            return nil
         }
+
+        let connectionProvider = endPointToProvider[url.absoluteString] ??
+            createConnectionProvider(for: url, authInterceptor: authInterceptor, connectionType: connectionType)
+        endPointToProvider[url.absoluteString] = connectionProvider
+        let connection = AppSyncSubscriptionConnection(provider: connectionProvider)
+
+        let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
+        connection.addRetryHandler(handler: retryHandler)
+
         return connection
     }
 
     func connection(for url: URL, authType: AWSAppSyncAuthType, connectionType: SubscriptionConnectionType) -> SubscriptionConnection? {
-        return connectionPool(for: authType)?.connection(for: url, connectionType: connectionType)
+        guard let authInterceptor = self.authInterceptor else {
+            return nil
+        }
+        let connectionProvider = endPointToProvider[url.absoluteString] ??
+            createConnectionProvider(for: url, authInterceptor: authInterceptor, connectionType: connectionType)
+        endPointToProvider[url.absoluteString] = connectionProvider
+        return AppSyncSubscriptionConnection(provider: connectionProvider)
     }
 
     // MARK: - Private Methods
-    private func connectionPool(for authType: AWSAppSyncAuthType) -> SubscriptionConnectionPool? {
-        switch authType {
-        case .apiKey:
-            return apiKeyBasedPool
-        case .awsIAM:
-            return iamBasedPool
-        case .amazonCognitoUserPools:
-            return userpoolsBasedPool
-        case .oidcToken:
-            return oidcBasedPool
+
+    private func createConnectionProvider(for url: URL, authInterceptor: AuthInterceptor, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
+        let provider = ConnectionPoolFactory.createConnectionProvider(for: url, connectionType: connectionType)
+        if let messageInterceptable = provider as? MessageInterceptable {
+            messageInterceptable.addInterceptor(authInterceptor)
         }
+        if let connectionInterceptable = provider as? ConnectionInterceptable {
+            connectionInterceptable.addInterceptor(RealtimeGatewayURLInterceptor())
+            connectionInterceptable.addInterceptor(authInterceptor)
+        }
+
+        return provider
     }
 }
