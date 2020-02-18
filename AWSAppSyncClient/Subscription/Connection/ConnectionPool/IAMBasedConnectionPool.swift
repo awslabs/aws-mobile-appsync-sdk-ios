@@ -9,13 +9,11 @@ import AWSCore
 
 class IAMBasedConnectionPool: SubscriptionConnectionPool {
 
-    private let credentialProvider: AWSCredentialsProvider
-    private let regionType: AWSRegionType
+    private let authInterceptor: AuthInterceptor
     var endPointToProvider: [String: ConnectionProvider]
 
-    init(_ credentialProvider: AWSCredentialsProvider, region: AWSRegionType) {
-        self.credentialProvider = credentialProvider
-        self.regionType = region
+    init(_ authInterceptor: AuthInterceptor) {
+        self.authInterceptor = authInterceptor
         self.endPointToProvider = [:]
     }
 
@@ -30,11 +28,11 @@ class IAMBasedConnectionPool: SubscriptionConnectionPool {
     func createConnectionProvider(for url: URL, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
         let provider = ConnectionPoolFactory.createConnectionProvider(for: url, connectionType: connectionType)
         if let messageInterceptable = provider as? MessageInterceptable {
-            messageInterceptable.addInterceptor(IAMAuthInterceptor(credentialProvider, region: regionType))
+            messageInterceptable.addInterceptor(authInterceptor)
         }
         if let connectionInterceptable = provider as? ConnectionInterceptable {
             connectionInterceptable.addInterceptor(RealtimeGatewayURLInterceptor())
-            connectionInterceptable.addInterceptor(IAMAuthInterceptor(credentialProvider, region: regionType))
+            connectionInterceptable.addInterceptor(authInterceptor)
         }
 
         return provider

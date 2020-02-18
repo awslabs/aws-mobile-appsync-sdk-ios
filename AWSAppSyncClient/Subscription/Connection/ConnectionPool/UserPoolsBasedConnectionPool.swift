@@ -8,11 +8,11 @@ import Foundation
 
 class UserPoolsBasedConnectionPool: SubscriptionConnectionPool {
 
-    private let tokenProvider: AWSCognitoUserPoolsAuthProvider
+    private let authInterceptor: AuthInterceptor
     var endPointToProvider: [String: ConnectionProvider]
 
-    init(_ tokenProvider: AWSCognitoUserPoolsAuthProvider) {
-        self.tokenProvider = tokenProvider
+    init(_ authInterceptor: AuthInterceptor) {
+        self.authInterceptor = authInterceptor
         self.endPointToProvider = [:]
     }
 
@@ -27,11 +27,11 @@ class UserPoolsBasedConnectionPool: SubscriptionConnectionPool {
     func createConnectionProvider(for url: URL, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
         let provider = ConnectionPoolFactory.createConnectionProvider(for: url, connectionType: connectionType)
         if let messageInterceptable = provider as? MessageInterceptable {
-            messageInterceptable.addInterceptor(CognitoUserPoolsAuthInterceptor(tokenProvider))
+            messageInterceptable.addInterceptor(authInterceptor)
         }
         if let connectionInterceptable = provider as? ConnectionInterceptable {
             connectionInterceptable.addInterceptor(RealtimeGatewayURLInterceptor())
-            connectionInterceptable.addInterceptor(CognitoUserPoolsAuthInterceptor(tokenProvider))
+            connectionInterceptable.addInterceptor(authInterceptor)
         }
 
         return provider

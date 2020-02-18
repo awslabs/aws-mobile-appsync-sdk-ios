@@ -16,7 +16,7 @@ class IAMBasedConnectionPoolTests: XCTestCase {
     let url2 = URL(string: "http://appsyncendpoint-2.com/graphql")!
 
     override func setUp() {
-        connectionPool = IAMBasedConnectionPool(MockIAMAuthProvider(), region: .USWest2)
+        connectionPool = IAMBasedConnectionPool(IAMAuthInterceptor(MockIAMAuthProvider(), region: .USWest2))
     }
 
     /// Test retrieve connection

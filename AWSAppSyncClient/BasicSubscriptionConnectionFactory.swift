@@ -31,16 +31,20 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
         self.retryStrategy = retryStrategy
 
         if let apiKeyProvider = apiKeyProvider {
-            self.apiKeyBasedPool = APIKeyBasedConnectionPool(apiKeyProvider)
+            let authInterceptor = APIKeyAuthInterceptor(apiKeyProvider)
+            self.apiKeyBasedPool = APIKeyBasedConnectionPool(authInterceptor)
         }
         if let cognitoUserPoolProvider = cognitoUserPoolProvider {
-            self.userpoolsBasedPool = UserPoolsBasedConnectionPool(cognitoUserPoolProvider)
+            let authInterceptor = CognitoUserPoolsAuthInterceptor(cognitoUserPoolProvider)
+            self.userpoolsBasedPool = UserPoolsBasedConnectionPool(authInterceptor)
         }
         if let iamAuthProvider = iamAuthProvider, let awsRegion = region {
-            self.iamBasedPool = IAMBasedConnectionPool(iamAuthProvider, region: awsRegion)
+            let authInterceptor = IAMAuthInterceptor(iamAuthProvider, region: awsRegion)
+            self.iamBasedPool = IAMBasedConnectionPool(authInterceptor)
         }
         if let oidcAuthProvider = oidcAuthProvider {
-            self.oidcBasedPool = OIDCBasedConnectionPool(oidcAuthProvider)
+            let authInterceptor = CognitoUserPoolsAuthInterceptor(oidcAuthProvider)
+            self.oidcBasedPool = OIDCBasedConnectionPool(authInterceptor)
         }
     }
 

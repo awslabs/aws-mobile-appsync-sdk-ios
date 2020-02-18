@@ -7,7 +7,7 @@
 import Foundation
 import AWSCore
 
-class IAMAuthInterceptor: MessageInterceptor, ConnectionInterceptor {
+class IAMAuthInterceptor: AuthInterceptor {
     
     let authProvider: AWSCredentialsProvider
     let region: AWSRegionType

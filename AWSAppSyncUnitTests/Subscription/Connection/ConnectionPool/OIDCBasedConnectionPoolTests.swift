@@ -16,7 +16,7 @@ class OIDCBasedConnectionPoolTests: XCTestCase {
     let url2 = URL(string: "http://appsyncendpoint-2.com/graphql")!
 
     override func setUp() {
-       connectionPool = OIDCBasedConnectionPool(MockUserPoolsAuthProvider())
+       connectionPool = OIDCBasedConnectionPool(CognitoUserPoolsAuthInterceptor(MockUserPoolsAuthProvider()))
     }
 
     /// Test retrieve connection

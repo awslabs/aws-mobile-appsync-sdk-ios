@@ -6,7 +6,7 @@
 
 import Foundation
 
-class CognitoUserPoolsAuthInterceptor: MessageInterceptor, ConnectionInterceptor {
+class CognitoUserPoolsAuthInterceptor: AuthInterceptor {
 
     let authProvider: AWSOIDCAuthProvider
 

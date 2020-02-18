@@ -16,7 +16,7 @@ class APIKeyBasedConnectionPoolTests: XCTestCase {
     let url2 = URL(string: "http://appsyncendpoint-2.com/graphql")!
 
     override func setUp() {
-       connectionPool = APIKeyBasedConnectionPool(MockAPIKeyAuthProvider())
+       connectionPool = APIKeyBasedConnectionPool(APIKeyAuthInterceptor(MockAPIKeyAuthProvider()))
     }
 
     /// Test retrieve connection

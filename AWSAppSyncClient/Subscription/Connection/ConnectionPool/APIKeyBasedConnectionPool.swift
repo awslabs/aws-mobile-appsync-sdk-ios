@@ -8,11 +8,11 @@ import Foundation
 
 class APIKeyBasedConnectionPool: SubscriptionConnectionPool {
 
-    private let apiKeyProvider: AWSAPIKeyAuthProvider
+    private let authInterceptor: AuthInterceptor
     var endPointToProvider: [String: ConnectionProvider]
 
-    init(_ apiKeyProvider: AWSAPIKeyAuthProvider) {
-        self.apiKeyProvider = apiKeyProvider
+    init(_ authInterceptor: AuthInterceptor) {
+        self.authInterceptor = authInterceptor
         self.endPointToProvider = [:]
     }
 
@@ -27,11 +27,11 @@ class APIKeyBasedConnectionPool: SubscriptionConnectionPool {
     func createConnectionProvider(for url: URL, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
         let provider =  ConnectionPoolFactory.createConnectionProvider(for: url, connectionType: connectionType)
         if let messageInterceptable = provider as? MessageInterceptable {
-            messageInterceptable.addInterceptor(APIKeyAuthInterceptor(apiKeyProvider))
+            messageInterceptable.addInterceptor(authInterceptor)
         }
         if let connectionInterceptable = provider as? ConnectionInterceptable {
             connectionInterceptable.addInterceptor(RealtimeGatewayURLInterceptor())
-            connectionInterceptable.addInterceptor(APIKeyAuthInterceptor(apiKeyProvider))
+            connectionInterceptable.addInterceptor(authInterceptor)
         }
         return provider
     }

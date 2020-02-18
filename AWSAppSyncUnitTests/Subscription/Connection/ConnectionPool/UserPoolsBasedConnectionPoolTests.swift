@@ -16,7 +16,7 @@ class UserPoolsBasedConnectionPoolTests: XCTestCase {
     let url2 = URL(string: "http://appsyncendpoint-2.com/graphql")!
 
     override func setUp() {
-       connectionPool = UserPoolsBasedConnectionPool(MockUserPoolsAuthProvider())
+       connectionPool = UserPoolsBasedConnectionPool(CognitoUserPoolsAuthInterceptor(MockUserPoolsAuthProvider()))
     }
 
     /// Test retrieve connection
