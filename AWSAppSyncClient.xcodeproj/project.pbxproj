@@ -941,6 +941,7 @@
 			children = (
 				17E009981FCAB214005031DB /* Apollo */,
 				1756980121349F9900319ABC /* Internal */,
+				B40D1C82235917C30069BD4E /* BasicSubscriptionConnectionFactory.swift */,
 				B40D1C7D2359148B0069BD4E /* Subscription */,
 				17DECF611F59F5FF004B0512 /* AWSAppSync.h */,
 				178C8DA91FAAAC0600A7F725 /* AWSAppSyncAuthProvider.swift */,
@@ -1048,7 +1049,6 @@
 				B487B75E235F5D7000A60265 /* ConnectionPoolHelper.swift */,
 				B489D139235B8BC4008DDAC9 /* IAMBasedConnectionPool.swift */,
 				B4B71E9523692F96009B1863 /* OIDCBasedConnectionPool.swift */,
-				B40D1C82235917C30069BD4E /* BasicSubscriptionConnectionFactory.swift */,
 				B43EBB4123721C5B00F07E07 /* SubscriptionConnectionFactory.swift */,
 				B489D137235B8BB0008DDAC9 /* UserPoolsBasedConnectionPool.swift */,
 			);
