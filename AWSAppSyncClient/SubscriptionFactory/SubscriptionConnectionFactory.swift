@@ -13,8 +13,3 @@ protocol SubscriptionConnectionFactory {
     /// - Parameter connectionType: 
     func connection(connectionType: SubscriptionConnectionType) -> SubscriptionConnection?
 }
-
-enum SubscriptionConnectionType {
-
-    case appSyncRealtime
-}
