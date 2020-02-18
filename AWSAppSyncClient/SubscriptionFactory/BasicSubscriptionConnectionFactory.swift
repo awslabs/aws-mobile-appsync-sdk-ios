@@ -71,7 +71,9 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
     // MARK: - Private Methods
 
     private func createConnectionProvider(for url: URL, authInterceptor: AuthInterceptor, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
-        let provider = ConnectionPoolFactory.createConnectionProvider(for: url, connectionType: connectionType)
+
+        let provider = createConnectionProvider(for: url, connectionType: connectionType)
+
         if let messageInterceptable = provider as? MessageInterceptable {
             messageInterceptable.addInterceptor(authInterceptor)
         }
@@ -81,5 +83,14 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
         }
 
         return provider
+    }
+
+    private func createConnectionProvider(for url: URL, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
+        switch connectionType {
+        case .appSyncRealtime:
+            let websocketProvider = StarscreamAdapter()
+            let connectionProvider = RealtimeConnectionProvider(for: url, websocket: websocketProvider)
+            return connectionProvider
+        }
     }
 }

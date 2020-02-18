@@ -149,7 +149,6 @@
 		B47DED05235D719E003A8127 /* StarscreamAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47DED04235D719E003A8127 /* StarscreamAdapter.swift */; };
 		B47DED07235D71F7003A8127 /* StarscreamAdapter+Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47DED06235D71F7003A8127 /* StarscreamAdapter+Delegate.swift */; };
 		B48056BC22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B48056BB22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift */; };
-		B487B75F235F5D7000A60265 /* ConnectionPoolHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B487B75E235F5D7000A60265 /* ConnectionPoolHelper.swift */; };
 		B487B761235F5E3C00A60265 /* RealtimeConnectionProvider+ConnectionInterceptable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B487B760235F5E3C00A60265 /* RealtimeConnectionProvider+ConnectionInterceptable.swift */; };
 		B489D136235A7173008DDAC9 /* RealtimeConnectionProvider+MessageInterceptable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B489D134235A70A8008DDAC9 /* RealtimeConnectionProvider+MessageInterceptable.swift */; };
 		B49835282361016D00C0C287 /* AppSyncJSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = B49835272361016D00C0C287 /* AppSyncJSONValue.swift */; };
@@ -573,7 +572,6 @@
 		B47DED04235D719E003A8127 /* StarscreamAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarscreamAdapter.swift; sourceTree = "<group>"; };
 		B47DED06235D71F7003A8127 /* StarscreamAdapter+Delegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StarscreamAdapter+Delegate.swift"; sourceTree = "<group>"; };
 		B48056BB22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncSubscriptionWithSyncTests.swift; sourceTree = "<group>"; };
-		B487B75E235F5D7000A60265 /* ConnectionPoolHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionPoolHelper.swift; sourceTree = "<group>"; };
 		B487B760235F5E3C00A60265 /* RealtimeConnectionProvider+ConnectionInterceptable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RealtimeConnectionProvider+ConnectionInterceptable.swift"; sourceTree = "<group>"; };
 		B489D134235A70A8008DDAC9 /* RealtimeConnectionProvider+MessageInterceptable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RealtimeConnectionProvider+MessageInterceptable.swift"; sourceTree = "<group>"; };
 		B49835272361016D00C0C287 /* AppSyncJSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncJSONValue.swift; sourceTree = "<group>"; };
@@ -1019,15 +1017,24 @@
 			path = SubscriptionFactory;
 			sourceTree = "<group>";
 		};
+		214BD3E223FB8E1A0059A286 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				B43F085B235F896E000B3913 /* RealtimeGatewayURLInterceptor.swift */,
+				B49835272361016D00C0C287 /* AppSyncJSONValue.swift */,
+				214BD3CD23FB5D6F0059A286 /* AppSyncLogger.swift */,
+				214BD3DB23FB8AB40059A286 /* SubscriptionConnectionType.swift */,
+				B4B71E7523687F19009B1863 /* SubscriptionConstants.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
 		B40D1C7D2359148B0069BD4E /* Subscription */ = {
 			isa = PBXGroup;
 			children = (
-				214BD3CD23FB5D6F0059A286 /* AppSyncLogger.swift */,
 				B40D1C7E2359148B0069BD4E /* Connection */,
-				B43F085A235F8964000B3913 /* ConnectionInterceptor */,
 				B4B74D54235A3E4D00D9E121 /* ConnectionProvider */,
-				B4B71E7423687EFE009B1863 /* Constants */,
-				B49835262361015E00C0C287 /* JSONHandling */,
+				214BD3E223FB8E1A0059A286 /* Support */,
 				B40D1C91235A00630069BD4E /* Websocket */,
 			);
 			path = Subscription;
@@ -1037,21 +1044,11 @@
 			isa = PBXGroup;
 			children = (
 				B4B71E8C23692F30009B1863 /* AppSyncConnection */,
-				B40D1C81235917C30069BD4E /* ConnectionPool */,
 				B4D3856C236CEDEC0014653D /* RetryableConnection.swift */,
 				B40D1C8623591B360069BD4E /* SubscriptionConnection.swift */,
 				B40D1C8D2359FEB00069BD4E /* SubscriptionItem.swift */,
 			);
 			path = Connection;
-			sourceTree = "<group>";
-		};
-		B40D1C81235917C30069BD4E /* ConnectionPool */ = {
-			isa = PBXGroup;
-			children = (
-				B487B75E235F5D7000A60265 /* ConnectionPoolHelper.swift */,
-				214BD3DB23FB8AB40059A286 /* SubscriptionConnectionType.swift */,
-			);
-			path = ConnectionPool;
 			sourceTree = "<group>";
 		};
 		B40D1C8C235969450069BD4E /* AppsyncRealtimeConnection */ = {
@@ -1123,14 +1120,6 @@
 			path = MockSubscriptionFactory;
 			sourceTree = "<group>";
 		};
-		B43F085A235F8964000B3913 /* ConnectionInterceptor */ = {
-			isa = PBXGroup;
-			children = (
-				B43F085B235F896E000B3913 /* RealtimeGatewayURLInterceptor.swift */,
-			);
-			path = ConnectionInterceptor;
-			sourceTree = "<group>";
-		};
 		B46B88EE235FA37700308094 /* ConnectionInterceptor */ = {
 			isa = PBXGroup;
 			children = (
@@ -1178,22 +1167,6 @@
 			path = Subscription;
 			sourceTree = "<group>";
 		};
-		B49835262361015E00C0C287 /* JSONHandling */ = {
-			isa = PBXGroup;
-			children = (
-				B49835272361016D00C0C287 /* AppSyncJSONValue.swift */,
-			);
-			path = JSONHandling;
-			sourceTree = "<group>";
-		};
-		B4B71E7423687EFE009B1863 /* Constants */ = {
-			isa = PBXGroup;
-			children = (
-				B4B71E7523687F19009B1863 /* SubscriptionConstants.swift */,
-			);
-			path = Constants;
-			sourceTree = "<group>";
-		};
 		B4B71E8C23692F30009B1863 /* AppSyncConnection */ = {
 			isa = PBXGroup;
 			children = (
@@ -1208,14 +1181,14 @@
 		B4B74D54235A3E4D00D9E121 /* ConnectionProvider */ = {
 			isa = PBXGroup;
 			children = (
-				B4B74D55235A524100D9E121 /* ConnectionProvider.swift */,
-				B40D1C8A235968070069BD4E /* InterceptableConnection.swift */,
+				B47BCE20235BBA5A0088A9E7 /* AppSyncConnectionRequest.swift */,
 				B40D1C94235A00970069BD4E /* AppSyncMessage.swift */,
 				B47DECF7235D1C3C003A8127 /* AppSyncMessage+Encodable.swift */,
-				B47BCE20235BBA5A0088A9E7 /* AppSyncConnectionRequest.swift */,
-				B47DECFD235D4DE7003A8127 /* AppSyncResponse.swift */,
-				B426E12423664D6F0049C232 /* ConnectionProviderError.swift */,
 				B40D1C8C235969450069BD4E /* AppsyncRealtimeConnection */,
+				B47DECFD235D4DE7003A8127 /* AppSyncResponse.swift */,
+				B4B74D55235A524100D9E121 /* ConnectionProvider.swift */,
+				B426E12423664D6F0049C232 /* ConnectionProviderError.swift */,
+				B40D1C8A235968070069BD4E /* InterceptableConnection.swift */,
 			);
 			path = ConnectionProvider;
 			sourceTree = "<group>";
@@ -2118,7 +2091,6 @@
 			files = (
 				B4D3856D236CEDEC0014653D /* RetryableConnection.swift in Sources */,
 				17E009C31FCAB234005031DB /* GraphQLResponse.swift in Sources */,
-				B487B75F235F5D7000A60265 /* ConnectionPoolHelper.swift in Sources */,
 				17E009BF1FCAB234005031DB /* DataLoader.swift in Sources */,
 				17E009CC1FCAB234005031DB /* Promise.swift in Sources */,
 				FA88834521E3C2D300DEBCB3 /* AWSAppSyncConnection.swift in Sources */,
