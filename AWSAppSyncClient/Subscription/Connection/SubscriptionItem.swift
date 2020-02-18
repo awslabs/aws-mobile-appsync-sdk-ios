@@ -33,10 +33,10 @@ struct SubscriptionItem {
 }
 
 /// Event handler for subscription.
-typealias SubscriptionEventHandler = (Event, SubscriptionItem) -> Void
+typealias SubscriptionEventHandler = (SubscriptionItemEvent, SubscriptionItem) -> Void
 
 /// Event for subscription
-enum Event {
+enum SubscriptionItemEvent {
     /// Connect based event, the associated string will have connection message.
     case connection(SubscriptionConnectionEvent)
 
