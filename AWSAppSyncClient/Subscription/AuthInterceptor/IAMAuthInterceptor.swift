@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AWSCore
 
 class IAMAuthInterceptor: MessageInterceptor, ConnectionInterceptor {
     

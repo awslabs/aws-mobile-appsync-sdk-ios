@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AWSCore
 
 /// Auth interceptor for API Key based authentication
 class APIKeyAuthInterceptor: MessageInterceptor, ConnectionInterceptor {
