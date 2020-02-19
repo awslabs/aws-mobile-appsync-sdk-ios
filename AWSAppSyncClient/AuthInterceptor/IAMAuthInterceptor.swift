@@ -6,6 +6,7 @@
 
 import Foundation
 import AWSCore
+import AppSyncSubscriptionClient
 
 class IAMAuthInterceptor: AuthInterceptor {
     
@@ -28,7 +29,7 @@ class IAMAuthInterceptor: AuthInterceptor {
                                                type: message.messageType)
             return signedMessage
         default:
-            AppSyncLogger.debug("Message type does not need signing - \(message.messageType)")
+            AppSyncLog.debug("Message type does not need signing - \(message.messageType)")
         }
         return message
     }

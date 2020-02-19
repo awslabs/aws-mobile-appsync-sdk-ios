@@ -5,6 +5,7 @@
 //
 
 import Dispatch
+import AppSyncSubscriptionClient
 
 /// Used to determine the reason why a subscription is being cancelled/ disconnected.
 ///

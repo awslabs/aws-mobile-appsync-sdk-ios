@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AppSyncSubscriptionClient
 
 /// Encapsulates advice about whether a request should be retried, and if so, after how much time
 struct AWSAppSyncRetryAdvice: RetryAdvice {

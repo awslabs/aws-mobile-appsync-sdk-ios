@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AppSyncSubscriptionClient
 
 class CognitoUserPoolsAuthInterceptor: AuthInterceptor {
 
@@ -34,7 +35,7 @@ class CognitoUserPoolsAuthInterceptor: AuthInterceptor {
                                                type: message.messageType)
             return signedMessage
         default:
-            AppSyncLogger.debug("Message type does not need signing - \(message.messageType)")
+            AppSyncLog.debug("Message type does not need signing - \(message.messageType)")
         }
         return message
     }

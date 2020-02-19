@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AppSyncSubscriptionClient
 
 class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
 

@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.dependency 'AWSCore', '~> 2.12.0'
   s.dependency 'SQLite.swift', '~> 0.12.2'
   s.dependency 'ReachabilitySwift', '~> 5.0.0'
-  s.dependency 'Starscream', '~> 3.0.2'
+  s.dependency 'AppSyncSubscriptionClient', '~> 0.0.1'
 
   s.source_files = 'AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/*.swift', 'AWSAppSyncClient/Internal/*.swift', 'AWSAppSyncClient/Subscription/**/*.swift', 'AWSAppSyncClient/Apollo/Sources/Apollo/*.swift', 'AWSAppSyncClient/Internal/*.{h,m}'
   s.public_header_files = ['AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/AWSAppSync-Swift.h', 'AWSAppSyncClient/Internal/AppSyncLogHelper.h']

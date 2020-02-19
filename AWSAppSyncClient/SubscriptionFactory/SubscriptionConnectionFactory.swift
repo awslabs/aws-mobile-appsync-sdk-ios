@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AppSyncSubscriptionClient
 
 /// Protocol for the subscription factory
 protocol SubscriptionConnectionFactory {

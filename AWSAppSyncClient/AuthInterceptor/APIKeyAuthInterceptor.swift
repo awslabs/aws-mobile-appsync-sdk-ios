@@ -6,6 +6,7 @@
 
 import Foundation
 import AWSCore
+import AppSyncSubscriptionClient
 
 /// Auth interceptor for API Key based authentication
 class APIKeyAuthInterceptor: AuthInterceptor {
@@ -61,7 +62,7 @@ class APIKeyAuthInterceptor: AuthInterceptor {
                                                type: message.messageType)
             return signedMessage
         default:
-            AppSyncLogger.debug("Message type does not need signing - \(message.messageType)")
+            AppSyncLog.debug("Message type does not need signing - \(message.messageType)")
         }
         return message
     }

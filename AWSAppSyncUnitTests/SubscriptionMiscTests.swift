@@ -9,6 +9,7 @@ import XCTest
 @testable import AWSAppSync
 @testable import AWSCore
 @testable import AWSAppSyncTestCommon
+@testable import AppSyncSubscriptionClient
 
 class SubscriptionMiscTests: XCTestCase {
     

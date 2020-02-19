@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import AWSAppSync
+import AppSyncSubscriptionClient
 
 class RealtimeGatewayURLInterceptorTests: XCTestCase {
 
