@@ -14,3 +14,12 @@ protocol SubscriptionConnectionFactory {
     /// - Parameter connectionType: 
     func connection(connectionType: SubscriptionConnectionType) -> SubscriptionConnection?
 }
+
+/// Protocol for the different connection pool
+protocol SubscriptionConnectionPool {
+
+    /// Get Connection based on the url and connection type
+    /// - Parameter url: url to connect to
+    /// - Parameter connectionType:
+    func connection(for url: URL, connectionType: SubscriptionConnectionType) -> SubscriptionConnection
+}
