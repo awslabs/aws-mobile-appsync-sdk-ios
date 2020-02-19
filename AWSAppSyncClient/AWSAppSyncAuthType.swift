@@ -5,7 +5,7 @@
 //
 
 /// Supported authentication types for the AppSyncClient
-public enum AWSAppSyncAuthType: String, CaseIterable {
+public enum AWSAppSyncAuthType: String {
     /// AWS Identity and Access Management (IAM), for role-based authentication
     case awsIAM = "AWS_IAM"
 
