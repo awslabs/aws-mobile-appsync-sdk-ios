@@ -10,6 +10,7 @@ target "AWSAppSync" do
   pod "SQLite.swift", "~> 0.12.2"
   pod "ReachabilitySwift", "~> 5.0.0"
   pod "AppSyncSubscriptionClient", :path => '~/aws-amplify/amplify-ios'
+  # pod "AppSyncSubscriptionClient", "~> 0.10.0"
 end
 
 target "AWSAppSyncTestCommon" do
