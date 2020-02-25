@@ -215,12 +215,13 @@ class AppSyncSubscriptionWithSyncTests: XCTestCase {
             subscriptionMetadataCache: nil,
             syncConfiguration: .init(baseRefreshIntervalInSeconds: 1),
             handlerQueue: queue)
+        XCTAssertNotNil(subscriptionWithSync, "subscriptionWithSync should return an initialized object")
 
         weak var weakRef = subscriptionWithSync
         subscriptionWithSync?.cancel()
         subscriptionWithSync = nil
         let expectation = XCTestExpectation(description: "subscriptionWithSync reference deinitialized")
-        DispatchQueue.main.async {
+        DispatchQueue(label: "com.aws.subscriptionWithSync.dispatch", qos: .background).async {
             while true {
                 if weakRef == nil {
                     expectation.fulfill()
