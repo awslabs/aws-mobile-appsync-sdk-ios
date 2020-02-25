@@ -202,6 +202,35 @@ class AppSyncSubscriptionWithSyncTests: XCTestCase {
         let result = subscriptionWithSync.getOperationHash()
         XCTAssertNotNil(result, "Should produce a non nil hash when all fields are present.")
     }
+
+    func testCancelWithBaseQueryAndDeinitNoStrongReferenceRetained() {
+        var subscriptionWithSync: AppSyncSubscriptionWithSync? = AppSyncSubscriptionWithSync(
+            appSyncClient: appsyncClient,
+            baseQuery: listPostsQuery,
+            deltaQuery: emptyQuery,
+            subscription: emptySubscription,
+            baseQueryHandler: listQueryHandler,
+            deltaQueryHandler: emptyDeltaQueryHandler,
+            subscriptionResultHandler: emptySubscriptionResultHandler,
+            subscriptionMetadataCache: nil,
+            syncConfiguration: .init(baseRefreshIntervalInSeconds: 1),
+            handlerQueue: queue)
+
+        weak var weakRef = subscriptionWithSync
+        subscriptionWithSync?.cancel()
+        subscriptionWithSync = nil
+        let expectation = XCTestExpectation(description: "subscriptionWithSync reference deinitialized")
+        DispatchQueue.main.async {
+            while true {
+                if weakRef == nil {
+                    expectation.fulfill()
+                    break
+                }
+            }
+        }
+        wait(for: [expectation], timeout: 5.0)
+        XCTAssertNil(weakRef, "subscriptionWithSync was not deinitialized")
+    }
 }
 
 private class GraphGetQuery: GraphQLQuery {
