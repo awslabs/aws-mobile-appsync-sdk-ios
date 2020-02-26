@@ -24,6 +24,8 @@ final class AWSAppSyncRetryHandler: ConnectionRetryHandler {
     // We will rather cap it to 30.
     static let maxRetryAttemptsWhenUsingAggresiveMode = 30
     
+    static let maxExponentWhenCalculatingExponentialBackoff = 31
+
     private static let jitterMilliseconds: Float = 100.0
 
     private var currentAttemptNumber = 0
@@ -116,7 +118,11 @@ final class AWSAppSyncRetryHandler: ConnectionRetryHandler {
             let delay = Int(Double(1000.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.jitterMilliseconds)))
             return delay
         case .exponential:
-            let delay = Int(Double(truncating: pow(2.0, attemptNumber) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.jitterMilliseconds))
+            var exponent = attemptNumber
+            if attemptNumber > maxExponentWhenCalculatingExponentialBackoff {
+                exponent = maxExponentWhenCalculatingExponentialBackoff
+            }
+            let delay = Int(Double(truncating: pow(2.0, exponent) as NSNumber) * 100.0 + Double(AWSAppSyncRetryHandler.getRandomBetween0And1() * AWSAppSyncRetryHandler.jitterMilliseconds))
             return delay
         }
     }

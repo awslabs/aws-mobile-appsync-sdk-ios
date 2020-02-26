@@ -185,6 +185,24 @@ class AWSAppSyncRetryHandlerTests: XCTestCase {
         let aggAttempt6 = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: 6, retryStrategy: .aggressive)
         XCTAssert(1000 ... 1099 ~= aggAttempt6, "\(aggAttempt6) value is out of expected range.")
     }
+
+    func test_maxValueRetryDelayInMillseconds() {
+        let attemptNumber = 31
+        let numMilliSeconds = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: attemptNumber, retryStrategy: .exponential)
+        XCTAssert(214748364800 ... 214748364899 ~= numMilliSeconds, "\(numMilliSeconds) value is out of the expected range.")
+    }
+
+    func test_beyondMaxValueRetryDelayInMillseconds() {
+        let attemptNumber = 32
+        let numMilliSeconds = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: attemptNumber, retryStrategy: .exponential)
+        XCTAssert(214748364800 ... 214748364899 ~= numMilliSeconds, "\(numMilliSeconds) value is out of the expected range.")
+    }
+
+    func test_overflowRetryDelayInMillseconds() {
+        let attemptNumber = 57
+        let numMilliSeconds = AWSAppSyncRetryHandler.retryDelayInMillseconds(for: attemptNumber, retryStrategy: .exponential)
+        XCTAssert(214748364800 ... 214748364899 ~= numMilliSeconds, "\(numMilliSeconds) value is out of the expected range.")
+    }
 }
 
 extension DispatchTimeInterval {
