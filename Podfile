@@ -9,7 +9,7 @@ target "AWSAppSync" do
   pod "AWSCore", "~> #{AWS_SDK_VERSION}"
   pod "SQLite.swift", "~> 0.12.2"
   pod "ReachabilitySwift", "~> 5.0.0"
-  pod "AppSyncSubscriptionClient", :path => '~/aws-amplify/amplify-ios'
+  pod "AppSyncRealTimeClient", :path => '~/aws-amplify/aws-appsync-realtime-client-ios'
   # pod "AppSyncSubscriptionClient", "~> 0.10.0"
 end
 
@@ -19,7 +19,7 @@ target "AWSAppSyncTestCommon" do
   # We directly access a database connection to verify certain initialization
   # setups
   pod "SQLite.swift", "~> 0.12.2"
-  pod "AppSyncSubscriptionClient", :path => '~/aws-amplify/amplify-ios'
+  pod "AppSyncRealTimeClient", :path => '~/aws-amplify/aws-appsync-realtime-client-ios'
 end
 
 target "AWSAppSyncTestApp" do

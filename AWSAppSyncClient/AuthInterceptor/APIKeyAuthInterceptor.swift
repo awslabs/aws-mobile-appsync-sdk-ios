@@ -5,7 +5,6 @@
 //
 
 import Foundation
-import AWSCore
 import AppSyncSubscriptionClient
 
 /// Auth interceptor for API Key based authentication

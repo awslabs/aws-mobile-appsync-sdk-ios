@@ -1,6 +1,0 @@
-framework module AppSyncSubscriptionClient {
-  umbrella header "AppSyncSubscriptionClient-umbrella.h"
-
-  export *
-  module * { export * }
-}

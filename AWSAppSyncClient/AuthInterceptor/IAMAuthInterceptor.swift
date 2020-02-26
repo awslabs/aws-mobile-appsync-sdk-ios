@@ -5,7 +5,6 @@
 //
 
 import Foundation
-import AWSCore
 import AppSyncSubscriptionClient
 
 class IAMAuthInterceptor: AuthInterceptor {

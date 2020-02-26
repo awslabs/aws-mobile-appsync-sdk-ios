@@ -11,6 +11,6 @@
 #endif
 
 
-FOUNDATION_EXPORT double AppSyncSubscriptionClientVersionNumber;
-FOUNDATION_EXPORT const unsigned char AppSyncSubscriptionClientVersionString[];
+FOUNDATION_EXPORT double AppSyncRealTimeClientVersionNumber;
+FOUNDATION_EXPORT const unsigned char AppSyncRealTimeClientVersionString[];
 

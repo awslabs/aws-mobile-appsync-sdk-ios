@@ -1,0 +1,6 @@
+framework module AppSyncRealTimeClient {
+  umbrella header "AppSyncRealTimeClient-umbrella.h"
+
+  export *
+  module * { export * }
+}
