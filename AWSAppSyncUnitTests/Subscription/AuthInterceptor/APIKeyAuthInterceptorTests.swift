@@ -7,7 +7,7 @@
 import XCTest
 @testable import AWSAppSync
 @testable import AWSAppSyncTestCommon
-import AppSyncSubscriptionClient
+import AppSyncRealTimeClient
 
 class APIKeyAuthInterceptorTests: XCTestCase {
 

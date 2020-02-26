@@ -6,7 +6,7 @@
 
 import Foundation
 @testable import AWSAppSync
-import AppSyncSubscriptionClient
+import AppSyncRealTimeClient
 
 class MockSubscriptionFactory: SubscriptionConnectionFactory {
 

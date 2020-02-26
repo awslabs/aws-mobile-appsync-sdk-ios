@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import AppSyncSubscriptionClient
+import AppSyncRealTimeClient
 
 struct AppSyncJSONHelper {
 

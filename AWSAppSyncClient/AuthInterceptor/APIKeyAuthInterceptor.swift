@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import AppSyncSubscriptionClient
+import AppSyncRealTimeClient
 
 /// Auth interceptor for API Key based authentication
 class APIKeyAuthInterceptor: AuthInterceptor {
