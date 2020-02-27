@@ -5,9 +5,10 @@
 //
 
 import Foundation
+import AppSyncRealTimeClient
 
 /// Encapsulates advice about whether a request should be retried, and if so, after how much time
-struct AWSAppSyncRetryAdvice {
+struct AWSAppSyncRetryAdvice: RetryAdvice {
     let shouldRetry: Bool
     let retryInterval: DispatchTimeInterval?
 }
@@ -36,7 +37,7 @@ final class AWSAppSyncRetryHandler: ConnectionRetryHandler {
         self.retryStrategy = retryStrategy
     }
 
-    func shouldRetryRequest(for error: ConnectionProviderError) -> AWSAppSyncRetryAdvice {
+    func shouldRetryRequest(for error: ConnectionProviderError) -> RetryAdvice {
         currentAttemptNumber += 1
         switch error {
         case .connection, .limitExceeded:

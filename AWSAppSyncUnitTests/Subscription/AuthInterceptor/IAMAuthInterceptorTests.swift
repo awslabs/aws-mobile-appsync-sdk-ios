@@ -7,6 +7,7 @@
 import XCTest
 @testable import AWSAppSync
 @testable import AWSAppSyncTestCommon
+import AppSyncRealTimeClient
 
 class IAMAuthInterceptorTests: XCTestCase {
 

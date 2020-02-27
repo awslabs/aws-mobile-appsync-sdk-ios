@@ -9,7 +9,7 @@ target "AWSAppSync" do
   pod "AWSCore", "~> #{AWS_SDK_VERSION}"
   pod "SQLite.swift", "~> 0.12.2"
   pod "ReachabilitySwift", "~> 5.0.0"
-  pod "Starscream", "~> 3.0.2"
+  pod "AppSyncRealTimeClient", "~> 1.0.0"
 end
 
 target "AWSAppSyncTestCommon" do
@@ -18,6 +18,7 @@ target "AWSAppSyncTestCommon" do
   # We directly access a database connection to verify certain initialization
   # setups
   pod "SQLite.swift", "~> 0.12.2"
+  pod "AppSyncRealTimeClient", "~> 1.0.0"
 end
 
 target "AWSAppSyncTestApp" do
