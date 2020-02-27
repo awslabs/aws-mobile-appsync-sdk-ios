@@ -268,29 +268,22 @@ class SubscriptionTests: XCTestCase {
             watchersWhichShouldNotReceiveCallbackExpectation.fulfill()
         }
         
-        
-        // we create a dictionary where we hold all the watchers; this mimicks app holding reference to watchers
-        var watchers: [String: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>] = [:]
-        
+        // Initiate subscription requests for the generated object ids
+        for _ in 0 ..< subscriptionWatchers {
+            let watcher = try! appSyncClient.subscribe(subscription: OnUpvotePostSubscription(id: "123"),
+                                                       statusChangeHandler: statusChangeHandlerNoUpdates) { _, _, _ in }
+            // Immediately cancel subscription (before delayed http callback which we implemented above can be executed.)
+            watcher?.cancel()
+        }
+
         // create an array of object ids to be used in subscription
         var subscriptionIds: [String] = []
         for _ in 0 ..< subscriptionWatchers  {
             subscriptionIds.append(UUID().uuidString)
         }
-        
-        // Initiate subscription requests for the generated object ids
-        for uuid in subscriptionIds {
-            let watcher = try! appSyncClient.subscribe(subscription: OnUpvotePostSubscription(id: "123"),
-                                                       statusChangeHandler: statusChangeHandlerNoUpdates) { _, _, _ in }
-            watchers[uuid] = watcher
-        }
-        
-        // Immediately cancel all subscriptions (before delayed http callback which we implemented above can be executed.)
-        for uuid in subscriptionIds {
-            watchers[uuid]?.cancel()
-        }
-        // Remove references
-        watchers.removeAll()
+
+        // we create a dictionary where we hold all the watchers; this mimicks app holding reference to watchers
+        var watchers: [String: AWSAppSyncSubscriptionWatcher<OnUpvotePostSubscription>] = [:]
         
         // Try starting the subscriptions again
         for uuid in subscriptionIds {

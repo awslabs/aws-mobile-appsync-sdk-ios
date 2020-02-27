@@ -102,11 +102,11 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
 
     private func performInitialSync() {
         AppSyncLog.debug("Queuing operations for initial sync")
-        internalStateSyncQueue.addOperation {
-            self.registerForNotifications()
-            self.initializeLastSyncTimeFromCache()
-            self.initializeBaseQueryResultsFromCache()
-            self.performSync()
+        internalStateSyncQueue.addOperation { [weak self] in
+            self?.registerForNotifications()
+            self?.initializeLastSyncTimeFromCache()
+            self?.initializeBaseQueryResultsFromCache()
+            self?.performSync()
         }
     }
 
@@ -476,11 +476,11 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
             return
         }
 
-        nextSyncTimer = DispatchSource.makeOneOffDispatchSourceTimer(deadline: deadline, queue: handlerQueue) {
+        nextSyncTimer = DispatchSource.makeOneOffDispatchSourceTimer(deadline: deadline, queue: handlerQueue) { [weak self] in
             AppSyncLog.debug("Timer fired, queueing sync operation")
-            self.internalStateSyncQueue.addOperation {
+            self?.internalStateSyncQueue.addOperation {
                 AppSyncLog.debug("Perform sync queued by timer")
-                self.performSync()
+                self?.performSync()
             }
         }
 
