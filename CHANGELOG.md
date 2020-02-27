@@ -8,6 +8,11 @@ also includes support for offline operations.
 ### Bug Fixes
 
 - Default to `exponential` AWSAppSyncRetryStrategy when scheduling a delta sync when the appSyncClient reference is unavailable ([#325](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/325)).
+- Remove force-unwrap in derivation of retry strategy during delta sync. See [issue #325](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/325) [PR #327](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/327).
+- Fix strong reference cycle in delta sync. See [issue #342](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/342) [PR #343](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/343). Thanks, [@LachlanMcCulloch](https://github.com/LachlanMcCulloch)!
+
+### Misc. Updates
+- Moved Realtime subscription connection logic to a separate package. See [PR #338](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/338)
 
 ## 3.0.0
 
