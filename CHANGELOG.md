@@ -19,7 +19,7 @@ also includes support for offline operations.
 ## 3.0.1
 
 ### Deprecated release
-This release is deprecated due to errors. Please use 2.12.5 or greater.
+This release is deprecated due to errors. Please use 3.0.2 or greater.
 
 ## 3.0.0
 
