@@ -35,7 +35,7 @@ public class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableCon
     }
 
     public func subscribe(requestString: String,
-                   variables: [String: Any]?,
+                   variables: [String: Any?]?,
                    eventHandler: @escaping (SubscriptionItemEvent, SubscriptionItem) -> Void) -> SubscriptionItem {
         subscriptionItem = SubscriptionItem(requestString: requestString,
                                             variables: variables,

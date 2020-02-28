@@ -14,7 +14,7 @@ public struct SubscriptionItem {
     let identifier: String
 
     /// Subscription variables for the query
-    let variables: [String: Any]?
+    let variables: [String: Any?]?
 
     /// Request query for subscription
     let requestString: String
@@ -23,7 +23,7 @@ public struct SubscriptionItem {
     let subscriptionEventHandler: SubscriptionEventHandler
 
     init(requestString: String,
-         variables: [String: Any]?,
+         variables: [String: Any?]?,
          eventHandler: @escaping SubscriptionEventHandler) {
 
         self.identifier = UUID().uuidString

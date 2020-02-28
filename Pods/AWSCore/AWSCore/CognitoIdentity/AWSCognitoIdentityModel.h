@@ -1,5 +1,5 @@
 //
-// Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License").
 // You may not use this file except in compliance with the License.
@@ -134,6 +134,11 @@ typedef NS_ENUM(NSInteger, AWSCognitoIdentityRoleMappingType) {
  */
 @interface AWSCognitoIdentityCreateIdentityPoolInput : AWSRequest
 
+
+/**
+ <p>Enables or disables the Basic (Classic) authentication flow. For more information, see <a href="https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html">Identity Pools (Federated Identities) Authentication Flow</a> in the <i>Amazon Cognito Developer Guide</i>.</p>
+ */
+@property (nonatomic, strong) NSNumber * _Nullable allowClassicFlow;
 
 /**
  <p>TRUE if the identity pool supports unauthenticated logins.</p>
@@ -413,7 +418,7 @@ typedef NS_ENUM(NSInteger, AWSCognitoIdentityRoleMappingType) {
 @property (nonatomic, strong) NSDictionary<NSString *, NSString *> * _Nullable logins;
 
 /**
- <p>The expiration time of the token, in seconds. You can specify a custom expiration time for the token so that you can cache it. If you don't provide an expiration time, the token is valid for 15 minutes. You can exchange the token with Amazon STS for temporary AWS credentials, which are valid for a maximum of one hour. The maximum token duration you can set is 24 hours. You should take care in setting the expiration time for a token, as there are significant security implications: an attacker could use a leaked token to access your AWS resources for the token's duration.</p>
+ <p>The expiration time of the token, in seconds. You can specify a custom expiration time for the token so that you can cache it. If you don't provide an expiration time, the token is valid for 15 minutes. You can exchange the token with Amazon STS for temporary AWS credentials, which are valid for a maximum of one hour. The maximum token duration you can set is 24 hours. You should take care in setting the expiration time for a token, as there are significant security implications: an attacker could use a leaked token to access your AWS resources for the token's duration.</p><note><p>Please provide for a small grace period, usually no more than 5 minutes, to account for clock skew.</p></note>
  */
 @property (nonatomic, strong) NSNumber * _Nullable tokenDuration;
 
@@ -508,6 +513,11 @@ typedef NS_ENUM(NSInteger, AWSCognitoIdentityRoleMappingType) {
  */
 @interface AWSCognitoIdentityIdentityPool : AWSRequest
 
+
+/**
+ <p>Enables or disables the Basic (Classic) authentication flow. For more information, see <a href="https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html">Identity Pools (Federated Identities) Authentication Flow</a> in the <i>Amazon Cognito Developer Guide</i>.</p>
+ */
+@property (nonatomic, strong) NSNumber * _Nullable allowClassicFlow;
 
 /**
  <p>TRUE if the identity pool supports unauthenticated logins.</p>

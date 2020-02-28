@@ -37,7 +37,7 @@ extension AppSyncSubscriptionConnection {
         connectionProvider?.write(message)
     }
 
-    private func convertToPayload(for query: String, variables: [String: Any]?) -> AppSyncMessage.Payload {
+    private func convertToPayload(for query: String, variables: [String: Any?]?) -> AppSyncMessage.Payload {
         var dataDict: [String: Any] = ["query": query]
         if let subVariables = variables {
             dataDict["variables"] = subVariables
