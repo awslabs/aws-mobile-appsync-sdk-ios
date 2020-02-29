@@ -122,6 +122,7 @@
 		3D9BF115227836800079F52F /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9BF114227836800079F52F /* NetworkReachability.swift */; };
 		70C68E4D132FE62623DB8C07 /* Pods_AWSAppSyncTestHostApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C707001F57B091A8A001CAB /* Pods_AWSAppSyncTestHostApp.framework */; };
 		8032C5415EF414C038394D69 /* Pods_AWSAppSyncTestCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */; };
+		90DE0C49240A304D000E875B /* AWSAppSyncAuthTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DE0C48240A304D000E875B /* AWSAppSyncAuthTypeTests.swift */; };
 		A70604C0C722923A70C937A1 /* Pods_AWSAppSyncTestApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57F5A94352E1ABE35159489D /* Pods_AWSAppSyncTestApp.framework */; };
 		B41298E823674525008EC829 /* CognitoUserPoolsAuthInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B41298E723674525008EC829 /* CognitoUserPoolsAuthInterceptorTests.swift */; };
 		B43EBB2F2371F30D00F07E07 /* AppSyncJSONHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B43EBB2E2371F30D00F07E07 /* AppSyncJSONHelperTests.swift */; };
@@ -518,6 +519,7 @@
 		8623D545D4837963CF2FFF02 /* Pods-AWSAppSyncUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncUnitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncUnitTests/Pods-AWSAppSyncUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8C707001F57B091A8A001CAB /* Pods_AWSAppSyncTestHostApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncTestHostApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		90CBFC0B3531908E949BF9F0 /* Pods-AWSAppSyncIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncIntegrationTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncIntegrationTests/Pods-AWSAppSyncIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
+		90DE0C48240A304D000E875B /* AWSAppSyncAuthTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncAuthTypeTests.swift; sourceTree = "<group>"; };
 		AC48F9832142949C001C7D35 /* Object+Swizzling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Object+Swizzling.swift"; sourceTree = "<group>"; };
 		AC900D19F2ADD7D9AA202420 /* Pods-AWSAppSyncTestApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncTestApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncTestApp/Pods-AWSAppSyncTestApp.debug.xcconfig"; sourceTree = "<group>"; };
 		AD111EB21748A599F5796B74 /* Pods-AWSAppSync.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSync.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSync/Pods-AWSAppSync.debug.xcconfig"; sourceTree = "<group>"; };
@@ -1100,6 +1102,7 @@
 				FAD17C7021C2ABEA008D116C /* SubscriptionMessagesQueueTests.swift */,
 				17E4F27C2282835A00E92474 /* SubscriptionMiscTests.swift */,
 				FAD17C6821C16E58008D116C /* SyncStrategyTests.swift */,
+				90DE0C48240A304D000E875B /* AWSAppSyncAuthTypeTests.swift */,
 			);
 			path = AWSAppSyncUnitTests;
 			sourceTree = "<group>";
@@ -2070,6 +2073,7 @@
 				FAC28D3B221B0F09000F84CD /* CacheKeyTests.swift in Sources */,
 				2171809123FDB28100E520C9 /* UserPoolsBasedConnectionPoolTests.swift in Sources */,
 				B47DECF6235C027F003A8127 /* APIKeyAuthInterceptorTests.swift in Sources */,
+				90DE0C49240A304D000E875B /* AWSAppSyncAuthTypeTests.swift in Sources */,
 				E47789592284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift in Sources */,
 				FA4F0D9521D6ED9E0099D165 /* AppSyncClientComplexObjectMutationUnitTests.swift in Sources */,
 			);
