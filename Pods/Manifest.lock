@@ -1,5 +1,6 @@
 PODS:
-  - AppSyncRealTimeClient (1.0.1):
+  - AppSyncRealTimeClient (1.0.2):
+    - AWSCore (~> 2.12.7)
     - Starscream (~> 3.0.2)
   - AWSAuthCore (2.12.7):
     - AWSCore (= 2.12.7)
@@ -20,7 +21,7 @@ PODS:
   - Starscream (3.0.6)
 
 DEPENDENCIES:
-  - AppSyncRealTimeClient (~> 1.0.1)
+  - AppSyncRealTimeClient (from `~/aws-amplify/aws-appsync-realtime-client-ios`)
   - AWSCore (~> 2.12.0)
   - AWSMobileClient (~> 2.12.0)
   - AWSS3 (~> 2.12.0)
@@ -28,8 +29,9 @@ DEPENDENCIES:
   - SQLite.swift (~> 0.12.2)
 
 SPEC REPOS:
+  https://cdn.cocoapods.org/:
+    - Starscream
   trunk:
-    - AppSyncRealTimeClient
     - AWSAuthCore
     - AWSCognitoIdentityProvider
     - AWSCognitoIdentityProviderASF
@@ -38,10 +40,13 @@ SPEC REPOS:
     - AWSS3
     - ReachabilitySwift
     - SQLite.swift
-    - Starscream
+
+EXTERNAL SOURCES:
+  AppSyncRealTimeClient:
+    :path: "~/aws-amplify/aws-appsync-realtime-client-ios"
 
 SPEC CHECKSUMS:
-  AppSyncRealTimeClient: 63c44a04e7ce32e14f79836cc184cf800f71ac7a
+  AppSyncRealTimeClient: 9f39444c972c3c3671b569a6031445863abbbeb9
   AWSAuthCore: 288cb737a35ff031fbf42edaa8d0062328791d4e
   AWSCognitoIdentityProvider: 4998bdbfbafe5038dae0237a598580e102e7b6b5
   AWSCognitoIdentityProviderASF: f94f1a502e72ef3d0a1de93e10bf7a79c8698118
@@ -52,6 +57,6 @@ SPEC CHECKSUMS:
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
   Starscream: ef3ece99d765eeccb67de105bfa143f929026cf5
 
-PODFILE CHECKSUM: 301f64b87f8d7778566adb17759f330ca2bf4a33
+PODFILE CHECKSUM: 9c24000c63bba62d67b71fdafbee57f0fe7d0118
 
 COCOAPODS: 1.8.4

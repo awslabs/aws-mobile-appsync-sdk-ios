@@ -18,24 +18,17 @@ class UserPoolsBasedConnectionPool: SubscriptionConnectionPool {
     }
 
     func connection(for url: URL, connectionType: SubscriptionConnectionType) -> SubscriptionConnection {
+        if let connectionProvider = endPointToProvider[url.absoluteString] {
+            return AppSyncSubscriptionConnection(provider: connectionProvider)
+        }
 
-        let connectionProvider = endPointToProvider[url.absoluteString] ?? createConnectionProvider(for: url, connectionType: connectionType)
+        let authProvider = AppSyncRealTimeClientOIDCAuthProvider(authProvider: tokenProvider)
+        let authInterceptor = OIDCAuthInterceptor(authProvider)
+        let connectionProvider = ConnectionProviderFactory.createConnectionProvider(for: url,
+                                                                                    authInterceptor: authInterceptor,
+                                                                                    connectionType: connectionType)
         endPointToProvider[url.absoluteString] = connectionProvider
-        let connection = AppSyncSubscriptionConnection(provider: connectionProvider)
-        return connection
+
+        return AppSyncSubscriptionConnection(provider: connectionProvider)
     }
-
-    func createConnectionProvider(for url: URL, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
-        let provider = ConnectionPoolFactory.createConnectionProvider(for: url, connectionType: connectionType)
-        if let messageInterceptable = provider as? MessageInterceptable {
-            messageInterceptable.addInterceptor(CognitoUserPoolsAuthInterceptor(tokenProvider))
-        }
-        if let connectionInterceptable = provider as? ConnectionInterceptable {
-            connectionInterceptable.addInterceptor(RealtimeGatewayURLInterceptor())
-            connectionInterceptable.addInterceptor(CognitoUserPoolsAuthInterceptor(tokenProvider))
-        }
-
-        return provider
-    }
-
 }
