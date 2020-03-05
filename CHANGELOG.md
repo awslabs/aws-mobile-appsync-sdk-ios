@@ -6,7 +6,7 @@ also includes support for offline operations.
 ## 3.0.3
 
 ### General SDK improvements
-- Add Codable and Hashable to AWSAppSyncAuthType. See [PR #](352) Thanks [@LachlanMcCulloch](https://github.com/LachlanMcCulloch)!
+- Add Codable and Hashable to AWSAppSyncAuthType. See [PR #352](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/352) Thanks [@LachlanMcCulloch](https://github.com/LachlanMcCulloch)!
 
 ## 3.0.2
 
