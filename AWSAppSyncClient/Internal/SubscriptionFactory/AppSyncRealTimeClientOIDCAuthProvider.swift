@@ -8,16 +8,13 @@ import Foundation
 import AppSyncRealTimeClient
 
 class AppSyncRealTimeClientOIDCAuthProvider: OIDCAuthProvider {
+
     let authProvider: AWSOIDCAuthProvider
     init(authProvider: AWSOIDCAuthProvider) {
         self.authProvider = authProvider
     }
 
-    public func getLatestAuthToken(_ callback: @escaping (String?, Error?) -> Void) {
-        getToken(callback)
-    }
-
-    private func getToken(_ callback: (String?, Error?) -> Void) {
+    func getLatestAuthToken() -> Swift.Result<String, Error> {
         var jwtToken: String?
         var authError: Error?
 
@@ -29,8 +26,14 @@ class AppSyncRealTimeClientOIDCAuthProvider: OIDCAuthProvider {
                 semaphore.signal()
             }
             semaphore.wait()
-            callback(jwtToken, authError)
-            return
+
+            if let error = authError {
+                return .failure(error)
+            }
+
+            if let token = jwtToken {
+                return .success(token)
+            }
         }
 
         if let asyncAuthProvider = authProvider as? AWSOIDCAuthProviderAsync {
@@ -41,11 +44,15 @@ class AppSyncRealTimeClientOIDCAuthProvider: OIDCAuthProvider {
                 semaphore.signal()
             }
             semaphore.wait()
-            callback(jwtToken, authError)
-            return
+            if let error = authError {
+                return .failure(error)
+            }
+
+            if let token = jwtToken {
+                return .success(token)
+            }
         }
 
-        jwtToken = authProvider.getLatestAuthToken()
-        callback(jwtToken, authError)
+        return .success(authProvider.getLatestAuthToken())
     }
 }
