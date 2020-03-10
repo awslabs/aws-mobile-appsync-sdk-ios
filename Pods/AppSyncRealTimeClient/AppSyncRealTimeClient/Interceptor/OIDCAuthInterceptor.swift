@@ -1,32 +1,32 @@
 //
-// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// Licensed under the Amazon Software License
-// http://aws.amazon.com/asl/
+// Copyright 2018-2020 Amazon.com,
+// Inc. or its affiliates. All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
 //
 
 import Foundation
-import AppSyncRealTimeClient
 
-class CognitoUserPoolsAuthInterceptor: AuthInterceptor {
+public class OIDCAuthInterceptor: AuthInterceptor {
 
-    let authProvider: AWSOIDCAuthProvider
+    let authProvider: OIDCAuthProvider
 
-    init (_ authProvider: AWSOIDCAuthProvider) {
+    public init (_ authProvider: OIDCAuthProvider) {
         self.authProvider = authProvider
     }
 
-    func interceptMessage(_ message: AppSyncMessage, for endpoint: URL) -> AppSyncMessage {
+    public func interceptMessage(_ message: AppSyncMessage, for endpoint: URL) -> AppSyncMessage {
         let host = endpoint.host!
-        var jwtToken: String?
-        getToken { (token, error) in
+        let jwtToken: String
+        switch authProvider.getLatestAuthToken() {
+        case .success(let token):
             jwtToken = token
-        }
-        guard let token = jwtToken else {
+        case .failure:
             return message
         }
         switch message.messageType {
         case .subscribe:
-            let authHeader = UserPoolsAuthenticationHeader(token: token, host: host)
+            let authHeader = UserPoolsAuthenticationHeader(token: jwtToken, host: host)
             var payload = message.payload ?? AppSyncMessage.Payload()
             payload.authHeader = authHeader
 
@@ -35,21 +35,22 @@ class CognitoUserPoolsAuthInterceptor: AuthInterceptor {
                                                type: message.messageType)
             return signedMessage
         default:
-            AppSyncLog.debug("Message type does not need signing - \(message.messageType)")
+            AppSyncLogger.debug("Message type does not need signing - \(message.messageType)")
         }
         return message
     }
 
-    func interceptConnection(_ request: AppSyncConnectionRequest, for endpoint: URL) -> AppSyncConnectionRequest {
+    public func interceptConnection(_ request: AppSyncConnectionRequest, for endpoint: URL) -> AppSyncConnectionRequest {
         let host = endpoint.host!
-        var jwtToken: String?
-        getToken { (token, error) in
+        let jwtToken: String
+        switch authProvider.getLatestAuthToken() {
+        case .success(let token):
             jwtToken = token
-        }
-        guard let token = jwtToken else {
+        case .failure:
             return request
         }
-        let authHeader = UserPoolsAuthenticationHeader(token: token, host: host)
+
+        let authHeader = UserPoolsAuthenticationHeader(token: jwtToken, host: host)
         let base64Auth = AppSyncJSONHelper.base64AuthenticationBlob(authHeader)
 
         let payloadData = SubscriptionConstants.emptyPayload.data(using: .utf8)
@@ -66,25 +67,6 @@ class CognitoUserPoolsAuthInterceptor: AuthInterceptor {
         }
         let signedRequest = AppSyncConnectionRequest(url: url)
         return signedRequest
-    }
-
-    private func getToken(_ callback: (String?, Error?) -> Void) {
-        var jwtToken: String?
-        var authError: Error?
-
-        guard let asyncAuthProvider = authProvider as? AWSCognitoUserPoolsAuthProviderAsync else {
-            jwtToken = authProvider.getLatestAuthToken()
-            callback(jwtToken, authError)
-            return
-        }
-        let semaphore = DispatchSemaphore(value: 0)
-        asyncAuthProvider.getLatestAuthToken { (token, error) in
-            jwtToken = token
-            authError = error
-            semaphore.signal()
-        }
-        semaphore.wait()
-        callback(jwtToken, authError)
     }
 }
 

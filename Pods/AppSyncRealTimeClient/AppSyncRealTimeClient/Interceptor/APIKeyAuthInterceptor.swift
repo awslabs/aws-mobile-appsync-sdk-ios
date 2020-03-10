@@ -1,19 +1,19 @@
 //
-// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// Licensed under the Amazon Software License
-// http://aws.amazon.com/asl/
+// Copyright 2018-2020 Amazon.com,
+// Inc. or its affiliates. All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
 //
 
 import Foundation
-import AppSyncRealTimeClient
 
 /// Auth interceptor for API Key based authentication
-class APIKeyAuthInterceptor: AuthInterceptor {
+public class APIKeyAuthInterceptor: AuthInterceptor {
 
-    let apikeyProvider: AWSAPIKeyAuthProvider
+    let apiKey: String
 
-    init (_ apikeyProvider: AWSAPIKeyAuthProvider) {
-        self.apikeyProvider = apikeyProvider
+    public init(_ apiKey: String) {
+        self.apiKey = apiKey
     }
 
     /// Intercept the connection and adds header, payload query to the request url.
@@ -24,10 +24,9 @@ class APIKeyAuthInterceptor: AuthInterceptor {
     /// * "x-api-key": <string> : Api key configured for AppSync API
     /// The value of payload is {}
     /// - Parameter request: Signed request
-    func interceptConnection(_ request: AppSyncConnectionRequest,
+    public func interceptConnection(_ request: AppSyncConnectionRequest,
                              for endpoint: URL) -> AppSyncConnectionRequest {
         let host = endpoint.host!
-        let apiKey  = self.apikeyProvider.getAPIKey()
         let authHeader = APIKeyAuthenticationHeader(apiKey: apiKey, host: host)
         let base64Auth = AppSyncJSONHelper.base64AuthenticationBlob(authHeader)
 
@@ -47,11 +46,10 @@ class APIKeyAuthInterceptor: AuthInterceptor {
         return signedRequest
     }
 
-    func interceptMessage(_ message: AppSyncMessage, for endpoint: URL) -> AppSyncMessage {
+    public func interceptMessage(_ message: AppSyncMessage, for endpoint: URL) -> AppSyncMessage {
         let host = endpoint.host!
         switch message.messageType {
         case .subscribe:
-            let apiKey  = self.apikeyProvider.getAPIKey()
             let authHeader = APIKeyAuthenticationHeader(apiKey: apiKey, host: host)
             var payload = message.payload ?? AppSyncMessage.Payload()
             payload.authHeader = authHeader
@@ -61,7 +59,7 @@ class APIKeyAuthInterceptor: AuthInterceptor {
                                                type: message.messageType)
             return signedMessage
         default:
-            AppSyncLog.debug("Message type does not need signing - \(message.messageType)")
+            AppSyncLogger.debug("Message type does not need signing - \(message.messageType)")
         }
         return message
     }
@@ -69,12 +67,20 @@ class APIKeyAuthInterceptor: AuthInterceptor {
 
 /// Authentication header for API key based auth
 private class APIKeyAuthenticationHeader: AuthenticationHeader {
+    static let ISO8601DateFormat: String = "yyyyMMdd'T'HHmmss'Z'"
     let date: String?
     let apiKey: String
 
+    var formatter: DateFormatter = {
+        var formatter = DateFormatter()
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = ISO8601DateFormat
+        return formatter
+    }()
+
     init(apiKey: String, host: String) {
-        let amzDate =  NSDate.aws_clockSkewFixed() as NSDate
-        self.date = amzDate.aws_stringValue(AWSDateISO8601DateFormat2)
+        self.date = formatter.string(from: Date())
         self.apiKey = apiKey
         super.init(host: host)
     }

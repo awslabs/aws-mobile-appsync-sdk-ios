@@ -8,13 +8,9 @@
 import Foundation
 
 /// Connection interceptor for real time connection provider
-public class RealtimeGatewayURLInterceptor: ConnectionInterceptor {
+class RealtimeGatewayURLInterceptor: ConnectionInterceptor {
 
-    public init() {
-
-    }
-
-    public func interceptConnection(_ request: AppSyncConnectionRequest,
+    func interceptConnection(_ request: AppSyncConnectionRequest,
                              for endpoint: URL) -> AppSyncConnectionRequest {
         guard let host = endpoint.host else {
             return request

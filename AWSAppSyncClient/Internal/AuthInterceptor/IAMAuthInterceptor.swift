@@ -8,7 +8,7 @@ import Foundation
 import AppSyncRealTimeClient
 
 class IAMAuthInterceptor: AuthInterceptor {
-    
+
     let authProvider: AWSCredentialsProvider
     let region: AWSRegionType
 
@@ -16,7 +16,7 @@ class IAMAuthInterceptor: AuthInterceptor {
         self.authProvider = authProvider
         self.region = region
     }
-    
+
     func interceptMessage(_ message: AppSyncMessage, for endpoint: URL) -> AppSyncMessage {
         switch message.messageType {
         case .subscribe:
@@ -32,7 +32,7 @@ class IAMAuthInterceptor: AuthInterceptor {
         }
         return message
     }
-    
+
     func interceptConnection(_ request: AppSyncConnectionRequest, for endpoint: URL) -> AppSyncConnectionRequest {
         let url = endpoint.appendingPathComponent(RealtimeProviderConstants.iamConnectPath)
         let payloadString = SubscriptionConstants.emptyPayload
@@ -119,7 +119,7 @@ private class IAMAuthenticationHeader: AuthenticationHeader {
         self.contentType = contentType
         super.init(host: host)
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case authorization = "Authorization"
         case accept
@@ -128,7 +128,7 @@ private class IAMAuthenticationHeader: AuthenticationHeader {
         case date = "x-amz-date"
         case securityToken = "x-amz-security-token"
     }
-    
+
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(authorization, forKey: .authorization)
