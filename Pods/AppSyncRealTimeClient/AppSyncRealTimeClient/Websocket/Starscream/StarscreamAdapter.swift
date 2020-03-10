@@ -21,6 +21,7 @@ public class StarscreamAdapter: AppSyncWebsocketProvider {
         socket = WebSocket(url: url, protocols: protocols)
         self.delegate = delegate
         socket?.delegate = self
+        socket?.callbackQueue = DispatchQueue(label: "com.amazonaws.StarscreamAdapter.callBack")
         socket?.connect()
     }
 

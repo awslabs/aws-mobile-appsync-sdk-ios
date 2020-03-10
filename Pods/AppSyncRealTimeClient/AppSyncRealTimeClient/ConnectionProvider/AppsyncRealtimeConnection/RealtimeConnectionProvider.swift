@@ -28,6 +28,8 @@ public class RealtimeConnectionProvider: ConnectionProvider {
 
     let serialCallbackQueue = DispatchQueue(label: "com.amazonaws.AppSyncRealTimeConnectionProvider.callbackQueue")
 
+    let serialWriteQueue = DispatchQueue(label: "com.amazonaws.AppSyncRealTimeConnectionProvider.writeQueue")
+
     public init(for url: URL, websocket: AppSyncWebsocketProvider) {
         self.url = url
         self.websocket = websocket
@@ -57,30 +59,33 @@ public class RealtimeConnectionProvider: ConnectionProvider {
     }
 
     public func write(_ message: AppSyncMessage) {
-        let signedMessage = interceptMessage(message, for: url)
-        let jsonEncoder = JSONEncoder()
-        do {
-            let jsonData = try jsonEncoder.encode(signedMessage)
-            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
-                updateCallback(event: .error(ConnectionProviderError.jsonParse(message.id, nil)))
+
+        serialWriteQueue.async { [weak self] in
+            guard let self = self else {
                 return
             }
-            websocket.write(message: jsonString)
-        } catch {
-            AppSyncLogger.error(error)
-            switch message.messageType {
-            case .connectionInit:
-                serialConnectionQueue.async {[weak self] in
-                    guard let self = self else {
-                        return
-                    }
-                    self.status = .notConnected
-                    self.updateCallback(event: .error(ConnectionProviderError.connection))
+
+            let signedMessage = self.interceptMessage(message, for: self.url)
+            let jsonEncoder = JSONEncoder()
+            do {
+                let jsonData = try jsonEncoder.encode(signedMessage)
+                guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                    let jsonError = ConnectionProviderError.jsonParse(message.id, nil)
+                    self.updateCallback(event: .error(jsonError))
+                    return
                 }
-            default:
-                updateCallback(event: .error(ConnectionProviderError.jsonParse(message.id, error)))
+                self.websocket.write(message: jsonString)
+            } catch {
+                AppSyncLogger.error(error)
+                switch message.messageType {
+                case .connectionInit:
+                    self.receivedConnectionInit()
+                default:
+                    self.updateCallback(event: .error(ConnectionProviderError.jsonParse(message.id, error)))
+                }
             }
         }
+
     }
 
     public func disconnect() {
@@ -109,6 +114,16 @@ public class RealtimeConnectionProvider: ConnectionProvider {
     func updateCallback(event: ConnectionProviderEvent) {
         serialCallbackQueue.async { [weak self] in
             self?.listeners.values.forEach { $0(event) }
+        }
+    }
+
+    func receivedConnectionInit() {
+        self.serialConnectionQueue.async {[weak self] in
+            guard let self = self else {
+                return
+            }
+            self.status = .notConnected
+            self.updateCallback(event: .error(ConnectionProviderError.connection))
         }
     }
 }
