@@ -127,7 +127,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     
     func sha256(data: Data) -> String {
         let hash = AWSSignatureSignerUtility.hash(data)
-        return hash!.base64EncodedString()
+        return hash.base64EncodedString()
     }
     
     /// Returns `deviceId` for the specified key from the keychain.
@@ -247,9 +247,12 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         switch self.authType {
             
         case .awsIAM:
+            guard let credentialsProvider = self.credentialsProvider, let endpoint = self.endpoint else {
+                fatalError("Credentials Provider and endpoint not set")
+            }
             let signer: AWSSignatureV4Signer = AWSSignatureV4Signer(
-                credentialsProvider: self.credentialsProvider,
-                endpoint: self.endpoint)
+                credentialsProvider: credentialsProvider,
+                endpoint: endpoint)
             
             signer.interceptRequest(mutableRequest).continueWith { task in
                 if let error = task.error {
