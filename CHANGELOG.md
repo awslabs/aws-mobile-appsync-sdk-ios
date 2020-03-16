@@ -9,6 +9,7 @@ also includes support for offline operations.
 - Add Codable and Hashable to AWSAppSyncAuthType. See [PR #352](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/352) Thanks [@LachlanMcCulloch](https://github.com/LachlanMcCulloch)!
 - Improved AppSyncSubscriptionWithSync with fixing retain cycle and adding `isCancelled` state. See [Issue #342](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/342) and [PR #355](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/355). Thanks, [@LachlanMcCulloch](https://github.com/LachlanMcCulloch)!
 - Use AppSyncRealTimeClient 1.1.0 containing consolidated interceptors. See [PR #353](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/353) for more details
+- Update to use AppSyncRealTimeClient ~> 1.1, with Cartfile fix. See [PR #367](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/367)
 
 ## 3.0.2
 
