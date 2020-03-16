@@ -63,6 +63,8 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
     * AWSCore.framework
     * Reachability.framework
     * SQLite.framework
+    * AppSyncRealTimeClient.framework
+    * Starscream.framework
 
     Do not select the `Destination: Copy items` if needed check box when prompted.
 
