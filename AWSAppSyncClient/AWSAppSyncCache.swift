@@ -139,7 +139,7 @@ public enum CacheType: String {
 
 /// Errors thrown trying to clear the client's caches
 public enum ClearCacheError: Error {
-    case failedToClear([CacheType:Error])
+    case failedToClear([CacheType: Error])
 }
 
 // MARK: - LocalizedError
