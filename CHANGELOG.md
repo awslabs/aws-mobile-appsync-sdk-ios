@@ -8,6 +8,7 @@ also includes support for offline operations.
 ### Misc. Updates
 - Fix SwiftLint violation ([PR #379](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/379)) Thanks [@RafaelPlantard](https://github.com/RafaelPlantard)!
 - Update AWS dependencies to 2.13.1
+- Add SwiftLint as a Pod dependency
 
 ## 3.1.0
 
