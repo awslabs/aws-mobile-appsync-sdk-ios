@@ -1857,7 +1857,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			shellScript = "\"${PODS_ROOT}/SwiftLint/swiftlint\" --config \"${SRCROOT}/.swiftlint.yml\" --path \"${SRCROOT}/AWSAppSyncClient\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2049,7 +2049,6 @@
 				B48056BC22A992E200E4F742 /* AppSyncSubscriptionWithSyncTests.swift in Sources */,
 				FAC28D3B221B0F09000F84CD /* CacheKeyTests.swift in Sources */,
 				2171809123FDB28100E520C9 /* UserPoolsBasedConnectionPoolTests.swift in Sources */,
-				B47DECF6235C027F003A8127 /* APIKeyAuthInterceptorTests.swift in Sources */,
 				90DE0C49240A304D000E875B /* AWSAppSyncAuthTypeTests.swift in Sources */,
 				E47789592284B3DC008E7D6E /* MockAWSAppSyncServiceConfig.swift in Sources */,
 				FA4F0D9521D6ED9E0099D165 /* AppSyncClientComplexObjectMutationUnitTests.swift in Sources */,

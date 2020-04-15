@@ -1,8 +1,9 @@
-included:
-  - AWSAppSyncClient
+# Do not specify an `included` section at this top-level file. Specify the
+# `--config` option pointing to this file, and the `--path` option to the files
+# you wish to lint
 
 excluded:
-  - AWSAppSyncClient/Apollo
+  - Apollo
 
 
 # Note: This feature is experimental. As of this writing (4-Dec-2018) warnings
