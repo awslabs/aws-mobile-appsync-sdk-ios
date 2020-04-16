@@ -5,6 +5,9 @@ also includes support for offline operations.
 
 ## Unreleased
 
+### General SDK improvements
+- Upgrade to [AppSyncRealTimeClient 1.1.6](https://github.com/aws-amplify/aws-appsync-realtime-client-ios/releases/tag/1.1.6)
+
 ### Misc. Updates
 - Fix SwiftLint violation ([PR #379](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/379)) Thanks [@RafaelPlantard](https://github.com/RafaelPlantard)!
 - Update AWS dependencies to 2.13.1

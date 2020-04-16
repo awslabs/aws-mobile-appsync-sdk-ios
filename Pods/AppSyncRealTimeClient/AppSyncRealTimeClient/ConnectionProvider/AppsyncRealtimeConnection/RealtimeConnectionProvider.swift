@@ -30,7 +30,8 @@ public class RealtimeConnectionProvider: ConnectionProvider {
 
     let serialWriteQueue = DispatchQueue(label: "com.amazonaws.AppSyncRealTimeConnectionProvider.writeQueue")
 
-    public init(for url: URL, websocket: AppSyncWebsocketProvider) {
+    public init(for url: URL,
+                websocket: AppSyncWebsocketProvider) {
         self.url = url
         self.websocket = websocket
     }
@@ -93,15 +94,28 @@ public class RealtimeConnectionProvider: ConnectionProvider {
     }
 
     public func addListener(identifier: String, callback: @escaping ConnectionProviderCallback) {
-        serialCallbackQueue.async {
-            self.listeners[identifier] = callback
+        serialCallbackQueue.async { [weak self] in
+            self?.listeners[identifier] = callback
         }
-
     }
 
     public func removeListener(identifier: String) {
-        serialCallbackQueue.async {
+        serialCallbackQueue.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+
             self.listeners.removeValue(forKey: identifier)
+
+            if self.listeners.count == 0 {
+                self.serialConnectionQueue.async { [weak self] in
+                    guard let self = self else {
+                        return
+                    }
+                    self.status = .notConnected
+                    self.websocket.disconnect()
+                }
+            }
         }
     }
 

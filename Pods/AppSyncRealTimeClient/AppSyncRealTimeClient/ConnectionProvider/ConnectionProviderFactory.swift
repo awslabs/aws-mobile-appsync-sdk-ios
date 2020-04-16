@@ -26,7 +26,8 @@ public struct ConnectionProviderFactory {
         return provider
     }
 
-    static func createConnectionProvider(for url: URL, connectionType: SubscriptionConnectionType) -> ConnectionProvider {
+    static func createConnectionProvider(for url: URL,
+                                         connectionType: SubscriptionConnectionType) -> ConnectionProvider {
         switch connectionType {
         case .appSyncRealtime:
             let websocketProvider = StarscreamAdapter()

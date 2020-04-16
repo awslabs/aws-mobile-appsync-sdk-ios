@@ -27,6 +27,7 @@ public class StarscreamAdapter: AppSyncWebsocketProvider {
 
     public func disconnect() {
         socket?.disconnect()
+        socket = nil
     }
 
     public func write(message: String) {

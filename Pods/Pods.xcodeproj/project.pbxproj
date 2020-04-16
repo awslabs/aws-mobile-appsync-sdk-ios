@@ -3726,6 +3726,38 @@
 			};
 			name = Release;
 		};
+		011B337D95343525F8DDB80F14670101 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B71AA68AE84A106B4FF653B1041A1B10 /* AppSyncRealTimeClient.release.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient.modulemap";
+				PRODUCT_MODULE_NAME = AppSyncRealTimeClient;
+				PRODUCT_NAME = AppSyncRealTimeClient;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.1;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		0A044C808D5147A7A6984B4D5F693235 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B873AD48BD47D02A16AA8248A9DA22FC /* AWSCore.release.xcconfig */;
@@ -4487,37 +4519,6 @@
 			};
 			name = Debug;
 		};
-		91C2C94A3946A96B652016B8AAF3D116 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = F4E2F352990E27DD217BB465DC395EDF /* AppSyncRealTimeClient.debug.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient.modulemap";
-				PRODUCT_MODULE_NAME = AppSyncRealTimeClient;
-				PRODUCT_NAME = AppSyncRealTimeClient;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
 		9746EF76AE8548FF46F6E9746E9E97F1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2EAE3A875859EF6B56E7F545BEF95D90 /* SQLite.swift.release.xcconfig */;
@@ -4643,38 +4644,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		A0B0263636F45E1576F562B0C28D7BFE /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = B71AA68AE84A106B4FF653B1041A1B10 /* AppSyncRealTimeClient.release.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient.modulemap";
-				PRODUCT_MODULE_NAME = AppSyncRealTimeClient;
-				PRODUCT_NAME = AppSyncRealTimeClient;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -4837,6 +4806,37 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		D8CB59B3BD340DD906F9C8E40F7796C6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F4E2F352990E27DD217BB465DC395EDF /* AppSyncRealTimeClient.debug.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/AppSyncRealTimeClient/AppSyncRealTimeClient.modulemap";
+				PRODUCT_MODULE_NAME = AppSyncRealTimeClient;
+				PRODUCT_NAME = AppSyncRealTimeClient;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.1;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -5110,8 +5110,8 @@
 		FC97FAE7E1A80382F594D16928B64618 /* Build configuration list for PBXNativeTarget "AppSyncRealTimeClient" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				91C2C94A3946A96B652016B8AAF3D116 /* Debug */,
-				A0B0263636F45E1576F562B0C28D7BFE /* Release */,
+				D8CB59B3BD340DD906F9C8E40F7796C6 /* Debug */,
+				011B337D95343525F8DDB80F14670101 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
