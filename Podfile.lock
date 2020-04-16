@@ -1,5 +1,5 @@
 PODS:
-  - AppSyncRealTimeClient (1.1.5):
+  - AppSyncRealTimeClient (1.1.6):
     - Starscream (= 3.0.6)
   - AWSAuthCore (2.13.1):
     - AWSCore (= 2.13.1)
@@ -44,7 +44,7 @@ SPEC REPOS:
     - SwiftLint
 
 SPEC CHECKSUMS:
-  AppSyncRealTimeClient: 610da868f8c56539a840ee848f968120a07a7b6f
+  AppSyncRealTimeClient: 4a2ccdc1722750a1f4d76e216f9bfb1cf12f10de
   AWSAuthCore: c15735eb14cccf2a26e371e3a6a841d613d411ef
   AWSCognitoIdentityProvider: 78f240befbd2e47a8e644946a9dd19812b0e5044
   AWSCognitoIdentityProviderASF: f94f1a502e72ef3d0a1de93e10bf7a79c8698118
