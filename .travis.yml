@@ -1,5 +1,5 @@
 language: swift
-osx_image: xcode11
+osx_image: xcode11.5
 env:
   global:
   - FRAMEWORK_NAME=AWSAppSync
@@ -12,7 +12,7 @@ before_install:
   -d
 - brew update
 - brew outdated carthage || brew upgrade carthage
-- gem install cocoapods -v '1.8.4'
+- gem install cocoapods -v '1.9.3'
 before_deploy:
 - carthage build --no-skip-current
 - carthage archive $FRAMEWORK_NAME
