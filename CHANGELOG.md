@@ -8,6 +8,7 @@ also includes support for offline operations.
 ### Misc. Updates
 
 - Changed the repo's default branch to 'main'
+- Build Carthage binaries using Xcode 11.5
 
 ## 3.1.2
 
