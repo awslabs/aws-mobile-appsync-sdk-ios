@@ -110,7 +110,7 @@ final class CachedMutationOperation: AsynchronousOperation, Cancellable {
                     return
             }
 
-            // call master delegate
+            // call main delegate
             offlineMutationDelegate.mutationCallback(
                 recordIdentifier: self.mutation.recordIdentifier,
                 operationString: self.mutation.operationString!,
