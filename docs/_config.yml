@@ -3,7 +3,7 @@ description: The AWS AppSync SDK for iOS enables you to access your AWS AppSync 
 url: "https://awslabs.github.io/aws-mobile-appsync-sdk-ios/"
 
 github:
-  repository_url: "https://github.com/awslabs/aws-mobile-appsync-sdk-ios/tree/master/docs"
+  repository_url: "https://github.com/awslabs/aws-mobile-appsync-sdk-ios/tree/main/docs"
 
 plugins:
   - jekyll-redirect-from
