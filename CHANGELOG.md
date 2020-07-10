@@ -5,6 +5,11 @@ also includes support for offline operations.
 
 ## Unreleased
 
+## 3.1.3
+
+### General SDK improvements
+- Upgrade to 2.14.0 SDK and 1.2.0 realtime client. See [PR #400](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/400)
+
 ### Misc. Updates
 
 - Changed the repo's default branch to 'main'
