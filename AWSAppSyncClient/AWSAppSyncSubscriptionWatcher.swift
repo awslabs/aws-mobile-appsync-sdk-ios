@@ -72,8 +72,10 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         }
 
         let requestString = type(of: subscription).requestString
+        // Transform variables into a map of each respective json values.
+        let variables = subscription.variables?.mapValues { $0?.jsonValue }
         subscriptionItem = connection.subscribe(requestString: requestString,
-                                                variables: subscription.variables) { [weak self] (event, item) in
+                                                variables: variables) { [weak self] (event, item) in
                                                     switch event {
                                                     case .connection(let value):
                                                         self?.handleConnectionEvent(value)
