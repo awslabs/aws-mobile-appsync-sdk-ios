@@ -97,7 +97,8 @@ You can find a sample app which uses the AppSync SDK here: https://github.com/aw
 
 ## Documentation
 
-You can find a step by step walk through of setting up codegen backend and accessing it via the iOS client here: https://aws-amplify.github.io/docs/ios/api
+You can find a step by step walk through of setting up codegen backend and accessing it via the iOS client here: https://docs.amplify.aws/sdk/api/graphql/q/platform/ios
+
 
 ## Contributing
 
