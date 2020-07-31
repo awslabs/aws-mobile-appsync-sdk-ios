@@ -15,9 +15,11 @@ public struct AppSyncResponse {
 
     let responseType: AppSyncResponseType
 
-    init(id: String? = nil,
-         payload: [String: AppSyncJSONValue]? = nil,
-         type: AppSyncResponseType) {
+    init(
+        id: String? = nil,
+        payload: [String: AppSyncJSONValue]? = nil,
+        type: AppSyncResponseType
+    ) {
         self.id = id
         self.responseType = type
         self.payload = payload

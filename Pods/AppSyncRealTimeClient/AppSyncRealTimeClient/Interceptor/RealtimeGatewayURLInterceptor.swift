@@ -9,13 +9,14 @@ import Foundation
 
 /// Connection interceptor for real time connection provider
 public class RealtimeGatewayURLInterceptor: ConnectionInterceptor {
-
     public init() {
-
+        // Do nothing
     }
-    
-    public func interceptConnection(_ request: AppSyncConnectionRequest,
-                             for endpoint: URL) -> AppSyncConnectionRequest {
+
+    public func interceptConnection(
+        _ request: AppSyncConnectionRequest,
+        for endpoint: URL
+    ) -> AppSyncConnectionRequest {
         guard let host = endpoint.host else {
             return request
         }
@@ -23,8 +24,10 @@ public class RealtimeGatewayURLInterceptor: ConnectionInterceptor {
             return request
         }
         urlComponents.scheme = SubscriptionConstants.realtimeWebsocketScheme
-        urlComponents.host = host.replacingOccurrences(of: SubscriptionConstants.appsyncHostPart,
-                                                       with: SubscriptionConstants.appsyncRealtimeHostPart)
+        urlComponents.host = host.replacingOccurrences(
+            of: SubscriptionConstants.appsyncHostPart,
+            with: SubscriptionConstants.appsyncRealtimeHostPart
+        )
         guard let url = urlComponents.url else {
             return request
         }

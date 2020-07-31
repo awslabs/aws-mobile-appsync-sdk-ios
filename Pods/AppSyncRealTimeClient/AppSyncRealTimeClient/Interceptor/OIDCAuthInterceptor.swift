@@ -11,7 +11,7 @@ public class OIDCAuthInterceptor: AuthInterceptor {
 
     let authProvider: OIDCAuthProvider
 
-    public init (_ authProvider: OIDCAuthProvider) {
+    public init(_ authProvider: OIDCAuthProvider) {
         self.authProvider = authProvider
     }
 
@@ -30,9 +30,11 @@ public class OIDCAuthInterceptor: AuthInterceptor {
             var payload = message.payload ?? AppSyncMessage.Payload()
             payload.authHeader = authHeader
 
-            let signedMessage = AppSyncMessage(id: message.id,
-                                               payload: payload,
-                                               type: message.messageType)
+            let signedMessage = AppSyncMessage(
+                id: message.id,
+                payload: payload,
+                type: message.messageType
+            )
             return signedMessage
         default:
             AppSyncLogger.debug("Message type does not need signing - \(message.messageType)")
@@ -40,7 +42,10 @@ public class OIDCAuthInterceptor: AuthInterceptor {
         return message
     }
 
-    public func interceptConnection(_ request: AppSyncConnectionRequest, for endpoint: URL) -> AppSyncConnectionRequest {
+    public func interceptConnection(
+        _ request: AppSyncConnectionRequest,
+        for endpoint: URL
+    ) -> AppSyncConnectionRequest {
         let host = endpoint.host!
         let jwtToken: String
         switch authProvider.getLatestAuthToken() {

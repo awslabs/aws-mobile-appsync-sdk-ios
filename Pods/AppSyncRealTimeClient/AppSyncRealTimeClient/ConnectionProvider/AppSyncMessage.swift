@@ -22,9 +22,7 @@ public struct AppSyncMessage {
     /// Message type
     public let messageType: AppSyncMessageType
 
-    public init(id: String? = nil,
-         payload: Payload? = nil,
-         type: AppSyncMessageType) {
+    public init(id: String? = nil, payload: Payload? = nil, type: AppSyncMessageType) {
         self.id = id
         self.payload = payload
         self.messageType = type

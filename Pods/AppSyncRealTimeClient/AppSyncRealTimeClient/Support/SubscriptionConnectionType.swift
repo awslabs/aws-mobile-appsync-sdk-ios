@@ -6,6 +6,5 @@
 //
 
 public enum SubscriptionConnectionType {
-
     case appSyncRealtime
 }

@@ -8,7 +8,6 @@
 import Foundation
 
 extension AppSyncSubscriptionConnection {
-
     func handleConnectionEvent(connectionState: ConnectionState) {
         // If we get back not connected during an inprogress subscription connection
         // we should retry the connection
@@ -24,16 +23,19 @@ extension AppSyncSubscriptionConnection {
         }
     }
 
-    // MARK: -
+    // MARK: - Private implementations
+
     private func startSubscription() {
         guard subscriptionState == .notSubscribed else {
             return
         }
         subscriptionState = .inProgress
         let payload = convertToPayload(for: subscriptionItem.requestString, variables: subscriptionItem.variables)
-        let message = AppSyncMessage(id: subscriptionItem.identifier,
-                                     payload: payload,
-                                     type: .subscribe("start"))
+        let message = AppSyncMessage(
+            id: subscriptionItem.identifier,
+            payload: payload,
+            type: .subscribe("start")
+        )
         connectionProvider?.write(message)
     }
 

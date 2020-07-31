@@ -17,9 +17,11 @@ struct RealtimeConnectionProviderResponse {
 
     let responseType: RealtimeConnectionProviderResponseType
 
-    init(id: String? = nil,
-         payload: [String: AppSyncJSONValue]? = nil,
-         type: RealtimeConnectionProviderResponseType) {
+    init(
+        id: String? = nil,
+        payload: [String: AppSyncJSONValue]? = nil,
+        type: RealtimeConnectionProviderResponseType
+    ) {
         self.id = id
         self.responseType = type
         self.payload = payload

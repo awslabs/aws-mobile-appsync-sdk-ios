@@ -9,8 +9,8 @@ import Foundation
 import Starscream
 
 public class StarscreamAdapter: AppSyncWebsocketProvider {
-
     public init() {
+        // Do nothing
     }
 
     var socket: WebSocket?

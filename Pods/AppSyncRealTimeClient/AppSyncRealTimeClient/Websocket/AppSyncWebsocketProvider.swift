@@ -28,7 +28,7 @@ public protocol AppSyncWebsocketProvider {
 }
 
 /// Delegate method to get callbacks on websocket provider connection
-public protocol AppSyncWebsocketDelegate: class {
+public protocol AppSyncWebsocketDelegate: AnyObject {
 
     func websocketDidConnect(provider: AppSyncWebsocketProvider)
 

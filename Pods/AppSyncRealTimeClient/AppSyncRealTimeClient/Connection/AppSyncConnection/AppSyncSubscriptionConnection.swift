@@ -8,7 +8,6 @@
 import Foundation
 
 enum SubscriptionState {
-
     case notSubscribed
 
     case inProgress
@@ -17,7 +16,6 @@ enum SubscriptionState {
 }
 
 public class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableConnection {
-
     /// Connection provider that connects with the service
     weak var connectionProvider: ConnectionProvider?
 
@@ -34,12 +32,16 @@ public class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableCon
         self.connectionProvider = provider
     }
 
-    public func subscribe(requestString: String,
-                   variables: [String: Any?]?,
-                   eventHandler: @escaping (SubscriptionItemEvent, SubscriptionItem) -> Void) -> SubscriptionItem {
-        subscriptionItem = SubscriptionItem(requestString: requestString,
-                                            variables: variables,
-                                            eventHandler: eventHandler)
+    public func subscribe(
+        requestString: String,
+        variables: [String: Any?]?,
+        eventHandler: @escaping (SubscriptionItemEvent, SubscriptionItem) -> Void
+    ) -> SubscriptionItem {
+        subscriptionItem = SubscriptionItem(
+            requestString: requestString,
+            variables: variables,
+            eventHandler: eventHandler
+        )
         addListener()
         subscriptionItem.subscriptionEventHandler(.connection(.connecting), subscriptionItem)
         connectionProvider?.connect()
@@ -48,8 +50,7 @@ public class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableCon
 
     public func unsubscribe(item: SubscriptionItem) {
         AppSyncLogger.debug("Unsubscribe - \(item.identifier)")
-        let message = AppSyncMessage(id: item.identifier,
-                                     type: .unsubscribe("stop"))
+        let message = AppSyncMessage(id: item.identifier, type: .unsubscribe("stop"))
         connectionProvider?.write(message)
         connectionProvider?.removeListener(identifier: subscriptionItem.identifier)
     }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol ConnectionProvider: class {
+public protocol ConnectionProvider: AnyObject {
 
     func connect()
 

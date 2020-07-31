@@ -10,9 +10,11 @@ import Foundation
 /// Create connection providers to connect to the websocket endpoint of the AppSync endpoint.
 public struct ConnectionProviderFactory {
 
-    public static func createConnectionProvider(for url: URL,
-                                                authInterceptor: AuthInterceptor,
-                                                connectionType: SubscriptionConnectionType) -> ConnectionProvider {
+    public static func createConnectionProvider(
+        for url: URL,
+        authInterceptor: AuthInterceptor,
+        connectionType: SubscriptionConnectionType
+    ) -> ConnectionProvider {
         let provider = ConnectionProviderFactory.createConnectionProvider(for: url, connectionType: connectionType)
 
         if let messageInterceptable = provider as? MessageInterceptable {
@@ -26,8 +28,10 @@ public struct ConnectionProviderFactory {
         return provider
     }
 
-    static func createConnectionProvider(for url: URL,
-                                         connectionType: SubscriptionConnectionType) -> ConnectionProvider {
+    static func createConnectionProvider(
+        for url: URL,
+        connectionType: SubscriptionConnectionType
+    ) -> ConnectionProvider {
         switch connectionType {
         case .appSyncRealtime:
             let websocketProvider = StarscreamAdapter()
