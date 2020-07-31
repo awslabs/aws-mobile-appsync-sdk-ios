@@ -22,7 +22,6 @@ public struct SubscriptionConstants {
 }
 
 public struct RealtimeProviderConstants {
-
     public static let header = "header"
 
     public static let payload = "payload"

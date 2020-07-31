@@ -14,9 +14,11 @@ public protocol SubscriptionConnection {
     /// - Parameter variables: variables for the subscription
     /// - Parameter requestString: query for the subscription
     /// - Parameter eventHandler: event handler
-    func subscribe(requestString: String,
-                   variables: [String: Any?]?,
-                   eventHandler: @escaping SubscriptionEventHandler) -> SubscriptionItem
+    func subscribe(
+        requestString: String,
+        variables: [String: Any?]?,
+        eventHandler: @escaping SubscriptionEventHandler
+    ) -> SubscriptionItem
 
     /// Unsubscribe from the subscription
     /// - Parameter item: item to be unsubscribed

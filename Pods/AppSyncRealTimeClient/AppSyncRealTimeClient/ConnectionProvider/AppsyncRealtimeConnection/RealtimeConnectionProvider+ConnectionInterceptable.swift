@@ -13,7 +13,10 @@ extension RealtimeConnectionProvider: ConnectionInterceptable {
         connectionInterceptors.append(interceptor)
     }
 
-    public func interceptConnection(_ request: AppSyncConnectionRequest, for endpoint: URL) -> AppSyncConnectionRequest {
+    public func interceptConnection(
+        _ request: AppSyncConnectionRequest,
+        for endpoint: URL
+    ) -> AppSyncConnectionRequest {
         let finalRequest = connectionInterceptors.reduce(request) { $1.interceptConnection($0, for: endpoint) }
         return finalRequest
     }

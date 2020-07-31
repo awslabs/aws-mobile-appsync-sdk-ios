@@ -18,8 +18,9 @@ public enum ConnectionProviderError: Error {
     /// Caused when a limit exceeded error occurs. The optional String will have the identifier if available.
     case limitExceeded(String?)
 
-    /// Caused when any other subscription related error occurs. The optional String will have the identifier if available.
-    /// The second optional value is the error payload in dictionary format.
+    /// Caused when any other subscription related error occurs. The optional String
+    /// will have the identifier if available. The second optional value is the error
+    /// payload in dictionary format.
     case subscription(String, [String: Any]?)
 
     /// Any other error is identified by this type

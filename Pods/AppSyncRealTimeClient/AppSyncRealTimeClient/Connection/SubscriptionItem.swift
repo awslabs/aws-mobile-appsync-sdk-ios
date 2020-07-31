@@ -22,9 +22,11 @@ public struct SubscriptionItem {
     // Subscription related events will be send to this handler.
     let subscriptionEventHandler: SubscriptionEventHandler
 
-    init(requestString: String,
-         variables: [String: Any?]?,
-         eventHandler: @escaping SubscriptionEventHandler) {
+    public init(
+        requestString: String,
+        variables: [String: Any?]?,
+        eventHandler: @escaping SubscriptionEventHandler
+    ) {
 
         self.identifier = UUID().uuidString
         self.variables = variables
