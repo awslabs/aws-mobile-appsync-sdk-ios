@@ -8,7 +8,6 @@ also includes support for offline operations.
 ### Bug Fixes
 
 - Updated AppSync RealTime Client, which fixes stale connection handling upon resume from background:
-  - https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/393
   - https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/396
   - https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/403
   - Also see https://github.com/aws-amplify/aws-appsync-realtime-client-ios/issues/24
