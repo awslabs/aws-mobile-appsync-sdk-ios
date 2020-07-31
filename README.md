@@ -23,7 +23,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
     ```ruby
-    pod 'AWSAppSync', '~> 3.1.3'
+    pod 'AWSAppSync', '~> 3.1.4'
     ```
 
     Example:
@@ -37,7 +37,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
       use_frameworks!
 
       # Pods for EventsApp
-      pod 'AWSAppSync', '~> 3.1.3'
+      pod 'AWSAppSync', '~> 3.1.4'
     end
     ```
 
