@@ -45,10 +45,43 @@ class JSONValueSerializationTests: XCTestCase {
             XCTFail("Failed to set up subscription operation containing variables")
             return
         }
-        let jsonValue = variables.jsonValue
+        let jsonValue = variables.mapValues { $0?.jsonValue }
         XCTAssertTrue(JSONSerialization.isValidJSONObject(jsonValue))
+        let data = try? JSONSerialization.data(withJSONObject: jsonValue)
+        XCTAssertNotNil(data)
+    }
 
-        let jsonObject = try? JSONSerialization.data(withJSONObject: jsonValue)
-        XCTAssertNotNil(jsonObject)
+    func test_variablesEnumAndStruct() throws {
+        let reviewInput = ReviewInput(stars: 1, favoriteColor: ColorInput(red: 1, green: 1, blue: 1))
+        guard let variables = CreateReviewForEpisodeMutation(episode: .jedi, review: reviewInput).variables else {
+            XCTFail("Could not get variables")
+            return
+        }
+        let jsonValue = variables.mapValues { $0?.jsonValue }
+        XCTAssertTrue(JSONSerialization.isValidJSONObject(jsonValue))
+        let data = try? JSONSerialization.data(withJSONObject: jsonValue)
+        XCTAssertNotNil(data)
+    }
+
+    func test_variablesMultipleBool() throws {
+        guard let variables = HeroNameConditionalBothQuery(skipName: true, includeName: false).variables else {
+            XCTFail("Could not get variables")
+            return
+        }
+        let jsonValue = variables.mapValues { $0?.jsonValue }
+        XCTAssertTrue(JSONSerialization.isValidJSONObject(jsonValue))
+        let data = try? JSONSerialization.data(withJSONObject: jsonValue)
+        XCTAssertNotNil(data)
+    }
+
+    func test_variablesGraphQLIDAndOptionalGraphQLID() throws {
+        guard let variables = HumanFriendsFilteredByIdQuery(id: "123", friendId: "234").variables else {
+            XCTFail("Could not get variables")
+            return
+        }
+        let jsonValue = variables.mapValues { $0?.jsonValue }
+        XCTAssertTrue(JSONSerialization.isValidJSONObject(jsonValue))
+        let data = try? JSONSerialization.data(withJSONObject: jsonValue)
+        XCTAssertNotNil(data)
     }
 }
