@@ -352,10 +352,14 @@ AWSCognitoIdentityUserAttributeType* attribute(NSString *name, NSString *value) 
     return result;
 }
 
-- (NSDictionary<NSString*, NSString *>*) getValidationData:(NSArray<AWSCognitoIdentityUserAttributeType*>*)devProvidedValidationData {
+- (NSDictionary<NSString*, NSString *>*) getValidationData:(NSArray<AWSCognitoIdentityUserAttributeType*>*)devProvidedValidationData
+                                            clientMetaData:(nullable NSDictionary<NSString *,NSString *> *)clientMetaData {
     NSMutableDictionary *result = [NSMutableDictionary new];
     if (self.userPoolConfiguration.shouldProvideCognitoValidationData) {
         [result addEntriesFromDictionary:[self cognitoValidationData]];
+    }
+    if (clientMetaData != nil) {
+        [result addEntriesFromDictionary:clientMetaData];
     }
     if (devProvidedValidationData != nil) {
         for (AWSCognitoIdentityUserAttributeType * att in devProvidedValidationData) {
@@ -366,7 +370,7 @@ AWSCognitoIdentityUserAttributeType* attribute(NSString *name, NSString *value) 
 }
 
 - (NSArray<AWSCognitoIdentityUserAttributeType*>*) getValidationDataAsArray:(NSArray<AWSCognitoIdentityUserAttributeType*>*)devProvidedValidationData {
-    NSDictionary * dictionary = [self getValidationData:devProvidedValidationData];
+    NSDictionary * dictionary = [self getValidationData:devProvidedValidationData clientMetaData:nil];
     NSMutableArray * result = [NSMutableArray new];
     [dictionary enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL* stop) {
         [result addObject:attribute(key,value)];
@@ -529,6 +533,16 @@ shouldProvideCognitoValidationData:(BOOL)shouldProvideCognitoValidationData
     return self;
 }
 
+@end
+
+@implementation AWSCognitoIdentityMfaCodeDetails
+-(instancetype) initWithMfaCode: (NSString *) mfaCode {
+    self = [super init];
+    if(nil != self){
+        _mfaCode = mfaCode;
+    }
+    return self;
+}
 @end
 
 @implementation AWSCognitoIdentityUserPoolSignUpResponse
