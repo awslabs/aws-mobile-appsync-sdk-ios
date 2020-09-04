@@ -7,6 +7,8 @@ also includes support for offline operations.
 
 *Changes merged to `main`, but not yet released on a tag.*
 
+- Upgrade to 2.16.0 SDK. [PR #410](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/410)
+
 ## 3.1.5
 
 ### Bug Fixes

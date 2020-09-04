@@ -697,11 +697,10 @@ extension AWSMobileClient {
                     } else if error._domain == AWSCognitoIdentityErrorDomain
                         && error._code == AWSCognitoIdentityErrorType.notAuthorized.rawValue
                         && self.federationProvider == .oidcFederation {
-                        
-                        self.mobileClientStatusChanged(userState: .signedOutFederatedTokensInvalid, additionalInfo: [self.ProviderKey:self.cachedLoginsMap.first!.key])
                         // store a reference to the completion handler which we would be calling later on.
                         self.pendingAWSCredentialsCompletion = completionHandler
                         
+                        self.mobileClientStatusChanged(userState: .signedOutFederatedTokensInvalid, additionalInfo: [self.ProviderKey:self.cachedLoginsMap.first!.key])
                     } else {
                         self.credentialsFetchLock.leave()
                         completionHandler(nil, error)
@@ -832,6 +831,8 @@ extension AWSMobileClient {
 
     /// Verify a user attribute like phone_number.
     ///
+    /// This method is only valid for users signed in via UserPools (either directly or via HostedUI).
+    ///
     /// - Parameters:
     ///   - attributeName: name of the attribute.
     ///   - clientMetaData: A map of custom key-value pairs that you can provide as input for any
@@ -849,6 +850,8 @@ extension AWSMobileClient {
     }
     
     /// Update the attributes for a user.
+    ///
+    /// This method is only valid for users signed in via UserPools (either directly or via HostedUI).
     ///
     /// - Parameters:
     ///   - attributeMap: the attribute map of the user.
@@ -868,6 +871,8 @@ extension AWSMobileClient {
     
     /// Fetches the attributes for logged in user.
     ///
+    /// This method is only valid for users signed in via UserPools (either directly or via HostedUI).
+    ///
     /// - Parameter completionHandler: completion handler which will be invoked when result is available.
     public func getUserAttributes(completionHandler: @escaping (([String: String]?, Error?) -> Void)) {
         guard self.federationProvider == .userPools || self.federationProvider == .hostedUI else {
@@ -879,6 +884,8 @@ extension AWSMobileClient {
     }
     
     /// Confirm the updated attributes using a confirmation code.
+    ///
+    /// This method is only valid for users signed in via UserPools (either directly or via HostedUI).
     ///
     /// - Parameters:
     ///   - attributeName: the attribute to be confirmed.
@@ -893,6 +900,8 @@ extension AWSMobileClient {
     }
     
     /// Confirm the attribute using a confirmation code.
+    ///
+    /// This method is only valid for users signed in via UserPools (either directly or via HostedUI).
     ///
     /// - Parameters:
     ///   - attributeName: the attribute to be verified.
