@@ -25,6 +25,26 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///
     /// - Parameters:
     ///   - url: The URL of a GraphQL server to connect to.
+    ///   - apiKeyAuthProvider: An object of `AWSAPIKeyAuthProvider` protocol for API Key based authorization.
+    ///   - session: the URL session
+    ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
+    public init(url: URL,
+                apiKeyAuthProvider: AWSAPIKeyAuthProvider,
+                session: URLSession,
+                region: AWSRegionType,
+                sendOperationIdentifiers: Bool = false) {
+        self.url = url
+        self.session = session
+        self.sendOperationIdentifiers = sendOperationIdentifiers
+        self.region = region
+        self.endpoint = AWSEndpoint(region: region, serviceName: "appsync", url: url)
+        self.apiKeyAuthProvider = apiKeyAuthProvider
+    }  
+    
+    /// Creates a network transport with the specified server URL and session configuration.
+    ///
+    /// - Parameters:
+    ///   - url: The URL of a GraphQL server to connect to.
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
     ///   - retryStrategy: The retry strategy to be followed by HTTP client
