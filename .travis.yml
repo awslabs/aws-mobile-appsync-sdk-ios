@@ -1,5 +1,5 @@
 language: swift
-osx_image: xcode11.6
+osx_image: xcode12
 env:
   global:
   - FRAMEWORK_NAME=AWSAppSync
@@ -14,8 +14,8 @@ before_install:
 - brew outdated carthage || brew upgrade carthage
 - gem install cocoapods -v '1.9.3'
 before_deploy:
-- carthage build --no-skip-current
-- carthage archive $FRAMEWORK_NAME
+- bash ./build-support/carthage-build.sh build --no-skip-current
+- bash ./build-support/carthage-build.sh archive $FRAMEWORK_NAME
 script:
 - xcodebuild -quiet -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync build test -destination 'platform=iOS Simulator,name=iPhone 11,OS=latest'
 deploy:
@@ -28,7 +28,7 @@ deploy:
    repo: awslabs/aws-mobile-appsync-sdk-ios
    tags: true
 - provider: script
-  script: bash cocoapods_release.sh
+  script: bash ./build-support/cocoapods_release.sh
   on:
     repo: awslabs/aws-mobile-appsync-sdk-ios
     tags: true
