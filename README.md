@@ -83,7 +83,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 1. Now **Build** your project to start using the SDK. Whenever a new version of the SDK is released you can update by running `carthage update` and rebuilding your project to use the new features.
 
-    > Note: Currently, the AWSAppSync SDK for iOS builds the Carthage binaries using Xcode 11.5. To consume the pre-built binaries your Xcode version needs to be the same. Otherwise you will have to build the frameworks on your machine by passing `--no-use-binaries` flag to `carthage update` command.
+    > Note: Currently, the AWSAppSync SDK for iOS builds the Carthage binaries using Xcode 12.0. To consume the pre-built binaries your Xcode version needs to be the same. Otherwise you will have to build the frameworks on your machine by passing `--no-use-binaries` flag to `carthage update` command.
 
 1. In your source file, import the SDK using `import AWSAppSync`.
 

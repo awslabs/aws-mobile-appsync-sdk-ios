@@ -87,6 +87,7 @@
 #import "AWSCategory.h"
 #import "AWSLogging.h"
 #import "AWSModel.h"
+#import "AWSNSCodingUtilities.h"
 #import "AWSSynchronizedMutableDictionary.h"
 #import "AWSXMLDictionary.h"
 
