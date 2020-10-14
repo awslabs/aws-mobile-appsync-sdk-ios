@@ -65,24 +65,24 @@ class SubscriptionStressTestHelper: XCTestCase {
             allPostsAreCreatedExpectations.append(testData.postCreated)
 
             appSyncClient.perform(mutation: DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation,
-                                  queue: SubscriptionStressTestHelper.mutationQueue) { result, error in
+                                  queue: SubscriptionStressTestHelper.mutationQueue, resultHandler:  { result, error in
                                     XCTAssertNil(error, "Error should be nil")
-
+                                    
                                     guard
                                         let result = result,
                                         let payload = result.data?.createPostWithoutFileUsingParameters
-                                        else {
-                                            XCTFail("Result & payload should not be nil")
-                                            return
+                                    else {
+                                        XCTFail("Result & payload should not be nil")
+                                        return
                                     }
-
+                                    
                                     XCTAssertEqual(payload.author, DefaultTestPostData.author, "Authors should match.")
                                     let id = payload.id
                                     self.subscriptionTestStateHolders[id] = testData
                                     testData.postId = id
                                     testData.postCreated.fulfill()
                                     print("Post created \(i) (\(id))")
-            }
+                                  })
         }
 
         wait(for: allPostsAreCreatedExpectations, timeout: SubscriptionStressTestHelper.networkOperationTimeout)

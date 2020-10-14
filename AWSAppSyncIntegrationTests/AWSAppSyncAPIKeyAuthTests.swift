@@ -59,9 +59,9 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        deinitNotifiableAppSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+        deinitNotifiableAppSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
             postCreated.fulfill()
-        }
+        })
 
         // Wait for mutation to return before releasing client
         wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
@@ -74,7 +74,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(
@@ -83,7 +83,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
             )
             print("Created post \(result?.data?.createPostWithoutFileUsingParameters?.id ?? "(ID unexpectedly nil)")")
             postCreated.fulfill()
-        }
+        })
 
         wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
     }
@@ -92,7 +92,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(
@@ -100,7 +100,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 DefaultTestPostData.author
             )
             postCreated.fulfill()
-        }
+        })
 
         wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
@@ -122,7 +122,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(
@@ -130,7 +130,7 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
                 DefaultTestPostData.author
             )
             postCreated.fulfill()
-        }
+        })
 
         wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
@@ -179,13 +179,13 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
 
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+        appSyncClient?.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
             print("CreatePost result handler invoked")
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(result!.data!.createPostWithoutFileUsingParameters?.author, DefaultTestPostData.author)
             postCreated.fulfill()
-        }
+        })
         wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         let fetchQuery = ListPostsQuery()
@@ -277,14 +277,14 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         var idHolder: GraphQLID?
-        appSyncClient.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
+        appSyncClient.perform(mutation: addPost, queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
             print("CreatePost result handler invoked")
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(result!.data!.createPostWithoutFileUsingParameters?.author, DefaultTestPostData.author)
             idHolder = result?.data?.createPostWithoutFileUsingParameters?.id
             postCreated.fulfill()
-        }
+        })
         wait(for: [postCreated], timeout: AWSAppSyncAPIKeyAuthTests.networkOperationTimeout)
 
         guard let id = idHolder else {
@@ -438,12 +438,12 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         DispatchQueue.global().async {
             sleep(3)
             self.appSyncClient?.perform(mutation: firstUpvoteMutation,
-                                        queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
-                print("Received first upvote mutation response")
-                XCTAssertNil(error)
-                XCTAssertNotNil(result?.data?.upvotePost?.id)
-                firstUpvoteComplete.fulfill()
-            }
+                                        queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
+                                            print("Received first upvote mutation response")
+                                            XCTAssertNil(error)
+                                            XCTAssertNotNil(result?.data?.upvotePost?.id)
+                                            firstUpvoteComplete.fulfill()
+                                        })
         }
 
         wait(
@@ -584,12 +584,12 @@ class AWSAppSyncAPIKeyAuthTests: XCTestCase {
         DispatchQueue.global().async {
             sleep(3)
             self.appSyncClient?.perform(mutation: secondUpvoteMutation,
-                                        queue: AWSAppSyncAPIKeyAuthTests.mutationQueue) { result, error in
-                print("Received second upvote mutation response")
-                XCTAssertNil(error)
-                XCTAssertNotNil(result?.data?.upvotePost?.id)
-                secondUpvoteComplete.fulfill()
-            }
+                                        queue: AWSAppSyncAPIKeyAuthTests.mutationQueue, resultHandler:  { result, error in
+                                            print("Received second upvote mutation response")
+                                            XCTAssertNil(error)
+                                            XCTAssertNotNil(result?.data?.upvotePost?.id)
+                                            secondUpvoteComplete.fulfill()
+                                        })
         }
 
         wait(

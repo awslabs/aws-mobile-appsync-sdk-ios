@@ -5,7 +5,9 @@ also includes support for offline operations.
 
 ## Unreleased
 
-*Changes merged to `main`, but not yet released on a tag.*
+### Misc. Updates
+
+- Refactored `AWSAppSyncHTTPNetworkTransport` to simplify internal auth handling, and to support providing your own `URLSession` in the new initializer.
 
 ## 3.1.6
 

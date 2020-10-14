@@ -39,7 +39,7 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
         let postCreated = expectation(description: "Post created successfully.")
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
-        appSyncClient.perform(mutation: addPost, queue: AWSAppSyncCognitoAuthTests.mutationQueue) { result, error in
+        appSyncClient.perform(mutation: addPost, queue: AWSAppSyncCognitoAuthTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(
@@ -47,7 +47,7 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
                 DefaultTestPostData.author
             )
             postCreated.fulfill()
-        }
+        })
 
         wait(for: [postCreated], timeout: AWSAppSyncCognitoAuthTests.networkOperationTimeout)
     }
@@ -84,11 +84,12 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
 
         var mutationResult: GraphQLResult<CreatePostWithFileUsingParametersMutation.Data>? = nil
         appSyncClient.perform(mutation: createPostWithFile,
-                              queue: AWSAppSyncCognitoAuthTests.mutationQueue) { result, error in
-            XCTAssertNil(error)
-            mutationResult = result
-            postCreated.fulfill()
-        }
+                              queue: AWSAppSyncCognitoAuthTests.mutationQueue,
+                              resultHandler:  { result, error in
+                                XCTAssertNil(error)
+                                mutationResult = result
+                                postCreated.fulfill()
+                              })
 
         wait(for: [postCreated], timeout: AWSAppSyncCognitoAuthTests.networkOperationTimeout)
 
