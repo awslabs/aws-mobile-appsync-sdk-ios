@@ -11,7 +11,7 @@ also includes support for offline operations.
 
 ## Misc. Updates
 
-- fix 
+- fix carthage script [PR #423](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/423)
 - Support Xcode 12 [PR #419](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/419)
 
 ## 3.1.7
