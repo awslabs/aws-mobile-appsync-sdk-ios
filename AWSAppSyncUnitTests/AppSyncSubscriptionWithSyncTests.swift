@@ -203,29 +203,6 @@ class AppSyncSubscriptionWithSyncTests: XCTestCase {
         XCTAssertNotNil(result, "Should produce a non nil hash when all fields are present.")
     }
 
-    func testCancel() {
-        let expectation = XCTestExpectation(description: "Base Query Handler sync - should never be called")
-        expectation.isInverted = true
-        var toggle = true
-        let subscriptionWithSync = AppSyncSubscriptionWithSync(
-            appSyncClient: appsyncClient,
-            baseQuery: listPostsQuery,
-            deltaQuery: emptyQuery,
-            subscription: emptySubscription,
-            baseQueryHandler: { (result, error) in
-                if toggle { return }
-                expectation.fulfill()
-        },
-            deltaQueryHandler: emptyDeltaQueryHandler,
-            subscriptionResultHandler: emptySubscriptionResultHandler,
-            subscriptionMetadataCache: nil,
-            syncConfiguration: .init(baseRefreshIntervalInSeconds: 1),
-            handlerQueue: queue)
-        subscriptionWithSync.cancel()
-        toggle = false
-        wait(for: [expectation], timeout: 2.0)
-    }
-
     func testCancelWithBaseQueryAndDeinitNoStrongReferenceRetained() {
         var subscriptionWithSync: AppSyncSubscriptionWithSync? = AppSyncSubscriptionWithSync(
             appSyncClient: appsyncClient,
