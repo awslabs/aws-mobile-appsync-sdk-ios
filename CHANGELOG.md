@@ -13,7 +13,7 @@ also includes support for offline operations.
 
 - Fix Carthage build [PR #423](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/423)
 - Support Xcode 12 [PR #419](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/419)
-- Fix update podspec to match 2.17.0 [PR #428](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/428)
+- Fix dependency version in podspec [PR #428](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/428)
 
 ## 3.1.8
 
