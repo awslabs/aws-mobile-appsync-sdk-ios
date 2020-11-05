@@ -67,6 +67,7 @@
 #import "AWSNetworkingHelpers.h"
 #import "AWSURLSessionManager.h"
 #import "AWSSerialization.h"
+#import "AWSTimestampSerialization.h"
 #import "AWSURLRequestRetryHandler.h"
 #import "AWSURLRequestSerialization.h"
 #import "AWSURLResponseSerialization.h"

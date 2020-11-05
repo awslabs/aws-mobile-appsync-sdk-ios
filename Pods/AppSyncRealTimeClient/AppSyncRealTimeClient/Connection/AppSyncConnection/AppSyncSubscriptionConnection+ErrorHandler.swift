@@ -10,6 +10,11 @@ import Starscream
 
 extension AppSyncSubscriptionConnection {
     func handleError(error: Error) {
+        guard let subscriptionItem = subscriptionItem else {
+            AppSyncLogger.debug("\(#function): no subscription item")
+            return
+        }
+
         // If the error identifier is not for the this connection
         // we return immediately without handling the error.
         if case let ConnectionProviderError.subscription(identifier, _) = error,

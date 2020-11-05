@@ -10,9 +10,16 @@ import Foundation
 extension AppSyncSubscriptionConnection {
 
     func handleDataEvent(response: AppSyncResponse) {
-        guard response.id == subscriptionItem.identifier else {
+        guard let subscriptionItem = subscriptionItem else {
+            AppSyncLogger.debug("\(#function): no subscription item")
             return
         }
+
+        guard response.id == subscriptionItem.identifier else {
+            AppSyncLogger.verbose("\(#function): ignoring data event for \(response.id ?? "(null)")")
+            return
+        }
+
         switch response.responseType {
         case .data:
             let jsonEncode = JSONEncoder()
