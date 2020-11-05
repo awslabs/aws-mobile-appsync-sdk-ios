@@ -149,9 +149,9 @@ class MutationQueuePerformanceTests: XCTestCase {
 
                 operationQueue.addOperation {
                     let semaphore = DispatchSemaphore(value: numberOfMutations)
-                    appSyncClient.perform(mutation: mutation, queue: self.mutationHandlerQueue) { _, _ in
+                    appSyncClient.perform(mutation: mutation, queue: self.mutationHandlerQueue, resultHandler:  { _, _ in
                         semaphore.signal()
-                    }
+                    })
                     let _ = semaphore.wait(timeout: DispatchTime.now() + .seconds(60))
                 }
             }

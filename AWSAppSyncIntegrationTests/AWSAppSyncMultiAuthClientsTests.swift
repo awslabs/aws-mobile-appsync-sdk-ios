@@ -39,16 +39,16 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         userPoolsAppSyncClient.perform(mutation: addPost,
-                                       queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
-            // The result is disregarded.
-            userpoolPostCreated.fulfill()
-        }
+                                       queue: AWSAppSyncMultiAuthClientsTests.mutationQueue, resultHandler:  { result, error in
+                                        // The result is disregarded.
+                                        userpoolPostCreated.fulfill()
+                                       })
 
         iamAppSyncClient.perform(mutation: addPost,
-                                 queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
-            // The result is disregarded.
-            iamPostCreated.fulfill()
-        }
+                                 queue: AWSAppSyncMultiAuthClientsTests.mutationQueue, resultHandler:  { result, error in
+                                    // The result is disregarded.
+                                    iamPostCreated.fulfill()
+                                 })
 
         wait(for: [iamPostCreated, userpoolPostCreated],
              timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout,
@@ -77,7 +77,7 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         var createdId: GraphQLID?
-        iamAppSyncClient.perform(mutation: addPost, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
+        iamAppSyncClient.perform(mutation: addPost, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             createdId = result!.data!.createPostWithoutFileUsingParameters!.id
@@ -86,7 +86,7 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
                 DefaultTestPostData.author
             )
             postCreated.fulfill()
-        }
+        })
 
         wait(for: [postCreated], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
 
@@ -118,10 +118,10 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
         let upVote = UpvotePostMutation(id: createdId!)
         let upVoted = expectation(description: "Post upvoted")
 
-        iamAppSyncClient.perform(mutation: upVote, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
+        iamAppSyncClient.perform(mutation: upVote, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             upVoted.fulfill()
-        }
+        })
 
         wait(for: [upVoted], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
         wait(for: [upVoteEventTriggered], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
@@ -148,7 +148,7 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
         
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
         var createdId: GraphQLID?
-        iamAppSyncClient.perform(mutation: addPost, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue) { result, error in
+        iamAppSyncClient.perform(mutation: addPost, queue: AWSAppSyncMultiAuthClientsTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             createdId = result!.data!.createPostWithoutFileUsingParameters!.id
@@ -157,7 +157,7 @@ class AWSAppSyncMultiAuthClientsTests: XCTestCase {
                 DefaultTestPostData.author
             )
             postCreated.fulfill()
-        }
+        })
         
         wait(for: [postCreated], timeout: AWSAppSyncMultiAuthClientsTests.networkOperationTimeout)
 

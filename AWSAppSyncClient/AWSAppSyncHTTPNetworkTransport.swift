@@ -8,42 +8,87 @@ import Foundation
 import AWSCore
 
 public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
-    let url: URL
-    let session: URLSession
-    var region: AWSRegionType? = nil
-    let serializationFormat = JSONSerializationFormat.self
-    var credentialsProvider: AWSCredentialsProvider? = nil
-    var apiKeyAuthProvider: AWSAPIKeyAuthProvider? = nil
-    var userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil
-    var oidcAuthProvider: AWSOIDCAuthProvider? = nil
-    var endpoint: AWSEndpoint? = nil
-    let authType: AWSAppSyncAuthType
-    var retryStrategy: AWSAppSyncRetryStrategy
-    var activeTimers: [String: DispatchSourceTimer] = [:]
-    
+    public enum AppSyncAuthProvider {
+        case awsIAM(provider: AWSCredentialsProvider, endpoint: AWSEndpoint)
+        case apiKey(AWSAPIKeyAuthProvider)
+        case oidcToken(AWSOIDCAuthProvider)
+        case amazonCognitoUserPools(AWSCognitoUserPoolsAuthProvider)
+
+        public var appSyncAuthType: AWSAppSyncAuthType {
+            switch self {
+            case .awsIAM:
+                return .awsIAM
+            case .apiKey:
+                return .apiKey
+            case .amazonCognitoUserPools:
+                return .amazonCognitoUserPools
+            case .oidcToken:
+                return .oidcToken
+            }
+        }
+    }
+
+    private let url: URL
+    private let session: URLSession
+    private let serializationFormat = JSONSerializationFormat.self
+    private let authProvider: AppSyncAuthProvider
+    private let sendOperationIdentifiers: Bool
+    private var retryStrategy: AWSAppSyncRetryStrategy
+
+    private var activeTimers: [String: DispatchSourceTimer] = [:]
+
+    /// Designated initializer. Creates a network transport with the specified server
+    /// URL, URLSession (which must be created with an appropriate delegate and queue
+    /// if one is required), and auth provider.
+    ///
+    /// - Parameters:
+    ///   - url: The URL of a GraphQL server to connect to.
+    ///   - urlSession: The URLSession to be used to connect to the GraphQL server specified in `url`
+    ///   - authProvider: The AppSyncAuthProvider to be used to authorize requests
+    ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence
+    ///   - retryStrategy: The retry strategy to be followed by HTTP client
+    public init(
+        url: URL,
+        urlSession: URLSession,
+        authProvider: AppSyncAuthProvider,
+        sendOperationIdentifiers: Bool,
+        retryStrategy: AWSAppSyncRetryStrategy
+    ) {
+        self.url = url
+        self.session = urlSession
+        self.sendOperationIdentifiers = sendOperationIdentifiers
+        self.retryStrategy = retryStrategy
+        self.authProvider = authProvider
+    }
+
     /// Creates a network transport with the specified server URL and session configuration.
     ///
     /// - Parameters:
     ///   - url: The URL of a GraphQL server to connect to.
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
+    ///   - region: The AWS region in which the API is configured.
+    ///   - credentialsProvider: The AWSCredentialsProvider to use to authenticate requests via IAM.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
     ///   - retryStrategy: The retry strategy to be followed by HTTP client
-    public init(url: URL,
-                configuration: URLSessionConfiguration = URLSessionConfiguration.default,
-                region: AWSRegionType,
-                credentialsProvider: AWSCredentialsProvider,
-                sendOperationIdentifiers: Bool = false,
-                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
-        self.url = url
-        self.session = URLSession(configuration: configuration)
-        self.sendOperationIdentifiers = sendOperationIdentifiers
-        self.credentialsProvider = credentialsProvider
-        self.region = region
-        self.endpoint = AWSEndpoint(region: region, serviceName: "appsync", url: url)
-        self.authType = .awsIAM
-        self.retryStrategy = retryStrategy
+    public convenience init(url: URL,
+                            configuration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            region: AWSRegionType,
+                            credentialsProvider: AWSCredentialsProvider,
+                            sendOperationIdentifiers: Bool = false,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
+        guard let endpoint = AWSEndpoint(region: region, serviceName: "appsync", url: url) else {
+            fatalError("Unable to create endpoint for \(region) and \(url)")
+        }
+
+        self.init(
+            url: url,
+            urlSession: URLSession(configuration: configuration),
+            authProvider: .awsIAM(provider: credentialsProvider, endpoint: endpoint),
+            sendOperationIdentifiers: sendOperationIdentifiers,
+            retryStrategy: retryStrategy
+        )
     }
-    
+
     /// Creates a network transport with the specified server URL and session configuration.
     ///
     /// - Parameters:
@@ -52,19 +97,20 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
     ///   - retryStrategy: The retry strategy to be followed by HTTP client
-    public init(url: URL,
-                apiKeyAuthProvider: AWSAPIKeyAuthProvider,
-                configuration: URLSessionConfiguration = URLSessionConfiguration.default,
-                sendOperationIdentifiers: Bool = false,
-                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
-        self.url = url
-        self.session = URLSession(configuration: configuration)
-        self.sendOperationIdentifiers = sendOperationIdentifiers
-        self.apiKeyAuthProvider = apiKeyAuthProvider
-        self.authType = .apiKey
-        self.retryStrategy = retryStrategy
+    public convenience init(url: URL,
+                            apiKeyAuthProvider: AWSAPIKeyAuthProvider,
+                            configuration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            sendOperationIdentifiers: Bool = false,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
+        self.init(
+            url: url,
+            urlSession: URLSession(configuration: configuration),
+            authProvider: .apiKey(apiKeyAuthProvider),
+            sendOperationIdentifiers: sendOperationIdentifiers,
+            retryStrategy: retryStrategy
+        )
     }
-    
+
     /// Creates a network transport with the specified server URL and session configuration.
     ///
     /// - Parameters:
@@ -73,19 +119,20 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
     ///   - retryStrategy: The retry strategy to be followed by HTTP client
-    public init(url: URL,
-                userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider,
-                configuration: URLSessionConfiguration = URLSessionConfiguration.default,
-                sendOperationIdentifiers: Bool = false,
-                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
-        self.url = url
-        self.session = URLSession(configuration: configuration)
-        self.sendOperationIdentifiers = sendOperationIdentifiers
-        self.userPoolsAuthProvider = userPoolsAuthProvider
-        self.authType = .amazonCognitoUserPools
-        self.retryStrategy = retryStrategy
+    public convenience init(url: URL,
+                            userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider,
+                            configuration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            sendOperationIdentifiers: Bool = false,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
+        self.init(
+            url: url,
+            urlSession: URLSession(configuration: configuration),
+            authProvider: .amazonCognitoUserPools(userPoolsAuthProvider),
+            sendOperationIdentifiers: sendOperationIdentifiers,
+            retryStrategy: retryStrategy
+        )
     }
-    
+
     /// Creates a network transport with the specified server URL and session configuration.
     ///
     /// - Parameters:
@@ -94,19 +141,20 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
     ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
     ///   - retryStrategy: The retry strategy to be followed by HTTP client
-    public init(url: URL,
-                oidcAuthProvider: AWSOIDCAuthProvider,
-                configuration: URLSessionConfiguration = URLSessionConfiguration.default,
-                sendOperationIdentifiers: Bool = false,
-                retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
-        self.url = url
-        self.session = URLSession(configuration: configuration)
-        self.sendOperationIdentifiers = sendOperationIdentifiers
-        self.oidcAuthProvider = oidcAuthProvider
-        self.authType = .oidcToken
-        self.retryStrategy = retryStrategy
+    public convenience init(url: URL,
+                            oidcAuthProvider: AWSOIDCAuthProvider,
+                            configuration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            sendOperationIdentifiers: Bool = false,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
+        self.init(
+            url: url,
+            urlSession: URLSession(configuration: configuration),
+            authProvider: .oidcToken(oidcAuthProvider),
+            sendOperationIdentifiers: sendOperationIdentifiers,
+            retryStrategy: retryStrategy
+        )
     }
-    
+
     func initRequest(request: inout URLRequest) {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
@@ -114,22 +162,22 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.setValue("aws-sdk-ios/3.1.11 AppSyncClient", forHTTPHeaderField: "User-Agent")
         addDeviceId(request: &request)
     }
-    
+
     func addDeviceId(request: inout URLRequest) {
-        switch authType {
-        case .apiKey:
-            let data = self.apiKeyAuthProvider!.getAPIKey().data(using: .utf8)
+        switch authProvider {
+        case .apiKey(let provider):
+            let data = provider.getAPIKey().data(using: .utf8)
             request.setValue(fetchDeviceId(for: sha256(data: data!)), forHTTPHeaderField: "x-amz-subscriber-id")
         default:
             break
         }
     }
-    
+
     func sha256(data: Data) -> String {
         let hash = AWSSignatureSignerUtility.hash(data)
         return hash.base64EncodedString()
     }
-    
+
     /// Returns `deviceId` for the specified key from the keychain.
     /// If the key does not exist in keychain, a `deviceId` is generated, stored and returned.
     ///
@@ -145,7 +193,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             return uuid
         }
     }
-    
+
     func executeAfter(interval: DispatchTimeInterval, queue: DispatchQueue, block: @escaping () -> Void ) -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: 0), queue: queue)
         timer.schedule(deadline: .now() + interval)
@@ -153,7 +201,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         timer.resume()
         return timer
     }
-    
+
     internal func sendGraphQLRequest(mutableRequest: NSMutableURLRequest,
                                      retryHandler: AWSAppSyncRetryHandler,
                                      networkTransportOperation: AWSAppSyncHTTPNetworkTransportOperation,
@@ -169,7 +217,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                         let taskUUID = UUID().uuidString
                         let retryAdvice = retryHandler.shouldRetryRequest(for: error)
                         if retryAdvice.shouldRetry,
-                            let retryInterval = retryAdvice.retryInterval {
+                           let retryInterval = retryAdvice.retryInterval {
                             let timer = self?.executeAfter(interval: retryInterval,
                                                            queue: DispatchQueue.global(qos: .userInitiated)) {
                                 self?.sendGraphQLRequest(mutableRequest: mutableRequest,
@@ -188,35 +236,35 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             case .failure(let error):
                 completionHandler(nil, AWSAppSyncClientError.authenticationError(error))
             }
-            
+
         })
     }
-    
+
     /// Invoke HTTP network request for all GraphQL operations
     ///
     /// - Parameters:
     ///   - request: The URL request to be sent
     ///   - completionHandler: The completion handler which will be called once the request is completed
     /// - Returns: URLSessionDataTask cancellable object
-    internal func sendNetworkRequest(request: URLRequest, completionHandler: @escaping (Result<JSONObject, AWSAppSyncClientError>) -> Void) -> URLSessionDataTask {
-        
+    internal func sendNetworkRequest(request: URLRequest, completionHandler: @escaping (Swift.Result<JSONObject, AWSAppSyncClientError>) -> Void) -> URLSessionDataTask {
+
         let dataTask = self.session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) in
-            
+
             if let error = error {
                 completionHandler(.failure(AWSAppSyncClientError.requestFailed(data, nil, error)))
                 return
             }
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 fatalError("Response should be an HTTPURLResponse")
             }
-            
+
             if !httpResponse.isSuccessful {
                 completionHandler(.failure(AWSAppSyncClientError.requestFailed(data, httpResponse, error)))
 
                 return
             }
-            
+
             guard let data = data else {
                 completionHandler(.failure(AWSAppSyncClientError.noData(httpResponse)))
 
@@ -232,28 +280,25 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             } catch {
                 completionHandler(.failure(AWSAppSyncClientError.parseError(data, httpResponse, error)))
             }
-            
+
         })
-        
+
         dataTask.resume()
         return dataTask
     }
-    
+
     /// Updates the sendRequest with the appropriate authentication parameters
     /// In the case of a token retrieval error, the errorCallback is invoked
     private func updateRequestWithAuthInformation(mutableRequest: NSMutableURLRequest,
-                                                  completionHandler: @escaping (Result<Void, Error>) -> Void) {
+                                                  completionHandler: @escaping (Swift.Result<Void, Error>) -> Void) {
 
-        switch self.authType {
-            
-        case .awsIAM:
-            guard let credentialsProvider = self.credentialsProvider, let endpoint = self.endpoint else {
-                fatalError("Credentials Provider and endpoint not set")
-            }
+        switch authProvider {
+
+        case .awsIAM(let credentialsProvider, let endpoint):
             let signer: AWSSignatureV4Signer = AWSSignatureV4Signer(
                 credentialsProvider: credentialsProvider,
                 endpoint: endpoint)
-            
+
             signer.interceptRequest(mutableRequest).continueWith { task in
                 if let error = task.error {
                     completionHandler(.failure(error))
@@ -262,12 +307,13 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 }
                 return nil
             }
-        case .apiKey:
-            mutableRequest.setValue(self.apiKeyAuthProvider!.getAPIKey(), forHTTPHeaderField: "x-api-key")
-            completionHandler(.success(()))
-        case .oidcToken:
-            if let provider = self.oidcAuthProvider as? AWSOIDCAuthProviderAsync {
 
+        case .apiKey(let provider):
+            mutableRequest.setValue(provider.getAPIKey(), forHTTPHeaderField: "x-api-key")
+            completionHandler(.success(()))
+
+        case .oidcToken(let provider):
+            if let provider = provider as? AWSOIDCAuthProviderAsync {
                 provider.getLatestAuthToken { (token, error) in
                     if let error = error {
                         completionHandler(.failure(error))
@@ -278,15 +324,13 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                         fatalError("Invalid data returned in token callback")
                     }
                 }
-            } else if let provider = self.oidcAuthProvider {
+            } else {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
                 completionHandler(.success(()))
-            } else {
-                fatalError("Authentication provider not set")
             }
-        case .amazonCognitoUserPools:
-            if let provider = self.userPoolsAuthProvider as? AWSCognitoUserPoolsAuthProviderAsync {
-                
+
+        case .amazonCognitoUserPools(let provider):
+            if let provider = provider as? AWSCognitoUserPoolsAuthProviderAsync {
                 provider.getLatestAuthToken { (token, error) in
                     if let error = error {
                         completionHandler(.failure(error))
@@ -297,16 +341,14 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                         fatalError("Invalid data returned in token callback")
                     }
                 }
-            } else if let provider = self.userPoolsAuthProvider {
+            } else {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
                 completionHandler(.success(()))
-            } else {
-                fatalError("Authentication provider not set")
             }
         }
-        
+
     }
-    
+
     /// Send a GraphQL operation to a server and return a response for a subscription.
     ///
     /// - Parameters:
@@ -316,14 +358,14 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - error: An error that indicates why a request failed, or `nil` if the request was succesful.
     /// - Returns: An object that can be used to cancel an in progress request.
     public func sendSubscriptionRequest<Operation: GraphQLOperation>(operation: Operation, completionHandler: @escaping (JSONObject?, Error?) -> Void) throws -> Cancellable {
-        
+
         let networkTransportOperation = AWSAppSyncHTTPNetworkTransportOperation()
         var request = URLRequest(url: url)
         initRequest(request: &request)
-        
+
         let body = requestBody(for: operation)
         request.httpBody = try! serializationFormat.serialize(value: body)
-        
+
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
         sendGraphQLRequest(mutableRequest: mutableRequest,
@@ -333,7 +375,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
 
         return networkTransportOperation
     }
-    
+
     /// Send a GraphQL operation to a server and return a response.
     ///
     /// - Parameters:
@@ -344,20 +386,20 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     ///   - error: An error that indicates why a request failed, or `nil` if the request was succesful.
     /// - Returns: An object that can be used to cancel an in progress request.
     internal func send<Operation>(operation: Operation, overrideMap: GraphQLMap? = [:], completionHandler: @escaping (GraphQLResponse<Operation>?, Error?) -> Void) -> Cancellable {
-        
+
         // We will have to invoke this directly from DeltaSubs.
         let networkTransportOperation = AWSAppSyncHTTPNetworkTransportOperation()
-        
+
         var request = URLRequest(url: url)
         initRequest(request: &request)
-        
+
         let string = String(data: try! serializationFormat.serialize(value: requestBody(for: operation, overrideMap: overrideMap)), encoding: String.Encoding.utf8)
-        
+
         request.httpBody = string!.data(using: String.Encoding.utf8)
-        
+
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
-        
+
         let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
             guard error == nil else {
                 completionHandler(nil, error)
@@ -370,10 +412,10 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                            retryHandler: retryHandler,
                            networkTransportOperation: networkTransportOperation,
                            completionHandler: completionHandlerInternal)
-        
+
         return networkTransportOperation
     }
-    
+
     /// Send a GraphQL operation to a server and return a response.
     ///
     /// - Parameters:
@@ -385,20 +427,20 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     public func send<Operation>(operation: Operation, completionHandler: @escaping (GraphQLResponse<Operation>?, Error?) -> Void) -> Cancellable {
         return send(operation: operation, overrideMap: [:], completionHandler: completionHandler)
     }
-    
+
     /// Send a data payload to a server and return a response.
     ///
     /// - Parameters:
     ///   - data: The data to send.
     ///   - completionHandler: A closure to call when a request completes.
     public func send(data: Data, completionHandler: ((JSONObject?, Error?) -> Void)? = nil) {
-        
+
         var request = URLRequest(url: url)
         initRequest(request: &request)
-        
+
         let body = data
         request.httpBody = body
-        
+
         let mutableRequest = ((request as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         let retryHandler = AWSAppSyncRetryHandler(retryStrategy: retryStrategy)
         let completionHandlerInternal: (JSONObject?, Error?) -> Void = {(jsonObject, error) in
@@ -409,9 +451,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                            networkTransportOperation: AWSAppSyncHTTPNetworkTransportOperation(),
                            completionHandler: completionHandlerInternal)
     }
-    
-    private let sendOperationIdentifiers: Bool
-    
+
     private func requestBody<Operation: GraphQLOperation>(for operation: Operation, overrideMap: GraphQLMap? = nil) -> GraphQLMap {
         var operationVariables = operation.variables
         if overrideMap != nil && overrideMap!.count > 0 {
@@ -419,7 +459,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 operationVariables?[key] = value
             }
         }
-        
+
         if sendOperationIdentifiers {
             guard let operationIdentifier = type(of: operation).operationIdentifier else {
                 preconditionFailure("To send operation identifiers, Apollo types must be generated with operationIdentifiers")
@@ -428,11 +468,11 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         }
         return ["query": type(of: operation).requestString, "variables": operationVariables]
     }
-    
+
     internal class AWSAppSyncHTTPNetworkTransportOperation: Cancellable {
-        
+
         private var cancelled: Bool = false
-        
+
         var dataTask: URLSessionDataTask? = nil {
             didSet {
                 if self.cancelled {
@@ -440,16 +480,11 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 }
             }
         }
-        
+
         func cancel() {
             self.cancelled = true
             self.dataTask?.cancel()
         }
-    }
-    
-    internal enum Result<V, E> {
-        case success(V)
-        case failure(E)
     }
 
 }
