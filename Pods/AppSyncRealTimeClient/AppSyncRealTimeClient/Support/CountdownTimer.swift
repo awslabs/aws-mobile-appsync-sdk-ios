@@ -17,10 +17,12 @@ class CountdownTimer {
     /// The interval after which the timer will fire
     let interval: TimeInterval
 
+    private let lock: NSLock
     private var workItem: DispatchWorkItem?
     private let onCountdownComplete: () -> Void
 
     init(interval: TimeInterval, onCountdownComplete: @escaping () -> Void) {
+        self.lock = NSLock()
         self.interval = interval
         self.onCountdownComplete = onCountdownComplete
         createAndScheduleTimer()
@@ -28,20 +30,34 @@ class CountdownTimer {
 
     /// Resets the countdown of the timer to `interval`
     func resetCountdown() {
-        invalidate()
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
+        cancelAndClearWorkItem()
         createAndScheduleTimer()
     }
 
     /// Invalidates the timer
     func invalidate() {
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
+        cancelAndClearWorkItem()
+    }
+
+    private func cancelAndClearWorkItem() {
         workItem?.cancel()
         workItem = nil
     }
 
     /// Invoked by the timer. Do not execute this method directly.
     private func timerFired() {
+        lock.lock()
         defer {
             workItem = nil
+            lock.unlock()
         }
 
         guard let workItem = workItem, !workItem.isCancelled else {

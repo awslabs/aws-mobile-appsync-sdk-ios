@@ -20,7 +20,7 @@ public class RealtimeConnectionProvider: ConnectionProvider {
 
     /// Maximum number of seconds a connection may go without receiving a keep alive
     /// message before we consider it stale and force a disconnect
-    var staleConnectionTimeout: TimeInterval = 5 * 60
+    let staleConnectionTimeout = AtomicValue<TimeInterval>(initialValue: 5 * 60)
 
     /// A timer that automatically disconnects the current connection if it goes longer
     /// than `staleConnectionTimeout` without activity. Receiving any data or "keep

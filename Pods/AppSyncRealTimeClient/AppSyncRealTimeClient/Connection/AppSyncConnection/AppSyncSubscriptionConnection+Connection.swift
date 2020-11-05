@@ -26,11 +26,22 @@ extension AppSyncSubscriptionConnection {
     // MARK: - Private implementations
 
     private func startSubscription() {
-        guard subscriptionState == .notSubscribed else {
+        guard
+            let subscriptionItem = subscriptionItem,
+            subscriptionState == .notSubscribed
+        else {
             return
         }
+
         subscriptionState = .inProgress
-        let payload = convertToPayload(for: subscriptionItem.requestString, variables: subscriptionItem.variables)
+
+        guard let payload = convertToPayload(
+            for: subscriptionItem.requestString,
+            variables: subscriptionItem.variables
+        ) else {
+            return
+        }
+
         let message = AppSyncMessage(
             id: subscriptionItem.identifier,
             payload: payload,
@@ -39,7 +50,12 @@ extension AppSyncSubscriptionConnection {
         connectionProvider?.write(message)
     }
 
-    private func convertToPayload(for query: String, variables: [String: Any?]?) -> AppSyncMessage.Payload {
+    private func convertToPayload(for query: String, variables: [String: Any?]?) -> AppSyncMessage.Payload? {
+        guard let subscriptionItem = subscriptionItem else {
+            AppSyncLogger.debug("\(#function): no subscription item")
+            return nil
+        }
+
         var dataDict: [String: Any] = ["query": query]
         if let subVariables = variables {
             dataDict["variables"] = subVariables

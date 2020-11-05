@@ -11,11 +11,11 @@ extension RealtimeConnectionProvider {
 
     /// Start a stale connection timer, first invalidating and destroying any existing timer
     func startStaleConnectionTimer() {
-        AppSyncLogger.debug("Starting stale connection timer for \(staleConnectionTimeout)s")
+        AppSyncLogger.debug("Starting stale connection timer for \(staleConnectionTimeout.get())s")
         if staleConnectionTimer != nil {
             stopStaleConnectionTimer()
         }
-        staleConnectionTimer = CountdownTimer(interval: staleConnectionTimeout) {
+        staleConnectionTimer = CountdownTimer(interval: staleConnectionTimeout.get()) {
             self.disconnectStaleConnection()
         }
     }
