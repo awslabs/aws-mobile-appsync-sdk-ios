@@ -23,7 +23,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
     ```ruby
-    pod 'AWSAppSync', '~> 3.1.6'
+    pod 'AWSAppSync', '~> 3.1.11'
     ```
 
     Example:
@@ -37,7 +37,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
       use_frameworks!
 
       # Pods for EventsApp
-      pod 'AWSAppSync', '~> 3.1.6'
+      pod 'AWSAppSync', '~> 3.1.11'
     end
     ```
 
@@ -97,7 +97,8 @@ You can find a sample app which uses the AppSync SDK here: https://github.com/aw
 
 ## Documentation
 
-You can find a step by step walk through of setting up codegen backend and accessing it via the iOS client here: https://aws-amplify.github.io/docs/ios/api
+You can find a step by step walk through of setting up codegen backend and accessing it via the iOS client here: https://docs.amplify.aws/sdk/api/graphql/q/platform/ios
+
 
 ## Contributing
 

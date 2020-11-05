@@ -36,22 +36,25 @@ public struct SessionToken {
                 return nil
             }
             let claims = tokenSplit[1]
+                .replacingOccurrences(of: "-", with: "+")
+                .replacingOccurrences(of: "_", with: "/")
             
             let paddedLength = claims.count + (4 - (claims.count % 4)) % 4
             //JWT is not padded with =, pad it if necessary
             let updatedClaims = claims.padding(toLength: paddedLength, withPad: "=", startingAt: 0)
-            let claimsData = Data.init(base64Encoded: updatedClaims, options: .ignoreUnknownCharacters)
-            
-            guard claimsData != nil else {
+            let encodedData = Data(base64Encoded: updatedClaims, options: .ignoreUnknownCharacters)
+
+            guard let claimsData = encodedData else {
                 print("Cannot get claims in `Data` form. Token is not valid base64 encoded string.")
                 return nil
             }
-            let jsonObject = try? JSONSerialization.jsonObject(with: claimsData!, options: [])
-            guard jsonObject != nil else {
+            
+            let jsonObject = try? JSONSerialization.jsonObject(with: claimsData, options: [])
+            guard let convertedDictionary = jsonObject as? [String: AnyObject] else {
                 print("Cannot get claims in `Data` form. Token is not valid JSON string.")
                 return nil
             }
-            return jsonObject as? [String: AnyObject]
+            return convertedDictionary
         }
     }
     
@@ -88,28 +91,17 @@ extension AWSMobileClient: AWSIdentityProviderManager {
         } else if federationProvider == .userPools {
             
             let userPoolsTokenTask: AWSTaskCompletionSource<NSDictionary> = AWSTaskCompletionSource.init()
-            self.getTokens { (tokens, error) in
-                if let tokens = tokens {
-                    dict[self.userPoolClient!.identityProviderName] = tokens.idToken!.tokenString!
-                    userPoolsTokenTask.set(result: dict as NSDictionary)
-                } else if let error = error {
-                    userPoolsTokenTask.set(error: error)
-                }
+            self.getTokens { [weak self] (tokens, error) in
+                self?.setLoginMap(using: tokens, and: error, to: userPoolsTokenTask)
             }
-            
             return userPoolsTokenTask.task
         } else if federationProvider == .oidcFederation {
             dict.addEntries(from: self.cachedLoginsMap)
         } else if federationProvider == .hostedUI {
             if !federationDisabled {
                 let hostedUITokenTask: AWSTaskCompletionSource<NSDictionary> = AWSTaskCompletionSource.init()
-                self.getTokens { (tokens, error) in
-                    if let tokens = tokens {
-                        dict[self.userPoolClient!.identityProviderName] = tokens.idToken!.tokenString!
-                        hostedUITokenTask.set(result: dict as NSDictionary)
-                    } else if let error = error {
-                        hostedUITokenTask.set(error: error)
-                    }
+                self.getTokens { [weak self] (tokens, error) in
+                    self?.setLoginMap(using: tokens, and: error, to: hostedUITokenTask)
                 }
                 return hostedUITokenTask.task
             }
@@ -117,6 +109,25 @@ extension AWSMobileClient: AWSIdentityProviderManager {
         }
         let task = AWSTask.init(result: dict as NSDictionary)
         return task
+    }
+    
+    func setLoginMap(using tokens: Tokens?, and error: Error?, to task: AWSTaskCompletionSource<NSDictionary>) {
+        
+        guard let tokens = tokens else {
+            let idTokenError = error != nil ? error! :
+                AWSMobileClientError.unknown(message: "Could not read the id token or error from the token response")
+            task.set(error: idTokenError)
+            return
+        }
+        guard let idToken = tokens.idToken, let tokenString = idToken.tokenString else {
+            let errorString = "Could not read the id token from the token response"
+            let error = AWSMobileClientError.idTokenNotIssued(message: errorString)
+            task.set(error: error)
+            return
+        }
+        let providerName = self.userPoolClient!.identityProviderName as NSString
+        let dict = NSDictionary(object: tokenString, forKey: providerName)
+        task.set(result: dict)
     }
 }
 

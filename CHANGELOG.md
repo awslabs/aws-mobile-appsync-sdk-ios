@@ -9,6 +9,36 @@ also includes support for offline operations.
 
 - Refactored `AWSAppSyncHTTPNetworkTransport` to simplify internal auth handling, and to support providing your own `URLSession` in the new initializer.
 
+## 3.1.11
+
+### Misc. Updates
+
+- Update dependencies. ([PR #436](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/436))
+
+## 3.1.10
+
+### Misc. Updates
+
+- Update dependencies. ([PR #432](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/432))
+
+## 3.1.9
+
+## Misc. Updates
+
+- Fix Carthage build [PR #423](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/423)
+- Support Xcode 12 [PR #419](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/419)
+- Fix dependency version in podspec [PR #428](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/428)
+
+## 3.1.8
+
+### Deprecated release
+This release is deprecated due to errors. Please use 3.1.9 or greater.
+
+## 3.1.7
+
+### Deprecated release
+This release is deprecated due to errors. Please use 3.1.8 or greater.
+
 ## 3.1.6
 
 ### Misc. Updates

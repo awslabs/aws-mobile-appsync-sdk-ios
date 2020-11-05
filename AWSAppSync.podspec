@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'AWSAppSync'
-  s.version      = '3.1.6'
+  s.version      = '3.1.11'
   s.author       = 'AWS'
   s.homepage     = 'http://aws.amazon.com/mobile/sdk'
   s.license      = { :type => 'Amazon Software License', :file => 'LICENSE' }
@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '9.0'
   s.swift_version = '5.1'
 
-  s.dependency 'AWSCore', '~> 2.16.0'
+  s.dependency 'AWSCore', '~> 2.18.0'
   s.dependency 'SQLite.swift', '~> 0.12.2'
   s.dependency 'ReachabilitySwift', '~> 5.0.0'
   s.dependency 'AppSyncRealTimeClient', '~> 1.4'
