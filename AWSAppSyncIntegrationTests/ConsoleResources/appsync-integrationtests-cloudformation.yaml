@@ -23,6 +23,13 @@ Parameters:
     MaxLength: 24
     AllowedPattern: '^[a-zA-Z][a-zA-Z0-9]*$'
 
+  AppSyncApiKeyExpires:
+    Default: 1638316800
+    Description: >-
+      Unix time when the APIKey will expire.  Typically you want to do this
+      364 days in the future.  Default value is 12/01/2021 @12:00AM (UTC)
+    Type: Number
+
 Conditions:
   AuthTypeIsAPIKey: !Equals [ !Ref AuthType, ApiKey ]
   AuthTypeIsIAM: !Equals [ !Ref AuthType, IAM ]
@@ -215,10 +222,7 @@ Resources:
     Type: AWS::AppSync::ApiKey
     Properties:
       ApiId: !GetAtt GraphQLApi.ApiId
-      # Hardcoded, since we don't have an easy way of deriving
-      # expiration date via a function. Current value:
-      # 27-Dec-2019
-      Expires: 1577433600
+      Expires: !Sub ${AppSyncApiKeyExpires}
 
   #########################################################
   # AppSync IAM Auth resources
