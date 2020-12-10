@@ -3,7 +3,7 @@
 # you wish to lint
 
 excluded:
-  - Apollo
+  - AWSAppSyncClient/Apollo
 
 
 # Note: This feature is experimental. As of this writing (4-Dec-2018) warnings
