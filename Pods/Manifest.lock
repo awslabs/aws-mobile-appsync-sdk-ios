@@ -1,32 +1,32 @@
 PODS:
   - AppSyncRealTimeClient (1.4.2):
     - Starscream (~> 3.1.0)
-  - AWSAuthCore (2.18.1):
-    - AWSCore (= 2.18.1)
-  - AWSCognitoIdentityProvider (2.18.1):
-    - AWSCognitoIdentityProviderASF (= 2.18.1)
-    - AWSCore (= 2.18.1)
-  - AWSCognitoIdentityProviderASF (2.18.1)
-  - AWSCore (2.18.1)
-  - AWSMobileClient (2.18.1):
-    - AWSAuthCore (= 2.18.1)
-    - AWSCognitoIdentityProvider (= 2.18.1)
-    - AWSCognitoIdentityProviderASF (= 2.18.1)
-    - AWSCore (= 2.18.1)
-  - AWSS3 (2.18.1):
-    - AWSCore (= 2.18.1)
+  - AWSAuthCore (2.20.0):
+    - AWSCore (= 2.20.0)
+  - AWSCognitoIdentityProvider (2.20.0):
+    - AWSCognitoIdentityProviderASF (= 2.20.0)
+    - AWSCore (= 2.20.0)
+  - AWSCognitoIdentityProviderASF (2.20.0)
+  - AWSCore (2.20.0)
+  - AWSMobileClient (2.20.0):
+    - AWSAuthCore (= 2.20.0)
+    - AWSCognitoIdentityProvider (= 2.20.0)
+    - AWSCognitoIdentityProviderASF (= 2.20.0)
+    - AWSCore (= 2.20.0)
+  - AWSS3 (2.20.0):
+    - AWSCore (= 2.20.0)
   - ReachabilitySwift (5.0.0)
   - SQLite.swift (0.12.2):
     - SQLite.swift/standard (= 0.12.2)
   - SQLite.swift/standard (0.12.2)
   - Starscream (3.1.1)
-  - SwiftLint (0.40.3)
+  - SwiftLint (0.41.0)
 
 DEPENDENCIES:
   - AppSyncRealTimeClient (~> 1.4)
-  - AWSCore (~> 2.18.0)
-  - AWSMobileClient (~> 2.18.0)
-  - AWSS3 (~> 2.18.0)
+  - AWSCore (~> 2.20.0)
+  - AWSMobileClient (~> 2.20.0)
+  - AWSS3 (~> 2.20.0)
   - ReachabilitySwift (~> 5.0.0)
   - SQLite.swift (~> 0.12.2)
   - SwiftLint
@@ -47,17 +47,17 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   AppSyncRealTimeClient: 7fb160294d067b6c0c4b3c4ab91e953fd4cfba30
-  AWSAuthCore: 89562ca19419744144f7afcfe81acba64b33a9bd
-  AWSCognitoIdentityProvider: bb5c856ac56d976efb72660a2c09aeb131b44c88
-  AWSCognitoIdentityProviderASF: 67fe08635f9c0769a0cb1e6c548662075e40251e
-  AWSCore: 0979d22aebe17ffc24eea19d8bc40402b651b018
-  AWSMobileClient: e436716389ccbfaa8ee41f52d2128f942527a64e
-  AWSS3: 9419bfeaabafd660243ad9c1a6a0c8c2a96be4c6
+  AWSAuthCore: 6a5f0fdbbd65d917deab61e2f5035afecafaa687
+  AWSCognitoIdentityProvider: f9031fc36af73a1e6a3c7476cbd536c1d4f7591c
+  AWSCognitoIdentityProviderASF: c126563dd240709a5acf2c15910ea4c872c65df3
+  AWSCore: e8748f1d2e97874ff5638fe7c3c31431ad223b4a
+  AWSMobileClient: f98f4d3eb4d0f893a128b5546a31fd2cbc88e2ef
+  AWSS3: ad208d641f06eaf57e01db2071c09c9e50e17b0f
   ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
-  SwiftLint: dfd554ff0dff17288ee574814ccdd5cea85d76f7
+  SwiftLint: c585ebd615d9520d7fbdbe151f527977b0534f1e
 
-PODFILE CHECKSUM: caea9daab7b4ef82ad705c1aa6829b27f11fb1e2
+PODFILE CHECKSUM: 8b353ce99cb0cfa205128f042a1f7e1d377e9084
 
 COCOAPODS: 1.9.3
