@@ -89,7 +89,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Codegen
 
-    To use the AppSync SDK, you will need to use `amplify codegen` from the [AWS Amplify CLI](https://aws-amplify.github.io/docs/cli/codegen?sdk=ios) which helps generate a strongly typed API for your schema. You can find the instructions to use the codegen here: https://aws-amplify.github.io/docs/ios/api
+To use the AppSync SDK, you will need to use `amplify codegen` from the [AWS Amplify CLI](https://aws-amplify.github.io/docs/cli/codegen?sdk=ios). This command will generate Swift-language files corresponding to your schema. You can interact with these classes instead of operating on GraphQL query documents, directly. You can find the instructions to use the codegen [here](https://aws-amplify.github.io/docs/ios/api).
 
 ## Sample
 
