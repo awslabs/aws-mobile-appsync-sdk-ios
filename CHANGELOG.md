@@ -5,6 +5,8 @@ also includes support for offline operations.
 
 ## Unreleased
 
+## 3.1.12
+
 ### Misc. Updates
 - Add a parameter for the api key expiration for integ test setup CFN template ([PR #439](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/439))
 - Update dependencies. ([PR #441](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/441))
