@@ -204,26 +204,31 @@ class AppSyncSubscriptionWithSyncTests: XCTestCase {
     }
 
     func testCancel() {
-        let expectation = XCTestExpectation(description: "Base Query Handler sync - should never be called")
-        expectation.isInverted = true
-        var toggle = true
+        let expectation = XCTestExpectation(description: "Base Query Handler sync - should be called")
+        let injectedOperationQueue = OperationQueue()
         let subscriptionWithSync = AppSyncSubscriptionWithSync(
             appSyncClient: appsyncClient,
             baseQuery: listPostsQuery,
             deltaQuery: emptyQuery,
             subscription: emptySubscription,
             baseQueryHandler: { (result, error) in
-                if toggle { return }
                 expectation.fulfill()
         },
             deltaQueryHandler: emptyDeltaQueryHandler,
             subscriptionResultHandler: emptySubscriptionResultHandler,
             subscriptionMetadataCache: nil,
             syncConfiguration: .init(baseRefreshIntervalInSeconds: 1),
-            handlerQueue: queue)
-        subscriptionWithSync.cancel()
-        toggle = false
+            handlerQueue: queue,
+            operationQueue: injectedOperationQueue)
+
         wait(for: [expectation], timeout: 2.0)
+       
+        subscriptionWithSync.cancel()
+    
+        for operation in injectedOperationQueue.operations {
+            XCTAssert(operation.isCancelled, "All operations should be canceled")
+        }
+        XCTAssert(injectedOperationQueue.isSuspended, "Operation queue should be suspended")
     }
 
     func testCancelWithBaseQueryAndDeinitNoStrongReferenceRetained() {

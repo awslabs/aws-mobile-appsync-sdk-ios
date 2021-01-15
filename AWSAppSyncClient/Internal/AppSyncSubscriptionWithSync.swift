@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AppSyncRealTimeClient
 
 final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>: Cancellable {
 
@@ -29,7 +30,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
 
     private var currentSyncAttempts = 0
 
-    private var isCancelled = false
+    private var isCancelled: AtomicValue<Bool>
 
     /// Serializes sync setup, query, and teardown operations to ensure a consistent ordering of invocations.
     private var internalStateSyncQueue: OperationQueue
@@ -57,13 +58,14 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
                   subscriptionResultHandler: @escaping SubscriptionResultHandler<Subscription>,
                   subscriptionMetadataCache: AWSSubscriptionMetaDataCache?,
                   syncConfiguration: SyncConfiguration,
-                  handlerQueue: DispatchQueue) {
+                  handlerQueue: DispatchQueue,
+                  operationQueue: OperationQueue? = nil) {
         self.appSyncClient = appSyncClient
         self.subscriptionMetadataCache = subscriptionMetadataCache
         self.handlerQueue = handlerQueue
-
         self.baseQuery = baseQuery
         self.baseQueryHandler = baseQueryHandler
+        self.isCancelled = AtomicValue(initialValue: false)
 
         // We check if subscription and delta query are not internal no-op operations before setting them
         // This is done since Swift compiler can't infer generic types for these operations.
@@ -82,7 +84,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
             baseRefreshIntervalInSeconds: syncConfiguration.baseRefreshIntervalInSeconds
         )
 
-        internalStateSyncQueue = OperationQueue()
+        internalStateSyncQueue = operationQueue ?? OperationQueue()
         internalStateSyncQueue.maxConcurrentOperationCount = 1
         internalStateSyncQueue.name = "AppSync.DeltaSyncOperationQueue.\(getOperationHash())"
 
@@ -103,7 +105,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
     // MARK: - Setup
 
     private func performInitialSync() {
-        guard !isCancelled else {
+        guard !isCancelled.get() else {
             return
         }
         AppSyncLog.debug("Queuing operations for initial sync")
@@ -407,7 +409,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
     ///   a delta or base query is the responsibility of `SyncStrategy`
     /// - See Also: SyncStrategy
     private func performSync() {
-        guard !isCancelled else {
+        guard !isCancelled.get() else {
             return
         }
         AppSyncLog.debug("Starting sync")
@@ -528,7 +530,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
     /// Cancels and releases the subscription watcher, cancels active timers, and unregisters for system notifications. After
     /// invoking this method, the instance will be eligible for release.
     private func internalCancel() {
-        isCancelled = true
+        isCancelled.set(true)
         internalStateSyncQueue.cancelAllOperations()
         internalStateSyncQueue.isSuspended = true
         unregisterForNotifications()
