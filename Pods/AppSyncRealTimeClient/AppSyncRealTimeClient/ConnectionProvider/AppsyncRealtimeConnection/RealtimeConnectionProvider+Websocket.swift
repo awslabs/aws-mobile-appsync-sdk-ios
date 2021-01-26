@@ -1,5 +1,5 @@
 //
-// Copyright 2018-2020 Amazon.com,
+// Copyright 2018-2021 Amazon.com,
 // Inc. or its affiliates. All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -18,7 +18,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
     }
 
     public func websocketDidDisconnect(provider: AppSyncWebsocketProvider, error: Error?) {
-        serialConnectionQueue.async { [weak self] in
+        connectionQueue.async { [weak self] in
             guard let self = self else {
                 return
             }
@@ -43,14 +43,18 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
 
     // MARK: - Handle websocket response
 
-    func handleResponse(_ response: RealtimeConnectionProviderResponse) {
+    private func handleResponse(_ response: RealtimeConnectionProviderResponse) {
         resetStaleConnectionTimer()
 
         switch response.responseType {
         case .connectionAck:
-            handleConnectionAck(response: response)
+            connectionQueue.async { [weak self] in
+                self?.handleConnectionAck(response: response)
+            }
         case .error:
-            handleError(response: response)
+            connectionQueue.async { [weak self] in
+                self?.handleError(response: response)
+            }
         case .subscriptionAck, .unsubscriptionAck, .data:
             if let appSyncResponse = response.toAppSyncResponse() {
                 updateCallback(event: .data(appSyncResponse))
@@ -60,6 +64,9 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
         }
     }
 
+    /// Updates connection status callbacks and sets stale connection timeout
+    ///
+    /// - Warning: This method must be invoked on the `connectionQueue`
     private func handleConnectionAck(response: RealtimeConnectionProviderResponse) {
         // Only from in progress state, the connection can transition to connected state.
         // The below guard statement make sure that. If we get connectionAck in other
@@ -67,45 +74,39 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
         guard status == .inProgress else {
             return
         }
-        serialConnectionQueue.async {[weak self] in
-            guard let self = self else {
-                return
-            }
-            self.status = .connected
-            self.updateCallback(event: .connection(self.status))
 
-            // If the service returns a connection timeout, use that instead of the default
-            guard case let .number(value) = response.payload?["connectionTimeoutMs"] else {
-                return
-            }
+        status = .connected
+        updateCallback(event: .connection(status))
 
-            let interval = value / 1_000
-
-            guard interval != self.staleConnectionTimer?.interval else {
-                return
-            }
-
-            AppSyncLogger.debug(
-                """
-                Resetting keep alive timer in response to service timeout \
-                instructions: \(interval)s
-                """
-            )
-            self.staleConnectionTimeout.set(interval)
-            self.startStaleConnectionTimer()
+        // If the service returns a connection timeout, use that instead of the default
+        guard case let .number(value) = response.payload?["connectionTimeoutMs"] else {
+            return
         }
+
+        let interval = value / 1_000
+
+        guard interval != staleConnectionTimer?.interval else {
+            return
+        }
+
+        AppSyncLogger.debug(
+            """
+            Resetting keep alive timer in response to service timeout \
+            instructions: \(interval)s
+            """
+        )
+        staleConnectionTimeout.set(interval)
+        startStaleConnectionTimer()
     }
 
+    /// Resolves & dispatches errors from `response`.
+    ///
+    /// - Warning: This method must be invoked on the `connectionQueue`
     private func handleError(response: RealtimeConnectionProviderResponse) {
         // If we get an error in connection inprogress state, return back as connection error.
-        if status == .inProgress {
-            serialConnectionQueue.async {[weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.status = .notConnected
-                self.updateCallback(event: .error(ConnectionProviderError.connection))
-            }
+        guard status != .inProgress else {
+            status = .notConnected
+            updateCallback(event: .error(ConnectionProviderError.connection))
             return
         }
 

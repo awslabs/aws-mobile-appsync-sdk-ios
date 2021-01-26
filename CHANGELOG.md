@@ -7,6 +7,12 @@ also includes support for offline operations.
 
 *Changes merged to `main`, but not yet released on a tag.*
 
+## 3.1.15
+
+### Misc. Updates
+
+- Update dependencies to consume AppSyncRealTimeClient fix for race condition on disconnect ([PR #454](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/454))
+
 ## 3.1.14
 
 ### Misc. Updates
