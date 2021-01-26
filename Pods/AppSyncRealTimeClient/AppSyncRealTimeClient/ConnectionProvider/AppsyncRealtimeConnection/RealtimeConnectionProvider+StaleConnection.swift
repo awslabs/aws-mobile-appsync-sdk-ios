@@ -1,5 +1,5 @@
 //
-// Copyright 2018-2020 Amazon.com,
+// Copyright 2018-2021 Amazon.com,
 // Inc. or its affiliates. All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -35,7 +35,7 @@ extension RealtimeConnectionProvider {
 
     /// Fired when the stale connection timer expires
     private func disconnectStaleConnection() {
-        serialConnectionQueue.async {[weak self] in
+        connectionQueue.async {[weak self] in
             guard let self = self else {
                 return
             }
