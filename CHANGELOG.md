@@ -7,6 +7,12 @@ also includes support for offline operations.
 
 *Changes merged to `main`, but not yet released on a tag.*
 
+## 3.1.16
+
+### Misc. Updates
+
+- chore: Pinned Reachability library version to 5.0.0 ([PR #455](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/455))
+
 ## 3.1.15
 
 ### Misc. Updates
