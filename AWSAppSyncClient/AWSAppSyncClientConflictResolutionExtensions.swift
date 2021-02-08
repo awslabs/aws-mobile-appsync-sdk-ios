@@ -46,7 +46,7 @@ extension AWSAppSyncClient {
             }
 
             firstly {
-                try response.parseResult(cacheKeyForObject: self.store!.cacheKeyForObject)
+                try response.parseResult(cacheKeyForObject: self.store.cacheKeyForObject)
             }.andThen { result, records in
                 if let resultError = result.errors,
                     let conflictResolutionBlock = conflictResolutionBlock,
@@ -72,7 +72,7 @@ extension AWSAppSyncClient {
                     notifyResultHandler(result: result, error: nil)
 
                     if let records = records {
-                        self.store?.publish(records: records).catch { error in
+                        self.store.publish(records: records).catch { error in
                             preconditionFailure(String(describing: error))
                         }
                     }
