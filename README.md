@@ -53,7 +53,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 Carthage supports XCFrameworks in Xcode 12 or above. Follow the steps below to consume the AWS SDK for iOS using XCFrameworks:
 
-1. Install Carthage 0.37.0 or greater. (Carthage does not expect to support [XCFramework support until 0.37.0](https://github.com/Carthage/Carthage/releases/tag/0.36.1).) If it is not yet available, [install Carthage](https://github.com/Carthage/Carthage#installing-carthage) directly from source.
+1. Install Carthage 0.37.0 or greater.
 
 2. Add the following to your `Cartfile`:
 
