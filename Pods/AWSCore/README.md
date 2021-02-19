@@ -100,7 +100,7 @@ For a complete list of our pods, check out the .podspec files in the root direct
 
 Carthage supports XCFrameworks in Xcode 12 or above. Follow the steps below to consume the AWS SDK for iOS using XCFrameworks:
 
-1. Install Carthage 0.37.0 or greater. (Carthage does not expect to support [XCFramework support until 0.37.0](https://github.com/Carthage/Carthage/releases/tag/0.36.1).) If it is not yet available, [install Carthage](https://github.com/Carthage/Carthage#installing-carthage) directly from source.
+1. Install Carthage 0.37.0 or greater.
 
 2. Add the following to your `Cartfile`:
 
@@ -108,7 +108,9 @@ Carthage supports XCFrameworks in Xcode 12 or above. Follow the steps below to c
 
 3. Then run the following command:
     
-        $ carthage update --use-xcframeworks
+        $ carthage update --use-xcframeworks --no-use-binaries
+
+> As of Carthage 0.37.0, prebuilt binaries using XCFrameworks are not supported, as mentioned in the Carthage release notes - https://github.com/Carthage/Carthage/releases/tag/0.37.0
 
 4. On your application targets’ General settings tab, in the Embedded Binaries section, drag and drop each xcframework you want to use from the Carthage/Build folder on disk.
 
