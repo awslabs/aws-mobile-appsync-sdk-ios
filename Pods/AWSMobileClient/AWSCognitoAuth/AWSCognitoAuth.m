@@ -80,7 +80,7 @@ API_AVAILABLE(ios(13.0))
 
 @implementation AWSCognitoAuth
 
-NSString *const AWSCognitoAuthSDKVersion = @"2.22.1";
+NSString *const AWSCognitoAuthSDKVersion = @"2.23.0";
 
 
 static NSMutableDictionary *_instanceDictionary = nil;
@@ -516,7 +516,7 @@ withPresentingViewController:(UIViewController *)presentingViewController {
 
 - (void) signOut: (UIViewController *) vc completion: (AWSCognitoAuthSignOutBlock) completion {
     self.presentationAnchor = nil;
-    [self enqueueSignOut:nil completion:completion];
+    [self enqueueSignOut:vc completion:completion];
 }
 
 - (void) signOutWithWebUI:(ASPresentationAnchor) anchor completion:(AWSCognitoAuthSignOutBlock) completion {
