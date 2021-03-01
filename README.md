@@ -23,7 +23,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
     ```ruby
-    pod 'AWSAppSync', '~> 3.1.15'
+    pod 'AWSAppSync', '~> 3.1.17'
     ```
 
     Example:
@@ -37,7 +37,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
       use_frameworks!
 
       # Pods for EventsApp
-      pod 'AWSAppSync', '~> 3.1.15'
+      pod 'AWSAppSync', '~> 3.1.17'
     end
     ```
 
@@ -48,6 +48,36 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. In your source file, import the SDK using `import AWSAppSync`.
 
 #### Via Carthage
+
+##### XCFrameworks (recommended)
+
+Carthage supports XCFrameworks in Xcode 12 or above. Follow the steps below to consume the AWS SDK for iOS using XCFrameworks:
+
+1. Install Carthage 0.37.0 or greater.
+
+2. Add the following to your `Cartfile`:
+
+    ```
+    github "awslabs/aws-mobile-appsync-sdk-ios"
+    ```
+
+3. Then run the following command:
+    
+        $ carthage update --use-xcframeworks
+
+4. On your application targets’ General settings tab, in the Embedded Binaries section, drag and drop each xcframework you want to use from the Carthage/Build folder on disk.
+
+> Note: If you are using XCFrameworks (i.e., either Carthage or Dynamic Frameworks), the module `AWSMobileClient` is named as `AWSMobileClientXCF` to work around a [Swift issue](https://bugs.swift.org/browse/SR-11704). To use `AWSMobileClient`, import it as:
+        
+        import AWSMobileClientXCF
+
+and use it your app code without the `XCF` suffix.
+
+        AWSMobileClient.default.initialize() 
+
+##### Frameworks with "fat libraries" (not recommended)
+
+To build platform-specific framework bundles with multiple architectures in the binary, (Xcode 11 and below)
 
 1. Add the following to your Cartfile:
 
