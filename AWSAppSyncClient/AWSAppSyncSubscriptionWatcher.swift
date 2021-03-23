@@ -6,6 +6,7 @@
 
 import Dispatch
 import AppSyncRealTimeClient
+import Foundation
 
 /// Used to determine the reason why a subscription is being cancelled/ disconnected.
 ///

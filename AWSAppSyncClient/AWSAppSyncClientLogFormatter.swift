@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AWSCore
 
 public final class AWSAppSyncClientLogFormatter: NSObject, AWSDDLogFormatter {
 

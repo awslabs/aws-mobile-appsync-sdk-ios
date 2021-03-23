@@ -6,6 +6,7 @@
 
 import Foundation
 import Reachability
+import AWSCore
 
 internal extension Notification.Name {
     static let appSyncReachabilityChanged = Notification.Name("AppSyncNetworkAvailabilityChangedNotification")

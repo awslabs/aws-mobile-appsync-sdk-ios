@@ -6,6 +6,7 @@
 
 import Foundation
 import AppSyncRealTimeClient
+import AWSCore
 
 class IAMBasedConnectionPool: SubscriptionConnectionPool {
 
