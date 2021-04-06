@@ -9,9 +9,10 @@ echo "Bumping version from $1 to $2"
 find . -name 'AWSAppSync.podspec' -print0 | xargs -0 sed -i '' -e "s/$1/$2/g"
 find . -name 'Podfile' -print0 | xargs -0 sed -i '' -e "s/$1/$2/g"
 find . -name 'Cartfile' -print0 | xargs -0 sed -i '' -e "s/$1/$2/g"
+sed -i '' -e "s/$1/$2/g" Package.swift
 sed -i '' -e "s/$1/$2/g" README.md
 
-echo "SDK dependency updated in podspec, Podfile, and Cartfile."
-echo "Review the diff. If it looks correct, run 'pod update', build and test."
-echo "Then commit, and create a PR."
+echo "SDK dependency updated in podspec, Package.swift, Podfile, and Cartfile."
+echo "Review the diff. If it looks correct, run 'swift package resolve && pod update'"
+echo "Build and test, then commit, and create a PR."
 
