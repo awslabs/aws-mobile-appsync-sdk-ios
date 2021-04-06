@@ -4,3 +4,4 @@ docs/_site/
 xcuserdata
 */appsync_test_credentials.json
 Carthage
+.build/
