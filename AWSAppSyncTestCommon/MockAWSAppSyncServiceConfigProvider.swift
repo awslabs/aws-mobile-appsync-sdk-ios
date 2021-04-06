@@ -7,6 +7,7 @@
 import Foundation
 
 @testable import AWSAppSync
+import AWSCore
 
 struct MockAWSAppSyncServiceConfigProvider: AWSAppSyncServiceConfigProvider {
     public let endpoint: URL

@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AWSCore
 
 /// Client-side configurations of an AWSAppSync service instance
 public protocol AWSAppSyncServiceConfigProvider {

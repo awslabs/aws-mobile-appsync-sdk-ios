@@ -6,6 +6,8 @@
 
 import Foundation
 import AppSyncRealTimeClient
+import UIKit
+import AWSCore
 
 final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQuery: GraphQLQuery, DeltaQuery: GraphQLQuery>: Cancellable {
 

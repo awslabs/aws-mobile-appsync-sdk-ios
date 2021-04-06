@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import AWSCore
 
 /**
  * Configuration for AWSAppSyncClient as read from `awsconfiguration.json`

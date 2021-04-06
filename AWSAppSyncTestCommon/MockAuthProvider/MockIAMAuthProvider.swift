@@ -6,6 +6,7 @@
 
 import Foundation
 @testable import AWSAppSync
+import AWSCore
 
 class MockIAMAuthProvider: NSObject, AWSCredentialsProvider {
 

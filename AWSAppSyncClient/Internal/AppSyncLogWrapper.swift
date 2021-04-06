@@ -3,6 +3,7 @@
 // Licensed under the Amazon Software License
 // http://aws.amazon.com/asl/
 //
+import AWSCore
 
 final class AppSyncLog {
     class func verbose(_ message: @autoclosure () -> String, file: String = #file, function: String = #function, line: Int = #line) {

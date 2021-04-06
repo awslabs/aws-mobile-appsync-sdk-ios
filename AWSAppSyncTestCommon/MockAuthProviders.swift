@@ -5,6 +5,7 @@
 //
 
 @testable import AWSAppSync
+import AWSCore
 
 struct MockAWSAPIKeyAuthProvider: AWSAPIKeyAuthProvider {
     var apiKey: String
