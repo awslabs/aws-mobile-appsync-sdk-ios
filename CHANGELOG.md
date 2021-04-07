@@ -7,6 +7,17 @@ also includes support for offline operations.
 
 *Changes merged to `main`, but not yet released on a tag.*
 
+## 3.2.0
+
+### New Features
+
+- **Swift Package Manager**
+  - The AWS AppSync SDK for iOS can now be installed via Swift Package Manager. See the [README](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/blob/main/README.md) for full details.
+
+### Misc. Updates
+
+- Update dependencies ([PR #467](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/467))
+
 ## 3.1.17
 
 ### Misc. Updates

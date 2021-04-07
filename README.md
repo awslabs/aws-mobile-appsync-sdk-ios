@@ -18,6 +18,18 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 
 ### Installing the SDK
 
+#### Via Swift Package Manager
+
+1. Swift Package Manager is distributed with Xcode. To start adding the AWS SDK to your iOS project, open your project in Xcode and select **File > Swift Packages > Add Package Dependency**.
+
+1. Enter the URL for the AWS AppSync SDK for iOS GitHub repo (`https://github.com/awslabs/aws-mobile-appsync-sdk-ios`) into the search bar and click **Next**.
+
+1. You'll see the repository rules for which version of the SDK you want Swift Package Manager to install. Choose the first rule, **Version**, and select **Up to Next Major** as it will use the latest compatible version of the dependency that can be detected from the `main` branch, then click **Next**.
+
+1. Choose the **AWSAppSync** package product and click **Finish**.
+
+1. In your source file, import the SDK using `import AWSAppSync`.
+
 #### Via CocoaPods
 
 1. Add the following line to your Podfile:
