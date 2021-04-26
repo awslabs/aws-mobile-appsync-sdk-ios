@@ -3,7 +3,7 @@ platform :ios, "9.0"
 use_frameworks!
 inhibit_all_warnings!
 
-AWS_SDK_VERSION = "2.23.3"
+AWS_SDK_VERSION = "2.24.0"
 
 target "AWSAppSync" do
   pod "AWSCore", "~> #{AWS_SDK_VERSION}"
