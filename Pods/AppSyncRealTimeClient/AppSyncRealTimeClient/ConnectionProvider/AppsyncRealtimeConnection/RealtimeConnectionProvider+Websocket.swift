@@ -12,7 +12,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
     public func websocketDidConnect(provider: AppSyncWebsocketProvider) {
         // Call the ack to finish the connection handshake
         // Inform the callback when ack gives back a response.
-        AppSyncLogger.debug("WebsocketDidConnect, sending init message...")
+        AppSyncLogger.debug("[RealtimeConnectionProvider] WebsocketDidConnect, sending init message")
         sendConnectionInitMessage()
         startStaleConnectionTimer()
     }
@@ -48,10 +48,12 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
 
         switch response.responseType {
         case .connectionAck:
+            AppSyncLogger.debug("[RealtimeConnectionProvider] received connectionAck")
             connectionQueue.async { [weak self] in
                 self?.handleConnectionAck(response: response)
             }
         case .error:
+            AppSyncLogger.debug("[RealtimeConnectionProvider] received error")
             connectionQueue.async { [weak self] in
                 self?.handleError(response: response)
             }
@@ -60,7 +62,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
                 updateCallback(event: .data(appSyncResponse))
             }
         case .keepAlive:
-            AppSyncLogger.debug("\(self) received keepAlive")
+            AppSyncLogger.debug("[RealtimeConnectionProvider] received keepAlive")
         }
     }
 

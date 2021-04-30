@@ -13,29 +13,40 @@ public class StarscreamAdapter: AppSyncWebsocketProvider {
         // Do nothing
     }
 
+    private let serialQueue = DispatchQueue(label: "com.amazonaws.StarscreamAdapter.serialQueue")
+
     var socket: WebSocket?
     weak var delegate: AppSyncWebsocketDelegate?
 
     public func connect(url: URL, protocols: [String], delegate: AppSyncWebsocketDelegate?) {
-        AppSyncLogger.verbose("Connecting to url ...")
-        socket = WebSocket(url: url, protocols: protocols)
-        self.delegate = delegate
-        socket?.delegate = self
-        socket?.callbackQueue = DispatchQueue(label: "com.amazonaws.StarscreamAdapter.callBack")
-        socket?.connect()
+        serialQueue.async {
+            AppSyncLogger.verbose("[StarscreamAdapter] connect. Connecting to url")
+            self.socket = WebSocket(url: url, protocols: protocols)
+            self.delegate = delegate
+            self.socket?.delegate = self
+            self.socket?.callbackQueue = DispatchQueue(label: "com.amazonaws.StarscreamAdapter.callBack")
+            self.socket?.connect()
+        }
     }
 
     public func disconnect() {
-        socket?.disconnect()
-        socket = nil
+        serialQueue.async {
+            AppSyncLogger.verbose("[StarscreamAdapter] socket.disconnect")
+            self.socket?.disconnect()
+            self.socket = nil
+        }
     }
 
     public func write(message: String) {
-        AppSyncLogger.verbose("Websocket write - \(message)")
-        socket?.write(string: message)
+        serialQueue.async {
+            AppSyncLogger.verbose("[StarscreamAdapter] socket.write - \(message)")
+            self.socket?.write(string: message)
+        }
     }
 
     public var isConnected: Bool {
-        return socket?.isConnected ?? false
+        serialQueue.sync {
+            return socket?.isConnected ?? false
+        }
     }
 }

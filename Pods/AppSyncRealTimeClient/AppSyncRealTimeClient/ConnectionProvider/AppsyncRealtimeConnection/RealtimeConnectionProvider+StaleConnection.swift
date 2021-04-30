@@ -11,7 +11,7 @@ extension RealtimeConnectionProvider {
 
     /// Start a stale connection timer, first invalidating and destroying any existing timer
     func startStaleConnectionTimer() {
-        AppSyncLogger.debug("Starting stale connection timer for \(staleConnectionTimeout.get())s")
+        AppSyncLogger.debug("[RealtimeConnectionProvider] Starting stale connection timer for \(staleConnectionTimeout.get())s")
         if staleConnectionTimer != nil {
             stopStaleConnectionTimer()
         }
@@ -22,14 +22,14 @@ extension RealtimeConnectionProvider {
 
     /// Stop and destroy any existing stale connection timer
     func stopStaleConnectionTimer() {
-        AppSyncLogger.debug("Stopping and destroying stale connection timer")
+        AppSyncLogger.debug("[RealtimeConnectionProvider] Stopping and destroying stale connection timer")
         staleConnectionTimer?.invalidate()
         staleConnectionTimer = nil
     }
 
     /// Reset the stale connection timer in response to receiving a message
     func resetStaleConnectionTimer() {
-        AppSyncLogger.debug("Resetting stale connection timer")
+        AppSyncLogger.debug("[RealtimeConnectionProvider] Resetting stale connection timer")
         staleConnectionTimer?.resetCountdown()
     }
 
@@ -39,9 +39,9 @@ extension RealtimeConnectionProvider {
             guard let self = self else {
                 return
             }
+            AppSyncLogger.error("[RealtimeConnectionProvider] Realtime connection is stale, disconnecting.")
             self.status = .notConnected
             self.websocket.disconnect()
-            AppSyncLogger.error("Realtime connection is stale, disconnected.")
             self.updateCallback(event: .error(ConnectionProviderError.connection))
         }
     }

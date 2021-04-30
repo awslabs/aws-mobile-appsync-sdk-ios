@@ -23,7 +23,7 @@ PODS:
   - SwiftLint (0.43.1)
 
 DEPENDENCIES:
-  - AppSyncRealTimeClient (~> 1.4)
+  - AppSyncRealTimeClient (from `https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git`, branch `feat/data-race`)
   - AWSCore (~> 2.24.0)
   - AWSMobileClient (~> 2.24.0)
   - AWSS3 (~> 2.24.0)
@@ -33,7 +33,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - AppSyncRealTimeClient
     - AWSAuthCore
     - AWSCognitoIdentityProvider
     - AWSCognitoIdentityProviderASF
@@ -44,6 +43,16 @@ SPEC REPOS:
     - SQLite.swift
     - Starscream
     - SwiftLint
+
+EXTERNAL SOURCES:
+  AppSyncRealTimeClient:
+    :branch: feat/data-race
+    :git: https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git
+
+CHECKOUT OPTIONS:
+  AppSyncRealTimeClient:
+    :commit: 35eccb323609270b4e9f1af7681a196129a8b6fc
+    :git: https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git
 
 SPEC CHECKSUMS:
   AppSyncRealTimeClient: 4479354d262a23d2cc9fea1760f3815b75a4091a
@@ -58,6 +67,6 @@ SPEC CHECKSUMS:
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   SwiftLint: 99f82d07b837b942dd563c668de129a03fc3fb52
 
-PODFILE CHECKSUM: 32e0ac12e43edbf6b9f2e07d8cc58e931a4cfced
+PODFILE CHECKSUM: 9c87bd867b66001f3defa1b9178dfd9782169515
 
 COCOAPODS: 1.10.1

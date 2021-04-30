@@ -11,7 +11,7 @@ import Starscream
 extension AppSyncSubscriptionConnection {
     func handleError(error: Error) {
         guard let subscriptionItem = subscriptionItem else {
-            AppSyncLogger.debug("\(#function): no subscription item")
+            AppSyncLogger.warn("[AppSyncSubscriptionConnection] \(#function): missing subscription item")
             return
         }
 
@@ -34,7 +34,7 @@ extension AppSyncSubscriptionConnection {
 
         let retryAdvice = retryHandler.shouldRetryRequest(for: connectionError)
         if retryAdvice.shouldRetry, let retryInterval = retryAdvice.retryInterval {
-            AppSyncLogger.debug("Retrying subscription \(subscriptionItem.identifier) after \(retryInterval)")
+            AppSyncLogger.debug("[AppSyncSubscriptionConnection] Retrying subscription \(subscriptionItem.identifier) after \(retryInterval)")
             DispatchQueue.global().asyncAfter(deadline: .now() + retryInterval) {
                 self.connectionProvider?.connect()
             }
