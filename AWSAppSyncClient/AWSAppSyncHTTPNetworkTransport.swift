@@ -192,6 +192,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("aws-sdk-ios/3.4.2 AppSyncClient", forHTTPHeaderField: "User-Agent")
+        request.setValue(UUID().uuidString, forHTTPHeaderField: "x-choco-correlation-id")
         addDeviceId(request: &request)
     }
 
