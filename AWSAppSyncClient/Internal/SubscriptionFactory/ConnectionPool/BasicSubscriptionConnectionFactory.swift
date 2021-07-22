@@ -14,6 +14,7 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
     var userpoolsBasedPool: UserPoolsBasedConnectionPool?
     var iamBasedPool: IAMBasedConnectionPool?
     var oidcBasedPool: OIDCBasedConnectionPool?
+    var lambdaBasedPool: LambdaBasedConnectionPool?
 
     let url: URL
     let retryStrategy: AWSAppSyncRetryStrategy
@@ -70,6 +71,8 @@ class BasicSubscriptionConnectionFactory: SubscriptionConnectionFactory {
             return userpoolsBasedPool
         case .oidcToken:
             return oidcBasedPool
+        case .awsLambda:
+            return lambdaBasedPool
         }
     }
 }

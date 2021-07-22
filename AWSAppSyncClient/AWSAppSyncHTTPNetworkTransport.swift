@@ -13,6 +13,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         case apiKey(AWSAPIKeyAuthProvider)
         case oidcToken(AWSOIDCAuthProvider)
         case amazonCognitoUserPools(AWSCognitoUserPoolsAuthProvider)
+        case awsLambda(AWSLambdaAuthProvider)
 
         public var appSyncAuthType: AWSAppSyncAuthType {
             switch self {
@@ -24,6 +25,8 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 return .amazonCognitoUserPools
             case .oidcToken:
                 return .oidcToken
+            case .awsLambda:
+                return .awsLambda
             }
         }
     }
@@ -128,6 +131,28 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             url: url,
             urlSession: URLSession(configuration: configuration),
             authProvider: .amazonCognitoUserPools(userPoolsAuthProvider),
+            sendOperationIdentifiers: sendOperationIdentifiers,
+            retryStrategy: retryStrategy
+        )
+    }
+    
+    /// Creates a network transport with the specified server URL and session configuration.
+    ///
+    /// - Parameters:
+    ///   - url: The URL of a GraphQL server to connect to.
+    ///   - awsLambdaAuthProvider: An implementation of `AWSLambdaAuthProvider` protocol.
+    ///   - configuration: A session configuration used to configure the session. Defaults to `URLSessionConfiguration.default`.
+    ///   - sendOperationIdentifiers: Whether to send operation identifiers rather than full operation text, for use with servers that support query persistence. Defaults to false.
+    ///   - retryStrategy: The retry strategy to be followed by HTTP client
+    public convenience init(url: URL,
+                            awsLambdaAuthProvider: AWSLambdaAuthProvider,
+                            configuration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            sendOperationIdentifiers: Bool = false,
+                            retryStrategy: AWSAppSyncRetryStrategy = .exponential) {
+        self.init(
+            url: url,
+            urlSession: URLSession(configuration: configuration),
+            authProvider: .awsLambda(awsLambdaAuthProvider),
             sendOperationIdentifiers: sendOperationIdentifiers,
             retryStrategy: retryStrategy
         )
@@ -331,6 +356,23 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
 
         case .amazonCognitoUserPools(let provider):
             if let provider = provider as? AWSCognitoUserPoolsAuthProviderAsync {
+                provider.getLatestAuthToken { (token, error) in
+                    if let error = error {
+                        completionHandler(.failure(error))
+                    } else if let token = token {
+                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
+                        completionHandler(.success(()))
+                    } else {
+                        fatalError("Invalid data returned in token callback")
+                    }
+                }
+            } else {
+                mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
+                completionHandler(.success(()))
+            }
+        
+        case .awsLambda(let provider):
+            if let provider = provider as? AWSLambdaAuthProviderAsync {
                 provider.getLatestAuthToken { (token, error) in
                     if let error = error {
                         completionHandler(.failure(error))
