@@ -542,9 +542,9 @@ public class AWSAppSyncClientConfiguration {
                                                          urlSessionConfiguration: URLSessionConfiguration,
                                                          authProvider: AWSLambdaAuthProvider?,
                                                          retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
-        // No default OIDC provider available
+        // No default AWS Lambda provider available
         guard let authProvider = authProvider else {
-            throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AWSOIDCAuthProvider cannot be nil.")
+            throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AWSLambdaAuthProvider cannot be nil.")
         }
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               awsLambdaAuthProvider: authProvider,
