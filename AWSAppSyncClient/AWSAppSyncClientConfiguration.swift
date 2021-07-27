@@ -297,6 +297,7 @@ public class AWSAppSyncClientConfiguration {
                                                                            region: serviceRegion,
                                                                            apiKeyProvider: apikeyProvider,
                                                                            cognitoUserPoolProvider: userPoolsAuthProvider,
+                                                                           awsLambdaAuthProvider: awsLambdaAuthProvider,
                                                                            oidcAuthProvider: oidcAuthProvider,
                                                                            iamAuthProvider: credentialsProvider)
         self.networkTransport = try AWSAppSyncClientConfiguration.getNetworkTransport(
