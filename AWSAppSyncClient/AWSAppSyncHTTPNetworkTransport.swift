@@ -372,12 +372,12 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             }
         
         case .awsLambda(let provider):
-            guard let provider = provider as? AWSLambdaAuthProviderAsync else {
+            guard let asyncProvider = provider as? AWSLambdaAuthProviderAsync else {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
                 completionHandler(.success(()))
                 break
             }
-            provider.getLatestAuthToken { (token, error) in
+            asyncProvider.getLatestAuthToken { (token, error) in
                 if let error = error {
                     completionHandler(.failure(error))
                 } else if let token = token {
