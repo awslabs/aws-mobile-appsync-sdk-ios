@@ -226,6 +226,7 @@ public class AWSAppSyncClientConfiguration {
                       apiKeyAuthProvider: apiKeyAuthProvider,
                       credentialsProvider: credentialsProvider,
                       userPoolsAuthProvider: userPoolsAuthProvider,
+                      awsLambdaAuthProvider: awsLambdaAuthProvider,
                       oidcAuthProvider: oidcAuthProvider,
                       urlSessionConfiguration: urlSessionConfiguration,
                       cacheConfiguration: cacheConfiguration,
