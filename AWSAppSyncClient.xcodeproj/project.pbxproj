@@ -122,6 +122,7 @@
 		3D9BF115227836800079F52F /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D9BF114227836800079F52F /* NetworkReachability.swift */; };
 		70C68E4D132FE62623DB8C07 /* Pods_AWSAppSyncTestHostApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C707001F57B091A8A001CAB /* Pods_AWSAppSyncTestHostApp.framework */; };
 		7638897026A9E4D70061AF0B /* LambdaBasedConnectionPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7638896F26A9E4D70061AF0B /* LambdaBasedConnectionPool.swift */; };
+		763C857726B08D74005164B2 /* AWSAppSyncLambdaAuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763C857626B08D74005164B2 /* AWSAppSyncLambdaAuthTests.swift */; };
 		8032C5415EF414C038394D69 /* Pods_AWSAppSyncTestCommon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */; };
 		90DE0C49240A304D000E875B /* AWSAppSyncAuthTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90DE0C48240A304D000E875B /* AWSAppSyncAuthTypeTests.swift */; };
 		A70604C0C722923A70C937A1 /* Pods_AWSAppSyncTestApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57F5A94352E1ABE35159489D /* Pods_AWSAppSyncTestApp.framework */; };
@@ -512,6 +513,7 @@
 		74071C397A83DEA980BB2F4C /* Pods_AWSAppSyncTestCommon.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncTestCommon.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		741880AF213878B400523CA8 /* AuthProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthProviderTests.swift; sourceTree = "<group>"; };
 		7638896F26A9E4D70061AF0B /* LambdaBasedConnectionPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LambdaBasedConnectionPool.swift; sourceTree = "<group>"; };
+		763C857626B08D74005164B2 /* AWSAppSyncLambdaAuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWSAppSyncLambdaAuthTests.swift; sourceTree = "<group>"; };
 		82E714A3E9BFB80BD9E5EF90 /* Pods-ApolloTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ApolloTests/Pods-ApolloTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8623D545D4837963CF2FFF02 /* Pods-AWSAppSyncUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AWSAppSyncUnitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AWSAppSyncUnitTests/Pods-AWSAppSyncUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8C707001F57B091A8A001CAB /* Pods_AWSAppSyncTestHostApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AWSAppSyncTestHostApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1109,6 +1111,7 @@
 				FAFD409121D702EA0063D894 /* Helpers */,
 				FADC6B8822679B00008588FC /* Resources */,
 				741880AF213878B400523CA8 /* AuthProviderTests.swift */,
+				763C857626B08D74005164B2 /* AWSAppSyncLambdaAuthTests.swift */,
 				17664128214F6732003AE269 /* AWSAppSyncAPIKeyAuthTests.swift */,
 				174F80AE2109229C00775D0D /* AWSAppSyncCognitoAuthTests.swift */,
 				E48168AD226E8325005A1A41 /* AWSAppSyncMultiAuthClientsTests.swift */,
@@ -2077,6 +2080,7 @@
 			files = (
 				FADC6B8922679B38008588FC /* MutationQueuePerformanceTests.swift in Sources */,
 				FA902D0E21D97E9600C4052F /* AuthProviderTests.swift in Sources */,
+				763C857726B08D74005164B2 /* AWSAppSyncLambdaAuthTests.swift in Sources */,
 				FA902D1021D97EB100C4052F /* AWSAppSyncCognitoAuthTests.swift in Sources */,
 				E414DDB52289BD8A004C37CE /* AWSAppSyncMultiAuthClientsTests.swift in Sources */,
 				FA902D1321D97EC500C4052F /* SubscriptionStressTestHelper.swift in Sources */,

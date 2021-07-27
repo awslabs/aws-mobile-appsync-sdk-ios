@@ -235,8 +235,8 @@ public class AppSyncClientTestHelper: NSObject {
 
         case .lambda:
             appSyncConfig = try AWSAppSyncClientConfiguration(
-                url: testConfiguration.apiKeyEndpointURL,
-                serviceRegion: testConfiguration.apiKeyEndpointRegion,
+                url: testConfiguration.lambdaEndpointURL,
+                serviceRegion: testConfiguration.lambdaEndpointRegion,
                 awsLambdaAuthProvider: MockLambdaAuthProvider(),
                 cacheConfiguration: cacheConfiguration,
                 s3ObjectManager: s3ObjectManager
