@@ -372,20 +372,20 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             }
         
         case .awsLambda(let provider):
-            if let provider = provider as? AWSLambdaAuthProviderAsync {
-                provider.getLatestAuthToken { (token, error) in
-                    if let error = error {
-                        completionHandler(.failure(error))
-                    } else if let token = token {
-                        mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
-                        completionHandler(.success(()))
-                    } else {
-                        fatalError("Invalid data returned in token callback")
-                    }
-                }
-            } else {
+            guard let provider = provider as? AWSLambdaAuthProviderAsync else {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
                 completionHandler(.success(()))
+                break
+            }
+            provider.getLatestAuthToken { (token, error) in
+                if let error = error {
+                    completionHandler(.failure(error))
+                } else if let token = token {
+                    mutableRequest.setValue(token, forHTTPHeaderField: "authorization")
+                    completionHandler(.success(()))
+                } else {
+                    fatalError("Invalid data returned in token callback")
+                }
             }
         }
 
