@@ -60,6 +60,10 @@ class AWSAppSyncAuthTypeTests: XCTestCase {
         try performSuccessDecodableTest(inputString: "AMAZON_COGNITO_USER_POOLS", expectedOutput: .amazonCognitoUserPools)
     }
     
+    func test_SuccessfulDecodable_AWSLambda() throws {
+        try performSuccessDecodableTest(inputString: "AWS_LAMBDA", expectedOutput: .awsLambda)
+    }
+    
     func test_FailureDecodable_BadData() throws {
         let inputData = try JSONSerialization.data(withJSONObject: "INVALID_DATA", options: .fragmentsAllowed)
         XCTAssertThrowsError(try JSONDecoder().decode(AWSAppSyncAuthType.self, from: inputData))
@@ -81,6 +85,10 @@ class AWSAppSyncAuthTypeTests: XCTestCase {
     
     func test_SuccessfulEncodable_AmazonCognitoUserPools() throws {
         try performSuccessEncodableTest(inputType: .amazonCognitoUserPools, expectedString: "AMAZON_COGNITO_USER_POOLS")
+    }
+    
+    func test_SuccessfulEncodable_AWSLambda() throws {
+        try performSuccessEncodableTest(inputType: .awsLambda, expectedString: "AWS_LAMBDA")
     }
     
     // MARK: - Tests: Hashable
@@ -107,6 +115,14 @@ class AWSAppSyncAuthTypeTests: XCTestCase {
         XCTAssertNotEqual(oidcToken.hashValue, AWSAppSyncAuthType.awsIAM.hashValue)
         XCTAssertNotEqual(oidcToken.hashValue, AWSAppSyncAuthType.apiKey.hashValue)
         XCTAssertNotEqual(oidcToken.hashValue, AWSAppSyncAuthType.amazonCognitoUserPools.hashValue)
+    }
+    
+    func test_Hashable_AWSLambdaToken() {
+        let lambdaToken = AWSAppSyncAuthType.awsLambda
+        XCTAssertEqual(lambdaToken.hashValue, AWSAppSyncAuthType.awsLambda.hashValue)
+        XCTAssertNotEqual(lambdaToken.hashValue, AWSAppSyncAuthType.awsIAM.hashValue)
+        XCTAssertNotEqual(lambdaToken.hashValue, AWSAppSyncAuthType.apiKey.hashValue)
+        XCTAssertNotEqual(lambdaToken.hashValue, AWSAppSyncAuthType.amazonCognitoUserPools.hashValue)
     }
     
     func test_Hashable_AmazonCognitoUserPools() {
