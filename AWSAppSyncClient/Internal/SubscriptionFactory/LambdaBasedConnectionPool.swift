@@ -22,8 +22,7 @@ class LambdaBasedConnectionPool: SubscriptionConnectionPool {
             return AppSyncSubscriptionConnection(provider: connectionProvider)
         }
 
-        let authProvider = AppSyncRealTimeClientOIDCAuthProvider(authProvider: tokenProvider)
-        let authInterceptor = OIDCAuthInterceptor(authProvider)
+        let authInterceptor = LambdaAuthInterceptor(authTokenProvider: tokenProvider)
         let connectionProvider = ConnectionProviderFactory.createConnectionProvider(for: url,
                                                                                     authInterceptor: authInterceptor,
                                                                                     connectionType: connectionType)
