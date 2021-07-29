@@ -7,6 +7,11 @@ also includes support for offline operations.
 
 *Changes merged to `main`, but not yet released on a tag.*
 
+## 3.3.0
+
+### New Features
+- Added support for AWS Lambda auth mode ([PR #478](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/478))
+
 ## 3.2.1
 
 ### Misc. Updates
