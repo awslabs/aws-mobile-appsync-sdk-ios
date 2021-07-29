@@ -1,5 +1,5 @@
 //
-// Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2010-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License").
 // You may not use this file except in compliance with the License.
@@ -1994,6 +1994,7 @@ NSString *const AWSCognitoIdentityProviderErrorDomain = @"com.amazonaws.AWSCogni
              @"callbackURLs" : @"CallbackURLs",
              @"clientName" : @"ClientName",
              @"defaultRedirectURI" : @"DefaultRedirectURI",
+             @"enableTokenRevocation" : @"EnableTokenRevocation",
              @"explicitAuthFlows" : @"ExplicitAuthFlows",
              @"generateSecret" : @"GenerateSecret",
              @"idTokenValidity" : @"IdTokenValidity",
@@ -4562,6 +4563,30 @@ NSString *const AWSCognitoIdentityProviderErrorDomain = @"com.amazonaws.AWSCogni
 
 @end
 
+@implementation AWSCognitoIdentityProviderRevokeTokenRequest
+
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
++ (NSDictionary *)JSONKeyPathsByPropertyKey {
+	return @{
+             @"clientId" : @"ClientId",
+             @"clientSecret" : @"ClientSecret",
+             @"token" : @"Token",
+             };
+}
+
+@end
+
+@implementation AWSCognitoIdentityProviderRevokeTokenResponse
+
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
+@end
+
 @implementation AWSCognitoIdentityProviderRiskConfigurationType
 
 + (BOOL)supportsSecureCoding {
@@ -5584,6 +5609,7 @@ NSString *const AWSCognitoIdentityProviderErrorDomain = @"com.amazonaws.AWSCogni
              @"clientId" : @"ClientId",
              @"clientName" : @"ClientName",
              @"defaultRedirectURI" : @"DefaultRedirectURI",
+             @"enableTokenRevocation" : @"EnableTokenRevocation",
              @"explicitAuthFlows" : @"ExplicitAuthFlows",
              @"idTokenValidity" : @"IdTokenValidity",
              @"logoutURLs" : @"LogoutURLs",
@@ -5970,6 +5996,7 @@ NSString *const AWSCognitoIdentityProviderErrorDomain = @"com.amazonaws.AWSCogni
              @"clientSecret" : @"ClientSecret",
              @"creationDate" : @"CreationDate",
              @"defaultRedirectURI" : @"DefaultRedirectURI",
+             @"enableTokenRevocation" : @"EnableTokenRevocation",
              @"explicitAuthFlows" : @"ExplicitAuthFlows",
              @"idTokenValidity" : @"IdTokenValidity",
              @"lastModifiedDate" : @"LastModifiedDate",

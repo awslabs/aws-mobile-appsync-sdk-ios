@@ -13,7 +13,7 @@ public struct AppSyncJSONHelper {
         let jsonEncoder = JSONEncoder()
         do {
             let jsonHeader = try jsonEncoder.encode(header)
-            AppSyncLogger.verbose("Header - \(String(describing: String(data: jsonHeader, encoding: .utf8)))")
+            AppSyncLogger.verbose("Generated Header for request - \(String(describing: String(data: jsonHeader, encoding: .utf8)))")
             return jsonHeader.base64EncodedString()
         } catch {
             AppSyncLogger.error(error.localizedDescription)

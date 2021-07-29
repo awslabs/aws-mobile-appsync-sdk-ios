@@ -11,7 +11,7 @@ import Foundation
 /// through websocket.
 public class RealtimeConnectionProvider: ConnectionProvider {
     private let url: URL
-    private var listeners: [String: ConnectionProviderCallback]
+    var listeners: [String: ConnectionProviderCallback]
 
     let websocket: AppSyncWebsocketProvider
 
@@ -131,9 +131,11 @@ public class RealtimeConnectionProvider: ConnectionProvider {
             self.listeners.removeValue(forKey: identifier)
 
             if self.listeners.isEmpty {
-                AppSyncLogger.debug("All listeners removed, disconnecting")
+                AppSyncLogger.debug("[RealtimeConnectionProvider] all subscriptions removed, disconnecting websocket connection.")
                 self.status = .notConnected
-                self.disconnect()
+                self.websocket.disconnect()
+                self.staleConnectionTimer?.invalidate()
+                self.staleConnectionTimer = nil
             }
         }
     }

@@ -50,17 +50,17 @@ public class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableCon
     }
 
     public func unsubscribe(item: SubscriptionItem) {
-        AppSyncLogger.debug("Unsubscribe - \(item.identifier)")
+        AppSyncLogger.debug("[AppSyncSubscriptionConnection] Unsubscribe \(item.identifier)")
 
         let message = AppSyncMessage(id: item.identifier, type: .unsubscribe("stop"))
 
         guard let connectionProvider = connectionProvider else {
-            AppSyncLogger.debug("\(#function): no connection provider")
+            AppSyncLogger.warn("[AppSyncSubscriptionConnection] \(#function): missing connection provider")
             return
         }
 
         guard let subscriptionItem = subscriptionItem else {
-            AppSyncLogger.debug("\(#function): no subscription item")
+            AppSyncLogger.warn("[AppSyncSubscriptionConnection] \(#function): missing subscription item")
             return
         }
 
@@ -70,18 +70,18 @@ public class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableCon
 
     private func addListener() {
         guard let connectionProvider = connectionProvider else {
-            AppSyncLogger.debug("\(#function): no connection provider")
+            AppSyncLogger.warn("[AppSyncSubscriptionConnection] \(#function): no connection provider")
             return
         }
 
         guard let subscriptionItem = subscriptionItem else {
-            AppSyncLogger.debug("\(#function): no subscription item")
+            AppSyncLogger.warn("[AppSyncSubscriptionConnection] \(#function): no subscription item")
             return
         }
 
         connectionProvider.addListener(identifier: subscriptionItem.identifier) { [weak self] event in
             guard let self = self else {
-                AppSyncLogger.debug("Self is nil, listener is not called.")
+                AppSyncLogger.debug("[AppSyncSubscriptionConnection] \(#function): Self is nil, listener is not called.")
                 return
             }
             switch event {
