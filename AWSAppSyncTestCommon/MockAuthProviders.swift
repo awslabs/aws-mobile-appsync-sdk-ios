@@ -82,3 +82,16 @@ struct MockAWSCognitoUserPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider {
         return token
     }
 }
+
+
+struct MockLambdaAuthProvider: AWSLambdaAuthProvider {
+    var token: String
+
+    init(with token: String = "custom-lambda-token") {
+        self.token = token
+    }
+
+    func getLatestAuthToken() -> String {
+        return token
+    }
+}

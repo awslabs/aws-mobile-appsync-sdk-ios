@@ -193,6 +193,16 @@ You can get the backend setup by following the steps below:
         - `BucketName`
         - `BucketRegion`
         - `AppSyncMultiAuthAPIKey`
+1. Create another CloudFormation Stack following step 1-6 above with `API Key` as the Auth type (we'll change that later)
+   1. Create a Lambda function using the template provided in this project at `AWSAppSyncIntegrationTests/ConsoleResources/appsync-lambda-authorize
+r.js` 
+   1. Once the stack is complete click on the __Outputs__ tab
+   1. Copy the appropriate values to the test configuration file `AppSyncIntegrationTests/appsync_test_credentials.json`:
+        - `AppSyncEndpointAPIKeyLambda`
+        - `AppSyncEndpointAPIKeyLambdaRegion`
+
+   1. Go to the [AWS AppSync console](https://console.aws.amazon.com/appsync/home), select the newly created AppSync instance
+   1. In the `Settings` section, change the default authentication type to `AWS Lambda` and select the Lambda function created at the previous step
 
 > Note: You must either provide all values in the `AppSyncIntegrationTests/appsync_test_credentials.json` or in code. There is no mechanism to handle partial overrides of one source with the other. All values must be specified before running the integration tests.
 

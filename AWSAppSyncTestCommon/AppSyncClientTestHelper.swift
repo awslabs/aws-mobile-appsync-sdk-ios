@@ -48,6 +48,7 @@ public class AppSyncClientTestHelper: NSObject {
         case invalidAPIKey
         case invalidOIDC
         case invalidStaticCredentials
+        case lambda
         /// Delay set at 120 seconds
         case delayedInvalidOIDC
     }
@@ -232,6 +233,14 @@ public class AppSyncClientTestHelper: NSObject {
                 s3ObjectManager: s3ObjectManager
             )
 
+        case .lambda:
+            appSyncConfig = try AWSAppSyncClientConfiguration(
+                url: testConfiguration.lambdaEndpointURL,
+                serviceRegion: testConfiguration.lambdaEndpointRegion,
+                awsLambdaAuthProvider: MockLambdaAuthProvider(),
+                cacheConfiguration: cacheConfiguration,
+                s3ObjectManager: s3ObjectManager
+            )
         }
 
         return appSyncConfig

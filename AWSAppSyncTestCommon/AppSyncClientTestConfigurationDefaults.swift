@@ -49,4 +49,10 @@ struct AppSyncClientTestConfigurationDefaults {
 
     // Equivalent to the JSON key "BucketRegion"
     static let bucketRegion = AWSRegionType.USEast1
+    
+    // Equivalent to the JSON key "AppSyncEndpoint"
+    static let lambdaEndpointURL = URL(string: "https://localhost")!
+
+    // Equivalent to the JSON key "AppSyncRegion"
+    static let lambdaEndpointRegion = AWSRegionType.USEast1
 }

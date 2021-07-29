@@ -355,6 +355,27 @@ class AWSAppSyncClientConfigurationTests: XCTestCase {
             XCTAssert(clientInfoError.localizedDescription.starts(with: "Invalid Auth Configuration"), "Expected error to begin with 'Invalid Auth Configuration', but got '\(clientInfoError.localizedDescription)'")
         }
     }
+    
+    func testInitializer_MultipleProviders_AWSLambda() {
+        let serviceConfig = MockAWSAppSyncServiceConfig(
+            endpoint: URL(string: "http://www.amazon.com/for_unit_testing")!,
+            region: .USEast1,
+            authType: .awsLambda
+        )
+
+        do {
+            let _ = try AWSAppSyncClientConfiguration(appSyncServiceConfig: serviceConfig,
+                                                      apiKeyAuthProvider: MockAWSAPIKeyAuthProvider(),
+                                                      awsLambdaAuthProvider: MockLambdaAuthProvider())
+            XCTFail("Expected validation to fail with multiple auth providers")
+        } catch {
+            guard let clientInfoError = error as? AWSAppSyncClientConfigurationError else {
+                XCTFail("Expected validation to throw AWSAppSyncClientInfoError if specifying multiple providers, but got \(type(of: error))")
+                return
+            }
+            XCTAssert(clientInfoError.localizedDescription.starts(with: "Invalid Auth Configuration"), "Expected error to begin with 'Invalid Auth Configuration', but got '\(clientInfoError.localizedDescription)'")
+        }
+    }
 
     // MARK: - Test other derived properties
 

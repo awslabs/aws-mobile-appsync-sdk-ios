@@ -109,6 +109,7 @@ public class AWSAppSyncClientConfiguration {
     ///   `credentialsProvider`.
     /// - `oidcAuthProvider` is specified, and `appSyncClientInfo.authType` is "OPENID_CONNECT"
     /// - `userPoolsAuthProvider` is specified, and `appSyncClientInfo.authType` is "AMAZON_COGNITO_USER_POOLS"
+    /// - `awsLambdaAuthProvider` is specified, and `appSyncClientInfo.authType` is "AWS_LAMBDA"
     ///
     /// If none of those conditions are met, or if more than provider is specified, the initializer will throw an error.
     ///
@@ -117,6 +118,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - apiKeyAuthProvider: A `AWSAPIKeyAuthProvider` protocol object for API Key based authorization.
     ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization.
     ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for User Pool based authorization.
+    ///   - awsLambdaAuthProvider: A `AWSLambdaAuthProvider` protocol object for AWS Lambda based authorization.
     ///   - oidcAuthProvider: A `AWSOIDCAuthProvider` protocol object for OIDC based authorization.
     ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
     ///   - cacheConfiguration: Configuration for local queries, mutations, and subscriptions caches.
@@ -131,6 +133,7 @@ public class AWSAppSyncClientConfiguration {
                             credentialsProvider: AWSCredentialsProvider? = nil,
                             oidcAuthProvider: AWSOIDCAuthProvider? = nil,
                             userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil,
+                            awsLambdaAuthProvider: AWSLambdaAuthProvider? = nil,
                             urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
                             cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
@@ -150,6 +153,7 @@ public class AWSAppSyncClientConfiguration {
                       apiKeyAuthProvider: apiKeyAuthProvider,
                       credentialsProvider: credentialsProvider,
                       userPoolsAuthProvider: userPoolsAuthProvider,
+                      awsLambdaAuthProvider: awsLambdaAuthProvider,
                       oidcAuthProvider: oidcAuthProvider,
                       urlSessionConfiguration: urlSessionConfiguration,
                       cacheConfiguration: cacheConfiguration,
@@ -177,6 +181,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization
     ///   - oidcAuthProvider: A `AWSOIDCAuthProvider` protocol object for OIDC based authorization
     ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for User Pool based authorization
+    ///   - awsLambdaAuthProvider: A `AWSLambdaAuthProvider` protocol object for AWS Lambda based authorization.
     ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration
     ///   - cacheConfiguration: Configuration for local queries, mutations, and subscriptions caches.
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes
@@ -191,6 +196,7 @@ public class AWSAppSyncClientConfiguration {
                             credentialsProvider: AWSCredentialsProvider? = nil,
                             oidcAuthProvider: AWSOIDCAuthProvider? = nil,
                             userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil,
+                            awsLambdaAuthProvider: AWSLambdaAuthProvider? = nil,
                             urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
                             cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
@@ -207,6 +213,8 @@ public class AWSAppSyncClientConfiguration {
             authType = .oidcToken
         } else if userPoolsAuthProvider != nil {
             authType = .amazonCognitoUserPools
+        } else if awsLambdaAuthProvider != nil {
+            authType = .awsLambda
         } else {
             throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("Invalid auth provider configuration. Exactly one of the supported auth providers must be passed")
         }
@@ -218,6 +226,7 @@ public class AWSAppSyncClientConfiguration {
                       apiKeyAuthProvider: apiKeyAuthProvider,
                       credentialsProvider: credentialsProvider,
                       userPoolsAuthProvider: userPoolsAuthProvider,
+                      awsLambdaAuthProvider: awsLambdaAuthProvider,
                       oidcAuthProvider: oidcAuthProvider,
                       urlSessionConfiguration: urlSessionConfiguration,
                       cacheConfiguration: cacheConfiguration,
@@ -240,6 +249,7 @@ public class AWSAppSyncClientConfiguration {
     ///   - credentialsProvider: A `AWSCredentialsProvider` object for AWS_IAM based authorization.
     ///   - userPoolsAuthProvider: A `AWSCognitoUserPoolsAuthProvider` protocol object for Cognito User Pools based authorization.
     ///   - oidcAuthProvider: A `AWSOIDCAuthProvider` protocol object for any OpenId Connect based authorization.
+    ///   - awsLambdaAuthProvider: A `AWSLambdaAuthProvider` protocol object for AWS Lambda based authorization.
     ///   - urlSessionConfiguration: A `URLSessionConfiguration` configuration object for custom HTTP configuration.
     ///   - cacheConfiguration: Configuration for local queries, mutations, and subscriptions caches.
     ///   - connectionStateChangeHandler: The delegate object to be notified when client network state changes.
@@ -254,6 +264,7 @@ public class AWSAppSyncClientConfiguration {
                  apiKeyAuthProvider: AWSAPIKeyAuthProvider?,
                  credentialsProvider: AWSCredentialsProvider?,
                  userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider?,
+                 awsLambdaAuthProvider: AWSLambdaAuthProvider? = nil,
                  oidcAuthProvider: AWSOIDCAuthProvider?,
                  urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
                  cacheConfiguration: AWSAppSyncCacheConfiguration?,
@@ -287,6 +298,7 @@ public class AWSAppSyncClientConfiguration {
                                                                            region: serviceRegion,
                                                                            apiKeyProvider: apikeyProvider,
                                                                            cognitoUserPoolProvider: userPoolsAuthProvider,
+                                                                           awsLambdaAuthProvider: awsLambdaAuthProvider,
                                                                            oidcAuthProvider: oidcAuthProvider,
                                                                            iamAuthProvider: credentialsProvider)
         self.networkTransport = try AWSAppSyncClientConfiguration.getNetworkTransport(
@@ -298,6 +310,7 @@ public class AWSAppSyncClientConfiguration {
             apiKeyAuthProvider: apiKeyAuthProvider,
             credentialsProvider: credentialsProvider,
             userPoolsAuthProvider: userPoolsAuthProvider,
+            awsLambdaAuthProvider: awsLambdaAuthProvider,
             oidcAuthProvider: oidcAuthProvider,
             retryStrategy: retryStrategy
         )
@@ -315,24 +328,28 @@ public class AWSAppSyncClientConfiguration {
     ///   - credentialsProvider: Should be `nil` unless `authType` is `.awsIAM`
     ///   - oidcAuthProvider: Should be `nil` unless `authType` is `.oidcToken`
     ///   - userPoolsAuthProvider: Should be `nil` unless `authType` is `.amazonCognitoUserPools`
+    ///   - awsLambdaAuthProvider: Should be `nil` unless `authType` is `.awsLambda`
     /// - Returns: `true` if the auth providers not required for `authType` are all `nil`, `false` otherwise.
     private static func unusedAuthProvidersAreNil(for authType: AWSAppSyncAuthType,
                                                   apiKeyAuthProvider: AWSAPIKeyAuthProvider?,
                                                   credentialsProvider: AWSCredentialsProvider?,
                                                   oidcAuthProvider: AWSOIDCAuthProvider?,
-                                                  userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider?) -> Bool {
+                                                  userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider?,
+                                                  awsLambdaAuthProvider: AWSLambdaAuthProvider?) -> Bool {
 
         let unneededProviders: [Any?]
 
         switch authType {
         case .apiKey:
-            unneededProviders = [credentialsProvider, userPoolsAuthProvider, oidcAuthProvider]
+            unneededProviders = [credentialsProvider, userPoolsAuthProvider, oidcAuthProvider, awsLambdaAuthProvider]
         case .amazonCognitoUserPools:
-            unneededProviders = [apiKeyAuthProvider, credentialsProvider, oidcAuthProvider]
+            unneededProviders = [apiKeyAuthProvider, credentialsProvider, oidcAuthProvider, awsLambdaAuthProvider]
         case .awsIAM:
-            unneededProviders = [apiKeyAuthProvider, oidcAuthProvider, userPoolsAuthProvider]
+            unneededProviders = [apiKeyAuthProvider, oidcAuthProvider, userPoolsAuthProvider, awsLambdaAuthProvider]
         case .oidcToken:
-            unneededProviders = [apiKeyAuthProvider, credentialsProvider, userPoolsAuthProvider]
+            unneededProviders = [apiKeyAuthProvider, credentialsProvider, userPoolsAuthProvider, awsLambdaAuthProvider]
+        case .awsLambda:
+            unneededProviders = [apiKeyAuthProvider, credentialsProvider, userPoolsAuthProvider, oidcAuthProvider]
         }
 
         return unneededProviders.allSatisfy { $0 == nil }
@@ -361,6 +378,7 @@ public class AWSAppSyncClientConfiguration {
                                             apiKeyAuthProvider: AWSAPIKeyAuthProvider?,
                                             credentialsProvider: AWSCredentialsProvider?,
                                             userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider?,
+                                            awsLambdaAuthProvider: AWSLambdaAuthProvider?,
                                             oidcAuthProvider: AWSOIDCAuthProvider?,
                                             retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
 
@@ -370,7 +388,8 @@ public class AWSAppSyncClientConfiguration {
             apiKeyAuthProvider: apiKeyAuthProvider,
             credentialsProvider: credentialsProvider,
             oidcAuthProvider: oidcAuthProvider,
-            userPoolsAuthProvider: userPoolsAuthProvider
+            userPoolsAuthProvider: userPoolsAuthProvider,
+            awsLambdaAuthProvider: awsLambdaAuthProvider
         )
 
         guard unusedProvidersAreNil else {
@@ -405,6 +424,11 @@ public class AWSAppSyncClientConfiguration {
                                                                urlSessionConfiguration: urlSessionConfiguration,
                                                                authProvider: oidcAuthProvider,
                                                                retryStrategy: retryStrategy)
+        case .awsLambda:
+            networkTransport = try makeNetworkTransportForAWSLambda(url: url,
+                                                                    urlSessionConfiguration: urlSessionConfiguration,
+                                                                    authProvider: awsLambdaAuthProvider,
+                                                                    retryStrategy: retryStrategy)
         }
 
         return networkTransport
@@ -502,6 +526,30 @@ public class AWSAppSyncClientConfiguration {
         }
         let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
                                                               oidcAuthProvider: authProvider,
+                                                              configuration: urlSessionConfiguration,
+                                                              retryStrategy: retryStrategy)
+        return networkTransport
+    }
+    
+    /// Returns an AWSAppSyncHTTPNetworkTransport configured to use the provided auth provider
+    ///
+    /// - Parameters:
+    ///   - url: The endpoint URL
+    ///   - urlSessionConfiguration: The URLSessionConfiguration to use for network connections managed by the transport
+    ///   - authProvider: The auth provider to use for authenticating network requests
+    ///   - retryStrategy: The retry strategy specified in client configuration
+    /// - Returns: The AWSAppSyncHTTPNetworkTransport
+    /// - Throws: An AWSAppSyncClientConfigurationError if the auth provider is nil
+    private static func makeNetworkTransportForAWSLambda(url: URL,
+                                                         urlSessionConfiguration: URLSessionConfiguration,
+                                                         authProvider: AWSLambdaAuthProvider?,
+                                                         retryStrategy: AWSAppSyncRetryStrategy) throws -> AWSAppSyncHTTPNetworkTransport {
+        // No default AWS Lambda provider available
+        guard let authProvider = authProvider else {
+            throw AWSAppSyncClientConfigurationError.invalidAuthConfiguration("AWSLambdaAuthProvider cannot be nil.")
+        }
+        let networkTransport = AWSAppSyncHTTPNetworkTransport(url: url,
+                                                              awsLambdaAuthProvider: authProvider,
                                                               configuration: urlSessionConfiguration,
                                                               retryStrategy: retryStrategy)
         return networkTransport

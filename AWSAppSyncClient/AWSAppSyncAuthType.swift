@@ -17,6 +17,8 @@ public enum AWSAppSyncAuthType: String, Codable, Hashable {
 
     /// User directory based authentication
     case amazonCognitoUserPools = "AMAZON_COGNITO_USER_POOLS"
+    
+    case awsLambda = "AWS_LAMBDA"
 
     /// Convenience method to use instead of `AuthType(rawValue:)`
     public static func getAuthType(rawValue: String) throws -> AWSAppSyncAuthType {

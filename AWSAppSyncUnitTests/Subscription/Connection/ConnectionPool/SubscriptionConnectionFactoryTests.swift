@@ -20,6 +20,7 @@ class SubscriptionConnectionFactoryTests: XCTestCase {
                                                           region: .USWest2,
                                                           apiKeyProvider: MockAPIKeyAuthProvider(),
                                                           cognitoUserPoolProvider: MockUserPoolsAuthProvider(),
+                                                          awsLambdaAuthProvider: MockLambdaAuthProvider(),
                                                           oidcAuthProvider: MockUserPoolsAuthProvider(),
                                                           iamAuthProvider: MockIAMAuthProvider())
     }
