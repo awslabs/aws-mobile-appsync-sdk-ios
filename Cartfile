@@ -1,4 +1,4 @@
-github "aws/aws-sdk-ios" ~> 2.24.0
+github "aws/aws-sdk-ios" ~> 2.25.0
 github "stephencelis/SQLite.swift" ~> 0.12.2
 github "ashleymills/Reachability.swift" "v5.0.0"
 github "aws-amplify/aws-appsync-realtime-client-ios" ~> 1.4
