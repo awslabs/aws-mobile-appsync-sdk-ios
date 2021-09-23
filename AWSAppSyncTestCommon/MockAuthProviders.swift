@@ -95,3 +95,15 @@ struct MockLambdaAuthProvider: AWSLambdaAuthProvider {
         return token
     }
 }
+
+struct MockLambdaAuthAsyncProvider: AWSLambdaAuthProviderAsync {
+    var token: String
+
+    init(with token: String = "custom-lambda-token") {
+        self.token = token
+    }
+    
+    func getLatestAuthToken(_ callback: @escaping (String?, Error?) -> Void) {
+        callback(token, nil)
+    }
+}
