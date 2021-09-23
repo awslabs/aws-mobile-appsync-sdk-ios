@@ -83,8 +83,12 @@ class LambdaAuthInterceptor: AuthInterceptor {
             semaphore.signal()
         }
         semaphore.wait()
-        guard let authToken = authToken, authTokenError == nil else {
-            return .failure(authTokenError!)
+        
+        if let authTokenError = authTokenError {
+            return .failure(authTokenError)
+        }
+        guard let authToken = authToken else {
+            fatalError("Incompatible values for authorization token and error: nil, nil")
         }
         
         return .success(authToken)
