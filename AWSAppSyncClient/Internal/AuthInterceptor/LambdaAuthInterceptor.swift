@@ -19,7 +19,10 @@ class LambdaAuthInterceptor: AuthInterceptor {
 
     func interceptMessage(_ message: AppSyncMessage, for endpoint: URL) -> AppSyncMessage {
         let host = endpoint.host!
-        let authToken = authTokenProvider.getLatestAuthToken()
+        guard case let .success(authToken) = self.retrieveLatestAuthToken() else {
+            return message
+        }
+        
         guard case .subscribe = message.messageType else {
             return message
         }
@@ -41,7 +44,10 @@ class LambdaAuthInterceptor: AuthInterceptor {
         for endpoint: URL
     ) -> AppSyncConnectionRequest {
         let host = endpoint.host!
-        let authToken = authTokenProvider.getLatestAuthToken()
+        
+        guard case let .success(authToken) = self.retrieveLatestAuthToken() else {
+            return request
+        }
 
         let authHeader = TokenAuthHeader(token: authToken, host: host)
         let base64Auth = AppSyncJSONHelper.base64AuthenticationBlob(authHeader)
@@ -60,6 +66,34 @@ class LambdaAuthInterceptor: AuthInterceptor {
         }
         let signedRequest = AppSyncConnectionRequest(url: url)
         return signedRequest
+    }
+    
+    private func retrieveLatestAuthToken() -> Swift.Result<String, Error> {
+        guard let asyncAuthProvider = authTokenProvider as? AWSLambdaAuthProviderAsync else {
+            return .success(authTokenProvider.getLatestAuthToken())
+        }
+        var authToken: String?
+        var authTokenError: Error?
+        let result: Swift.Result<String, Error>
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        asyncAuthProvider.getLatestAuthToken { (token, error) in
+            authToken = token
+            authTokenError = error
+            semaphore.signal()
+        }
+        semaphore.wait()
+        
+        if let authTokenError = authTokenError {
+            result = .failure(authTokenError)
+        } else if let authToken = authToken {
+            result = .success(authToken)
+        } else {
+            fatalError("Incompatible values for authorization token and error: nil, nil")
+        }
+        
+        return result
     }
 }
 

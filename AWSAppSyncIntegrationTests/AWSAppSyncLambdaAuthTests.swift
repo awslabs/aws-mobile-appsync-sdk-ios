@@ -79,8 +79,86 @@ class AWSAppSyncLambdaAuthTests: XCTestCase {
         wait(for: [listPostsCompleted], timeout: AWSAppSyncLambdaAuthTests.networkOperationTimeout)
     }
     
+    func testSubscriptionWithAsyncAuthProvider() throws {
+        let authType = AppSyncClientTestHelper.AuthenticationType.asyncLambda
+        let appSyncClient = try AWSAppSyncLambdaAuthTests.makeAppSyncClient(authType: authType)
+        try testSubscription(withClient: appSyncClient)
+    }
+    
+    func testSubscriptionWithSyncAuthProvider() throws {
+        let authType = AppSyncClientTestHelper.AuthenticationType.lambda
+        let appSyncClient = try AWSAppSyncLambdaAuthTests.makeAppSyncClient(authType: authType)
+        try testSubscription(withClient: appSyncClient)
+    }
+    
     
     // MARK: - Utilities
+    
+    func testSubscription(withClient client: AWSAppSyncClient?) throws {
+        let postCreated = expectation(description: "Post created successfully.")
+        let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
+
+        var idHolder: GraphQLID?
+        client?.perform(mutation: addPost, queue: Self.subscriptionAndFetchQueue) { result, error in
+            print("CreatePost result handler invoked")
+            XCTAssertNil(error)
+            XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
+            XCTAssertEqual(result!.data!.createPostWithoutFileUsingParameters?.author, DefaultTestPostData.author)
+            idHolder = result?.data?.createPostWithoutFileUsingParameters?.id
+            postCreated.fulfill()
+        }
+        wait(for: [postCreated], timeout: Self.networkOperationTimeout)
+
+        guard let id = idHolder else {
+            XCTFail("Expected ID from addPost mutation")
+            return
+        }
+
+        // This handler will be invoked if an error occurs during the setup, or if we receive a successful mutation response.
+        let subscriptionResultHandlerInvoked = expectation(description: "Subscription received successfully.")
+        let subscriptionIsActive = expectation(description: "Upvote subscription should be connected")
+
+        let statusChangeHandler: SubscriptionStatusChangeHandler = { status in
+            if case .connected = status {
+                subscriptionIsActive.fulfill()
+            }
+        }
+
+        let subscription = try client?.subscribe(subscription: OnUpvotePostSubscription(id: id),
+                                                             queue: Self.subscriptionAndFetchQueue,
+                                                             statusChangeHandler: statusChangeHandler) { result, _, error in
+                                                                print("Subscription result handler invoked")
+                                                                guard error == nil else {
+                                                                    XCTAssertNil(error)
+                                                                    return
+                                                                }
+
+                                                                guard result != nil else {
+                                                                    XCTFail("Result was unexpectedly nil")
+                                                                    return
+                                                                }
+                                                                subscriptionResultHandlerInvoked.fulfill()
+        }
+        XCTAssertNotNil(subscription, "Subscription expected to be non nil.")
+
+        defer {
+            subscription?.cancel()
+        }
+
+        wait(for: [subscriptionIsActive], timeout: Self.networkOperationTimeout)
+
+        let upvotePerformed = expectation(description: "Upvote mutation performed")
+        let upvoteMutation = UpvotePostMutation(id: id)
+        client?.perform(mutation: upvoteMutation, queue: Self.mutationQueue) {
+            result, error in
+            print("Received upvote mutation response.")
+            XCTAssertNil(error)
+            XCTAssertNotNil(result?.data?.upvotePost?.id)
+            upvotePerformed.fulfill()
+        }
+
+        wait(for: [upvotePerformed, subscriptionResultHandlerInvoked], timeout: Self.networkOperationTimeout)
+    }
 
     static func makeAppSyncClient(authType: AppSyncClientTestHelper.AuthenticationType,
                                   cacheConfiguration: AWSAppSyncCacheConfiguration? = nil) throws -> DeinitNotifiableAppSyncClient {
