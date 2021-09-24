@@ -74,6 +74,7 @@ class LambdaAuthInterceptor: AuthInterceptor {
         }
         var authToken: String?
         var authTokenError: Error?
+        let result: Swift.Result<String, Error>
         
         let semaphore = DispatchSemaphore(value: 0)
         
@@ -85,13 +86,14 @@ class LambdaAuthInterceptor: AuthInterceptor {
         semaphore.wait()
         
         if let authTokenError = authTokenError {
-            return .failure(authTokenError)
-        }
-        guard let authToken = authToken else {
+            result = .failure(authTokenError)
+        } else if let authToken = authToken {
+            result = .success(authToken)
+        } else {
             fatalError("Incompatible values for authorization token and error: nil, nil")
         }
         
-        return .success(authToken)
+        return result
     }
 }
 
