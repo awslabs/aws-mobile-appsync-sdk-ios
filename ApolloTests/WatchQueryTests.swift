@@ -296,7 +296,7 @@ class WatchQueryTests: XCTestCase {
       waitForExpectations(timeout: 5, handler: nil)
 
       let nameQuery = HeroNameQuery()
-      try await(store.withinReadWriteTransaction { transaction in
+      try awaitWith(store.withinReadWriteTransaction { transaction in
         try transaction.update(query: nameQuery) { (data: inout HeroNameQuery.Data) in
           data.hero?.name = "Artoo"
         }
