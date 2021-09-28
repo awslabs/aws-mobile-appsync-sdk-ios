@@ -15,7 +15,7 @@ class ReadWriteFromStoreTests: XCTestCase {
 
       let query = HeroNameQuery()
 
-      try await(store.withinReadTransaction { transaction in
+      try awaitWith(store.withinReadTransaction { transaction in
         let data = try transaction.read(query: query)
         
         XCTAssertEqual(data.hero?.__typename, "Droid")
@@ -35,7 +35,7 @@ class ReadWriteFromStoreTests: XCTestCase {
       
       let query = HeroNameQuery(episode: .jedi)
       
-      try await(store.withinReadWriteTransaction { transaction in
+      try awaitWith(store.withinReadWriteTransaction { transaction in
         try? transaction.update(query: query, { (data) in
             data.hero!.name = "asd"
         })
@@ -60,7 +60,7 @@ class ReadWriteFromStoreTests: XCTestCase {
       
       let query = HeroNameQuery()
       
-      try await(store.withinReadTransaction { transaction in
+      try awaitWith(store.withinReadTransaction { transaction in
         XCTAssertThrowsError(try transaction.read(query: query)) { error in
           if case let error as GraphQLResultError = error {
             XCTAssertEqual(error.path, ["hero", "name"])
@@ -85,7 +85,7 @@ class ReadWriteFromStoreTests: XCTestCase {
 
       let query = HeroNameQuery(episode: .jedi)
 
-      try await(store.withinReadWriteTransaction { transaction in
+      try awaitWith(store.withinReadWriteTransaction { transaction in
         
         try transaction.update(query: query) { (data) in
           data.hero?.name = "Artoo"
@@ -93,7 +93,7 @@ class ReadWriteFromStoreTests: XCTestCase {
         }
       })
 
-      let result = try await(store.load(query: query))
+      let result = try awaitWith(store.load(query: query))
 
       guard let data = result.data else { XCTFail(); return }
         
@@ -124,7 +124,7 @@ class ReadWriteFromStoreTests: XCTestCase {
     
       let query = HeroAndFriendsNamesQuery()
       
-      try await(store.withinReadTransaction { transaction in
+      try awaitWith(store.withinReadTransaction { transaction in
         let data = try transaction.read(query: query)
         
         XCTAssertEqual(data.hero?.name, "R2-D2")
@@ -156,13 +156,13 @@ class ReadWriteFromStoreTests: XCTestCase {
 
       let query = HeroAndFriendsNamesQuery()
 
-      try await(store.withinReadWriteTransaction { transaction in
+      try awaitWith(store.withinReadWriteTransaction { transaction in
         try transaction.update(query: query) { (data: inout HeroAndFriendsNamesQuery.Data) in
           data.hero?.friends?.append(.makeDroid(name: "C-3PO"))
         }
       })
       
-      let result = try await(store.load(query: query))
+      let result = try awaitWith(store.load(query: query))
       guard let data = result.data else { XCTFail(); return }
       
       XCTAssertEqual(data.hero?.name, "R2-D2")
@@ -179,7 +179,7 @@ class ReadWriteFromStoreTests: XCTestCase {
     try withCache(initialRecords: initialRecords) { (cache) in
       let store = ApolloStore(cache: cache)
       
-      try await(store.withinReadTransaction { transaction in
+      try awaitWith(store.withinReadTransaction { transaction in
         let r2d2 = try transaction.readObject(ofType: HeroDetails.self, withKey: "2001")
         
         XCTAssertEqual(r2d2.name, "R2-D2")
@@ -196,7 +196,7 @@ class ReadWriteFromStoreTests: XCTestCase {
     try withCache(initialRecords: initialRecords) { (cache) in
       let store = ApolloStore(cache: cache)
       
-      try await(store.withinReadTransaction { transaction in
+      try awaitWith(store.withinReadTransaction { transaction in
         XCTAssertNoThrow(try transaction.readObject(ofType: HeroDetails.self, withKey: "2001"))
       })
     }
@@ -222,7 +222,7 @@ class ReadWriteFromStoreTests: XCTestCase {
     try withCache(initialRecords: initialRecords) { (cache) in
       let store = ApolloStore(cache: cache)
 
-      try await(store.withinReadTransaction { transaction in
+      try awaitWith(store.withinReadTransaction { transaction in
         let friendsNamesFragment = try transaction.readObject(ofType: FriendsNames.self, withKey: "2001")
 
         let friendsNames = friendsNamesFragment.friends?.compactMap { $0?.name }
@@ -251,13 +251,13 @@ class ReadWriteFromStoreTests: XCTestCase {
     try withCache(initialRecords: initialRecords) { (cache) in
       let store = ApolloStore(cache: cache)
 
-      try await(store.withinReadWriteTransaction { transaction in
+      try awaitWith(store.withinReadWriteTransaction { transaction in
         try transaction.updateObject(ofType: FriendsNames.self, withKey: "2001") { (friendsNames: inout FriendsNames) in
           friendsNames.friends?.append(.makeDroid(name: "C-3PO"))
         }
       })
 
-      let result = try await(store.load(query: HeroAndFriendsNamesQuery()))
+      let result = try awaitWith(store.load(query: HeroAndFriendsNamesQuery()))
       guard let data = result.data else { XCTFail(); return }
 
       XCTAssertEqual(data.hero?.name, "R2-D2")
