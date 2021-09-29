@@ -7,11 +7,19 @@ also includes support for offline operations.
 
 *Changes merged to `main`, but not yet released on a tag.*
 
+## 3.4.1
+
+### Misc. Updates
+
+- Update to 2.26.0 SDK dependencies ([PR #492](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/492))
+
 ## 3.4.0
+
 ### Misc. Updates
 - Updated `LambdaAuthInterceptor` to support async auth provider ([PR #488](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/488))
 
 ## 3.3.1
+
 ### Misc. Updates
 
 - Update to 2.25.0 SDK dependencies ([PR #484](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/484))
