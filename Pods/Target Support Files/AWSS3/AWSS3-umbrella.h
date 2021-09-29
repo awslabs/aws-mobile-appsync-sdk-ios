@@ -17,8 +17,10 @@
 #import "AWSS3Resources.h"
 #import "AWSS3Serializer.h"
 #import "AWSS3Service.h"
+#import "AWSS3TransferUtility+EnumerateBlocks.h"
 #import "AWSS3TransferUtility+HeaderHelper.h"
 #import "AWSS3TransferUtility.h"
+#import "AWSS3TransferUtilityBlocks.h"
 #import "AWSS3TransferUtilityDatabaseHelper.h"
 #import "AWSS3TransferUtilityTasks.h"
 

@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '9.0'
   s.swift_version = '5.1'
 
-  s.dependency 'AWSCore', '~> 2.25.0'
+  s.dependency 'AWSCore', '~> 2.26.0'
   s.dependency 'SQLite.swift', '~> 0.12.2'
   s.dependency 'ReachabilitySwift', '5.0.0'
   s.dependency 'AppSyncRealTimeClient', '~> 1.4'
