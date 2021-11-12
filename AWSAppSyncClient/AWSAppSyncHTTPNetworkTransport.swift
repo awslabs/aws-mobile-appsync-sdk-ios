@@ -6,6 +6,7 @@
 
 import Foundation
 import AWSCore
+import AppSyncRealTimeClient
 
 public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     public enum AppSyncAuthProvider {
@@ -37,7 +38,8 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     private let authProvider: AppSyncAuthProvider
     private let sendOperationIdentifiers: Bool
     private var retryStrategy: AWSAppSyncRetryStrategy
-
+    
+    private let activeTimersQueue = DispatchQueue(label: "AWSAppSyncHTTPNetworkTransport.activeTimers", attributes: .concurrent)
     private var activeTimers: [String: DispatchSourceTimer] = [:]
 
     /// Designated initializer. Creates a network transport with the specified server
@@ -249,9 +251,13 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                                                          retryHandler: retryHandler,
                                                          networkTransportOperation: networkTransportOperation,
                                                          completionHandler: completionHandler)
-                                self?.activeTimers.removeValue(forKey: taskUUID)
+                                self?.activeTimersQueue.async(flags: .barrier) {
+                                    self?.activeTimers.removeValue(forKey: taskUUID)
+                                }
                             }
-                            self?.activeTimers[taskUUID] = timer
+                            self?.activeTimersQueue.async(flags: .barrier) {
+                                self?.activeTimers[taskUUID] = timer
+                            }
                         } else {
                             completionHandler(nil, error)
                         }
