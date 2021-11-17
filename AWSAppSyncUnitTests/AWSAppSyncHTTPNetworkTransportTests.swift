@@ -180,7 +180,7 @@ class AWSAppSyncHTTPNetworkTransportTests: XCTestCase {
         var currentAttempt = 0
         MockURLProtocol.requestHandler = { request in
             currentAttempt += 1
-            if currentAttempt < 10000 {
+            if currentAttempt < 100 {
                 // Mock a response with "Retry-After" header to perform a retry with 0 interval (immediately retry)
                 let headers = ["Retry-After": "0"]
                 let response = HTTPURLResponse(url: self.url, statusCode: 200, httpVersion: nil, headerFields: headers)!
