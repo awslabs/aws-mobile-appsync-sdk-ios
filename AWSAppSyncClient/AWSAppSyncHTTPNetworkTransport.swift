@@ -6,7 +6,6 @@
 
 import Foundation
 import AWSCore
-import AppSyncRealTimeClient
 
 public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     public enum AppSyncAuthProvider {
