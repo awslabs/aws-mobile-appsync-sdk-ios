@@ -31,14 +31,19 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         }
     }
 
+    // MARK: - Stored Properties -
+
     private let url: URL
     private let session: URLSession
     private let serializationFormat = JSONSerializationFormat.self
     private let authProvider: AppSyncAuthProvider
     private let sendOperationIdentifiers: Bool
     private var retryStrategy: AWSAppSyncRetryStrategy
-
+    
+    private let activeTimersQueue = DispatchQueue(label: "AWSAppSyncHTTPNetworkTransport.activeTimers")
     private var activeTimers: [String: DispatchSourceTimer] = [:]
+
+    // MARK: - Initializers -
 
     /// Designated initializer. Creates a network transport with the specified server
     /// URL, URLSession (which must be created with an appropriate delegate and queue
@@ -180,6 +185,8 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         )
     }
 
+    // MARK: - Internal Functions -
+
     func initRequest(request: inout URLRequest) {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
@@ -249,9 +256,9 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                                                          retryHandler: retryHandler,
                                                          networkTransportOperation: networkTransportOperation,
                                                          completionHandler: completionHandler)
-                                self?.activeTimers.removeValue(forKey: taskUUID)
+                                self?.removeActiveTimer(taskUUID: taskUUID)
                             }
-                            self?.activeTimers[taskUUID] = timer
+                            self?.addActiveTimer(taskUUID: taskUUID, timer: timer)
                         } else {
                             completionHandler(nil, error)
                         }
@@ -510,6 +517,28 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         }
         return ["query": type(of: operation).requestString, "variables": operationVariables]
     }
+
+    // MARK: - Protected State Transitions -
+
+    private func removeActiveTimer(taskUUID: String) {
+        if #available(iOS 10.0, *) {
+            dispatchPrecondition(condition: .notOnQueue(activeTimersQueue))
+        }
+        activeTimersQueue.sync {
+            _ = activeTimers.removeValue(forKey: taskUUID)
+        }
+    }
+
+    private func addActiveTimer( taskUUID: String, timer: DispatchSourceTimer?) {
+        if #available(iOS 10.0, *) {
+            dispatchPrecondition(condition: .notOnQueue(activeTimersQueue))
+        }
+        activeTimersQueue.sync {
+            activeTimers[taskUUID] = timer
+        }
+    }
+
+    // MARK: - Internal Class -
 
     internal class AWSAppSyncHTTPNetworkTransportOperation: Cancellable {
 
