@@ -5,7 +5,7 @@ also includes support for offline operations.
 
 ## Unreleased
 
-*Changes merged to `main`, but not yet released on a tag.*
+- AppSync is now built with Xcode 13.2 in the CI/CD pipeline
 
 ## 3.4.2
 - AppSync is now built with Xcode 13.1 and Swift 5.5 in the CI/CD pipeline
