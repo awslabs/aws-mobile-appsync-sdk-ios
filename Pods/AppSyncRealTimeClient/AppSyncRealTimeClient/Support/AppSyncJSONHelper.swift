@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AppSyncJSONHelper {
+public enum AppSyncJSONHelper {
 
     public static func base64AuthenticationBlob(_ header: AuthenticationHeader ) -> String {
         let jsonEncoder = JSONEncoder()

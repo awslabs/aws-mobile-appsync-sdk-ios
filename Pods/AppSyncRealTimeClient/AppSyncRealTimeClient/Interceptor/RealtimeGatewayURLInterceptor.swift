@@ -1,5 +1,5 @@
 //
-// Copyright 2018-2020 Amazon.com,
+// Copyright 2018-2021 Amazon.com,
 // Inc. or its affiliates. All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -23,11 +23,18 @@ public class RealtimeGatewayURLInterceptor: ConnectionInterceptor {
         guard var urlComponents = URLComponents(url: request.url, resolvingAgainstBaseURL: false) else {
             return request
         }
+
         urlComponents.scheme = SubscriptionConstants.realtimeWebsocketScheme
-        urlComponents.host = host.replacingOccurrences(
-            of: SubscriptionConstants.appsyncHostPart,
-            with: SubscriptionConstants.appsyncRealtimeHostPart
-        )
+        if AppSyncURLHelper.isStandardAppSyncGraphQLEndpoint(url: endpoint) {
+            urlComponents.host = host.replacingOccurrences(
+                of: SubscriptionConstants.appsyncHostPart,
+                with: SubscriptionConstants.appsyncRealtimeHostPart
+            )
+        } else {
+            // else this is a custom domain such that the host remains untouched and "/realtime" path is added
+            urlComponents.path.append(contentsOf: "/" + SubscriptionConstants.appsyncCustomDomainRealtimePath)
+        }
+
         guard let url = urlComponents.url else {
             return request
         }

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Create connection providers to connect to the websocket endpoint of the AppSync endpoint.
-public struct ConnectionProviderFactory {
+public enum ConnectionProviderFactory {
 
     public static func createConnectionProvider(
         for url: URL,
