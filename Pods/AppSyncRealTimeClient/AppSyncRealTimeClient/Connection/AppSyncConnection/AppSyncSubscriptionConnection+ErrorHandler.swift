@@ -1,6 +1,6 @@
 //
-// Copyright 2018-2021 Amazon.com,
-// Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -15,10 +15,13 @@ extension AppSyncSubscriptionConnection {
             return
         }
 
-        // If the error identifier is not for the this connection
+        // If the error identifier is not for the this subscription
         // we return immediately without handling the error.
         if case let ConnectionProviderError.subscription(identifier, _) = error,
             identifier != subscriptionItem.identifier {
+            return
+        }
+        if case let ConnectionProviderError.limitExceeded(identifier) = error, identifier != subscriptionItem.identifier {
             return
         }
 
