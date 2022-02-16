@@ -6,6 +6,7 @@
 
 import Foundation
 import AWSCore
+import AppSyncRealTimeClient
 
 public typealias SubscriptionResultHandler<Operation: GraphQLSubscription> = (_ result: GraphQLResult<Operation.Data>?, _ transaction: ApolloStore.ReadWriteTransaction?, _ error: Error?) -> Void
 
@@ -119,6 +120,8 @@ public class AWSAppSyncClient {
             name: .appSyncReachabilityChanged,
             object: nil)
 
+        AppSyncRealTimeClient.logLevel = AppSyncLogHelper.subscriptionLogLevel 
+        
         try AWSAppSyncClient.prefixTrackerQueue.sync {
             if appSyncConfig.cacheConfiguration?.usePrefix ?? false {
                 let prefixTrackerKey = appSyncConfig.cacheConfiguration?.prefix ?? ""

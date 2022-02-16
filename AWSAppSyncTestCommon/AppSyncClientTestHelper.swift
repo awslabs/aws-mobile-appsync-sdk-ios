@@ -112,9 +112,8 @@ public class AppSyncClientTestHelper: NSObject {
             throw TestHelperError.setupError(AppSyncClientTestHelper.testSetupErrorMessage)
         }
 
-        AWSDDLog.sharedInstance.logLevel = .error
-        AWSDDLog.add(AWSDDTTYLogger.sharedInstance)
-
+        AWSDDLog.sharedInstance.add(AWSDDTTYLogger.sharedInstance)
+        
         let appSyncConfig = try AppSyncClientTestHelper.makeAppSyncConfiguration(
             for: authenticationType,
             testConfiguration: resolvedTestConfiguration,
