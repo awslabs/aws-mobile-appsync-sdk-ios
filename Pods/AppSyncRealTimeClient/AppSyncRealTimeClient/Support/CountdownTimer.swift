@@ -1,6 +1,6 @@
 //
-// Copyright 2018-2021 Amazon.com,
-// Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -14,31 +14,54 @@ import Foundation
 /// includes work that must be performed on a specific queue, make sure to dispatch
 /// it inside the closure.
 class CountdownTimer {
-    /// The interval after which the timer will fire
-    let interval: TimeInterval
+    private static let defaultInterval: TimeInterval = 5 * 60
 
+    /// The interval in seconds of the timer
+    private var _interval: TimeInterval?
     private let lock: NSLock
     private var workItem: DispatchWorkItem?
-    private let onCountdownComplete: () -> Void
+    private var onCountdownComplete: (() -> Void)?
 
-    init(interval: TimeInterval, onCountdownComplete: @escaping () -> Void) {
+    init() {
         self.lock = NSLock()
-        self.interval = interval
-        self.onCountdownComplete = onCountdownComplete
-        createAndScheduleTimer()
     }
 
-    /// Resets the countdown of the timer to `interval`
-    func resetCountdown() {
+    var interval: TimeInterval {
+        _interval ?? CountdownTimer.defaultInterval
+    }
+
+    /// Starts the countdown of the timer with `interval` and perform
+    ///
+    /// - Parameters:
+    ///   - interval: The interval after which the timer will fire, and be reset on.
+    ///   - onCountdownComplete: The closure to perform when the timer fires.
+    func start(interval: TimeInterval, onCountdownComplete: @escaping () -> Void) {
         lock.lock()
         defer {
             lock.unlock()
         }
+        _interval = interval
+        self.onCountdownComplete = onCountdownComplete
         cancelAndClearWorkItem()
-        createAndScheduleTimer()
+        createAndScheduleTimer(interval: interval)
     }
 
-    /// Invalidates the timer
+    /// Resets the timer to begin counting down from the `interval` again.
+    ///
+    /// - Parameter interval: Optionally pass in a new interval for the timer.
+    func reset(interval: TimeInterval? = nil) {
+        lock.lock()
+        defer {
+            lock.unlock()
+        }
+        if let interval = interval {
+            _interval = interval
+        }
+        cancelAndClearWorkItem()
+        createAndScheduleTimer(interval: self.interval)
+    }
+
+    /// Invalidates/stops the timer
     func invalidate() {
         lock.lock()
         defer {
@@ -47,9 +70,16 @@ class CountdownTimer {
         cancelAndClearWorkItem()
     }
 
+    // MARK: - Private helpers
+
+    /// Invoked  by all puclic methods (`start`, `reset`, `invalidate`) to clear the previous timer
     private func cancelAndClearWorkItem() {
-        workItem?.cancel()
-        workItem = nil
+        guard let workItem = workItem else {
+            return
+        }
+
+        workItem.cancel()
+        self.workItem = nil
     }
 
     /// Invoked by the timer. Do not execute this method directly.
@@ -64,13 +94,13 @@ class CountdownTimer {
             return
         }
 
-        onCountdownComplete()
+        onCountdownComplete?()
     }
 
-    private func createAndScheduleTimer() {
+    /// Invoked by `start` and `reset` when creating a new timer.
+    private func createAndScheduleTimer(interval: TimeInterval) {
         let workItem = DispatchWorkItem { self.timerFired() }
         self.workItem = workItem
         DispatchQueue.global().asyncAfter(deadline: .now() + interval, execute: workItem)
     }
-
 }

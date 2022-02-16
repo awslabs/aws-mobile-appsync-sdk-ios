@@ -1,6 +1,6 @@
 //
-// Copyright 2018-2021 Amazon.com,
-// Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -16,9 +16,6 @@ extension AppSyncSubscriptionConnection {
         }
 
         guard response.id == subscriptionItem.identifier else {
-            AppSyncLogger.verbose("""
-                [AppSyncSubscriptionConnection] \(#function): \(subscriptionItem.identifier). Ignoring data event for \(response.id ?? "(null)")
-                """)
             return
         }
 
