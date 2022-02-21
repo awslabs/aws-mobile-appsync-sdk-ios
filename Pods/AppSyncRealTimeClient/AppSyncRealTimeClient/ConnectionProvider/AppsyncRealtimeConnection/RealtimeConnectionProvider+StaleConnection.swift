@@ -1,36 +1,33 @@
 //
-// Copyright 2018-2021 Amazon.com,
-// Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
 
 import Foundation
 
+/// Consolidates usage and parameters passed to the `staleConnectionTimer` methods.
 extension RealtimeConnectionProvider {
 
     /// Start a stale connection timer, first invalidating and destroying any existing timer
     func startStaleConnectionTimer() {
-        AppSyncLogger.debug("[RealtimeConnectionProvider] Starting stale connection timer for \(staleConnectionTimeout.get())s")
-        if staleConnectionTimer != nil {
-            stopStaleConnectionTimer()
-        }
-        staleConnectionTimer = CountdownTimer(interval: staleConnectionTimeout.get()) {
+        AppSyncLogger.debug("[RealtimeConnectionProvider] Starting stale connection timer for \(staleConnectionTimer.interval)s")
+
+        staleConnectionTimer.start(interval: RealtimeConnectionProvider.staleConnectionTimeout) {
             self.disconnectStaleConnection()
         }
     }
 
-    /// Stop and destroy any existing stale connection timer
-    func stopStaleConnectionTimer() {
-        AppSyncLogger.debug("[RealtimeConnectionProvider] Stopping and destroying stale connection timer")
-        staleConnectionTimer?.invalidate()
-        staleConnectionTimer = nil
+    /// Reset the stale connection timer in response to receiving a message from the websocket
+    func resetStaleConnectionTimer(interval: TimeInterval? = nil) {
+        AppSyncLogger.debug("[RealtimeConnectionProvider] Resetting stale connection timer")
+        staleConnectionTimer.reset(interval: interval)
     }
 
-    /// Reset the stale connection timer in response to receiving a message
-    func resetStaleConnectionTimer() {
-        AppSyncLogger.debug("[RealtimeConnectionProvider] Resetting stale connection timer")
-        staleConnectionTimer?.resetCountdown()
+    /// Stops the timer when disconnecting the websocket.
+    func invalidateStaleConnectionTimer() {
+        staleConnectionTimer.invalidate()
     }
 
     /// Fired when the stale connection timer expires
