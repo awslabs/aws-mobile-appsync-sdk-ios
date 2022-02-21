@@ -1,6 +1,6 @@
 //
-// Copyright 2018-2021 Amazon.com,
-// Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -18,7 +18,6 @@ extension AppSyncSubscriptionConnection {
             return
         }
         if connectionState == .connected {
-            AppSyncLogger.debug("[AppSyncSubscriptionConnection] \(#function): connection is connected, start subscription.")
             startSubscription()
         }
     }
@@ -32,7 +31,7 @@ extension AppSyncSubscriptionConnection {
         else {
             return
         }
-
+        AppSyncLogger.debug("[AppSyncSubscriptionConnection] \(#function): connection is connected, start subscription.")
         subscriptionState = .inProgress
 
         guard let payload = convertToPayload(

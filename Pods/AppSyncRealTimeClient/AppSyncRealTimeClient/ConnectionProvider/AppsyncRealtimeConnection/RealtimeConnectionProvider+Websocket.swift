@@ -1,6 +1,6 @@
 //
-// Copyright 2018-2021 Amazon.com,
-// Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -87,7 +87,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
 
         let interval = value / 1_000
 
-        guard interval != staleConnectionTimer?.interval else {
+        guard interval != staleConnectionTimer.interval else {
             return
         }
 
@@ -97,8 +97,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
             instructions: \(interval)s
             """
         )
-        staleConnectionTimeout.set(interval)
-        startStaleConnectionTimer()
+        resetStaleConnectionTimer(interval: interval)
     }
 
     /// Resolves & dispatches errors from `response`.
@@ -119,9 +118,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
             return
         }
 
-        // Map to limit exceed error if we get MaxSubscriptionsReachedException
-        if let errorType = response.payload?["errorType"],
-            errorType == "MaxSubscriptionsReachedException" {
+        if response.isMaxSubscriptionReachedError() {
             let limitExceedError = ConnectionProviderError.limitExceeded(identifier)
             updateCallback(event: .error(limitExceedError))
             return

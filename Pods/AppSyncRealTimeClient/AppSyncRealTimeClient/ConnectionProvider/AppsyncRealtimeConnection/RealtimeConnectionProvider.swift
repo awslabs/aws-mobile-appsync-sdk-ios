@@ -1,6 +1,6 @@
 //
-// Copyright 2018-2021 Amazon.com,
-// Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -10,6 +10,10 @@ import Foundation
 /// Appsync Real time connection that connects to subscriptions
 /// through websocket.
 public class RealtimeConnectionProvider: ConnectionProvider {
+    /// Maximum number of seconds a connection may go without receiving a keep alive
+    /// message before we consider it stale and force a disconnect
+    static let staleConnectionTimeout: TimeInterval = 5 * 60
+
     private let url: URL
     var listeners: [String: ConnectionProviderCallback]
 
@@ -19,14 +23,10 @@ public class RealtimeConnectionProvider: ConnectionProvider {
     var messageInterceptors: [MessageInterceptor]
     var connectionInterceptors: [ConnectionInterceptor]
 
-    /// Maximum number of seconds a connection may go without receiving a keep alive
-    /// message before we consider it stale and force a disconnect
-    let staleConnectionTimeout: AtomicValue<TimeInterval>
-
     /// A timer that automatically disconnects the current connection if it goes longer
     /// than `staleConnectionTimeout` without activity. Receiving any data or "keep
     /// alive" message will cause the timer to be reset to the full interval.
-    var staleConnectionTimer: CountdownTimer?
+    var staleConnectionTimer: CountdownTimer
 
     /// Manages concurrency for socket connections, disconnections, writes, and status reports.
     ///
@@ -47,7 +47,7 @@ public class RealtimeConnectionProvider: ConnectionProvider {
         self.status = .notConnected
         self.messageInterceptors = []
         self.connectionInterceptors = []
-        self.staleConnectionTimeout = AtomicValue(initialValue: 5 * 60)
+        self.staleConnectionTimer = CountdownTimer()
         self.connectionQueue = DispatchQueue(
             label: "com.amazonaws.AppSyncRealTimeConnectionProvider.serialQueue"
         )
@@ -111,8 +111,7 @@ public class RealtimeConnectionProvider: ConnectionProvider {
     public func disconnect() {
         connectionQueue.async {
             self.websocket.disconnect()
-            self.staleConnectionTimer?.invalidate()
-            self.staleConnectionTimer = nil
+            self.invalidateStaleConnectionTimer()
         }
     }
 
@@ -134,8 +133,7 @@ public class RealtimeConnectionProvider: ConnectionProvider {
                 AppSyncLogger.debug("[RealtimeConnectionProvider] all subscriptions removed, disconnecting websocket connection.")
                 self.status = .notConnected
                 self.websocket.disconnect()
-                self.staleConnectionTimer?.invalidate()
-                self.staleConnectionTimer = nil
+                self.invalidateStaleConnectionTimer()
             }
         }
     }
