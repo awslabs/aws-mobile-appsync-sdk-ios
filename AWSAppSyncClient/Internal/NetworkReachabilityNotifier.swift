@@ -5,7 +5,6 @@
 //
 
 import Foundation
-import Reachability
 import AWSCore
 
 internal extension Notification.Name {
@@ -41,7 +40,7 @@ class NetworkReachabilityNotifier {
             return
         }
 
-        let factory = reachabilityFactory ?? Reachability.self
+        let factory = reachabilityFactory ?? AWSAppSyncReachability.self
         shared = NetworkReachabilityNotifier(
             host: host,
             allowsCellularAccess: allowsCellularAccess,
@@ -155,10 +154,10 @@ class NetworkReachabilityNotifier {
 
 // MARK: - Reachability
 
-extension Reachability: NetworkReachabilityProvidingFactory {
+extension AWSAppSyncReachability: NetworkReachabilityProvidingFactory {
     public static func make(for hostname: String) -> NetworkReachabilityProviding? {
-        return try? Reachability(hostname: hostname)
+        return try? AWSAppSyncReachability(hostname: hostname)
     }
 }
 
-extension Reachability: NetworkReachabilityProviding { }
+extension AWSAppSyncReachability: NetworkReachabilityProviding { }

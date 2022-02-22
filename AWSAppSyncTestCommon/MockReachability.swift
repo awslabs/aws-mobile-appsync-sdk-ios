@@ -5,7 +5,6 @@
 //
 
 import Foundation
-import Reachability
 @testable import AWSAppSync
 
 /// The factory will always return the same instance. Make sure to clear the instance between tests by calling `clearShared`
@@ -28,7 +27,7 @@ class MockReachabilityProviding: NetworkReachabilityProviding {
     var allowsCellularConnection = false
     var notificationCenter = NotificationCenter.default
 
-    var connection = Reachability.Connection.wifi {
+    var connection = AWSAppSyncReachability.Connection.wifi {
         didSet {
             guard isNotifierStarted else {
                 return
