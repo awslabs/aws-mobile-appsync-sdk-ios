@@ -28,7 +28,7 @@ POSSIBILITY OF SUCH DAMAGE.
 import SystemConfiguration
 import Foundation
 
-public enum ReachabilityError: Error {
+public enum AWSAppSyncReachabilityError: Error {
     case failedToCreateWithAddress(sockaddr, Int32)
     case failedToCreateWithHostname(String, Int32)
     case unableToSetCallback(Int32)
@@ -43,10 +43,10 @@ public extension Notification.Name {
     static let reachabilityChanged = Notification.Name("reachabilityChanged")
 }
 
-public class Reachability {
+public class AWSAppSyncReachability {
 
-    public typealias NetworkReachable = (Reachability) -> ()
-    public typealias NetworkUnreachable = (Reachability) -> ()
+    public typealias NetworkReachable = (AWSAppSyncReachability) -> ()
+    public typealias NetworkUnreachable = (AWSAppSyncReachability) -> ()
 
     @available(*, unavailable, renamed: "Connection")
     public enum NetworkStatus: CustomStringConvertible {
@@ -143,7 +143,7 @@ public class Reachability {
                             targetQueue: DispatchQueue? = nil,
                             notificationQueue: DispatchQueue? = .main) throws {
         guard let ref = SCNetworkReachabilityCreateWithName(nil, hostname) else {
-            throw ReachabilityError.failedToCreateWithHostname(hostname, SCError())
+            throw AWSAppSyncReachabilityError.failedToCreateWithHostname(hostname, SCError())
         }
         self.init(reachabilityRef: ref, queueQoS: queueQoS, targetQueue: targetQueue, notificationQueue: notificationQueue)
     }
@@ -156,7 +156,7 @@ public class Reachability {
         zeroAddress.sa_family = sa_family_t(AF_INET)
 
         guard let ref = SCNetworkReachabilityCreateWithAddress(nil, &zeroAddress) else {
-            throw ReachabilityError.failedToCreateWithAddress(zeroAddress, SCError())
+            throw AWSAppSyncReachabilityError.failedToCreateWithAddress(zeroAddress, SCError())
         }
 
         self.init(reachabilityRef: ref, queueQoS: queueQoS, targetQueue: targetQueue, notificationQueue: notificationQueue)
@@ -167,7 +167,7 @@ public class Reachability {
     }
 }
 
-public extension Reachability {
+public extension AWSAppSyncReachability {
 
     // MARK: - *** Notifier methods ***
     func startNotifier() throws {
@@ -178,30 +178,30 @@ public extension Reachability {
 
             // `weakifiedReachability` is guaranteed to exist by virtue of our
             // retain/release callbacks which we provided to the `SCNetworkReachabilityContext`.
-            let weakifiedReachability = Unmanaged<ReachabilityWeakifier>.fromOpaque(info).takeUnretainedValue()
+            let weakifiedReachability = Unmanaged<AWSAppSyncReachabilityWeakifier>.fromOpaque(info).takeUnretainedValue()
 
             // The weak `reachability` _may_ no longer exist if the `Reachability`
             // object has since been deallocated but a callback was already in flight.
             weakifiedReachability.reachability?.flags = flags
         }
 
-        let weakifiedReachability = ReachabilityWeakifier(reachability: self)
-        let opaqueWeakifiedReachability = Unmanaged<ReachabilityWeakifier>.passUnretained(weakifiedReachability).toOpaque()
+        let weakifiedReachability = AWSAppSyncReachabilityWeakifier(reachability: self)
+        let opaqueWeakifiedReachability = Unmanaged<AWSAppSyncReachabilityWeakifier>.passUnretained(weakifiedReachability).toOpaque()
 
         var context = SCNetworkReachabilityContext(
             version: 0,
             info: UnsafeMutableRawPointer(opaqueWeakifiedReachability),
             retain: { (info: UnsafeRawPointer) -> UnsafeRawPointer in
-                let unmanagedWeakifiedReachability = Unmanaged<ReachabilityWeakifier>.fromOpaque(info)
+                let unmanagedWeakifiedReachability = Unmanaged<AWSAppSyncReachabilityWeakifier>.fromOpaque(info)
                 _ = unmanagedWeakifiedReachability.retain()
                 return UnsafeRawPointer(unmanagedWeakifiedReachability.toOpaque())
             },
             release: { (info: UnsafeRawPointer) -> Void in
-                let unmanagedWeakifiedReachability = Unmanaged<ReachabilityWeakifier>.fromOpaque(info)
+                let unmanagedWeakifiedReachability = Unmanaged<AWSAppSyncReachabilityWeakifier>.fromOpaque(info)
                 unmanagedWeakifiedReachability.release()
             },
             copyDescription: { (info: UnsafeRawPointer) -> Unmanaged<CFString> in
-                let unmanagedWeakifiedReachability = Unmanaged<ReachabilityWeakifier>.fromOpaque(info)
+                let unmanagedWeakifiedReachability = Unmanaged<AWSAppSyncReachabilityWeakifier>.fromOpaque(info)
                 let weakifiedReachability = unmanagedWeakifiedReachability.takeUnretainedValue()
                 let description = weakifiedReachability.reachability?.description ?? "nil"
                 return Unmanaged.passRetained(description as CFString)
@@ -210,12 +210,12 @@ public extension Reachability {
 
         if !SCNetworkReachabilitySetCallback(reachabilityRef, callback, &context) {
             stopNotifier()
-            throw ReachabilityError.unableToSetCallback(SCError())
+            throw AWSAppSyncReachabilityError.unableToSetCallback(SCError())
         }
 
         if !SCNetworkReachabilitySetDispatchQueue(reachabilityRef, reachabilitySerialQueue) {
             stopNotifier()
-            throw ReachabilityError.unableToSetDispatchQueue(SCError())
+            throw AWSAppSyncReachabilityError.unableToSetDispatchQueue(SCError())
         }
 
         // Perform an initial check
@@ -253,14 +253,14 @@ public extension Reachability {
     }
 }
 
-fileprivate extension Reachability {
+fileprivate extension AWSAppSyncReachability {
 
     func setReachabilityFlags() throws {
         try reachabilitySerialQueue.sync { [unowned self] in
             var flags = SCNetworkReachabilityFlags()
             if !SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags) {
                 self.stopNotifier()
-                throw ReachabilityError.unableToGetFlags(SCError())
+                throw AWSAppSyncReachabilityError.unableToGetFlags(SCError())
             }
             
             self.flags = flags
@@ -282,7 +282,7 @@ fileprivate extension Reachability {
 
 extension SCNetworkReachabilityFlags {
 
-    typealias Connection = Reachability.Connection
+    typealias Connection = AWSAppSyncReachability.Connection
 
     var connection: Connection {
         guard isReachableFlagSet else { return .unavailable }
@@ -398,9 +398,9 @@ extension SCNetworkReachabilityFlags {
  - don't alter the public API of `Reachability.swift` in any way
  - still allow for automatic stopping of the notifier on `deinit`.
  */
-private class ReachabilityWeakifier {
-    weak var reachability: Reachability?
-    init(reachability: Reachability) {
+private class AWSAppSyncReachabilityWeakifier {
+    weak var reachability: AWSAppSyncReachability?
+    init(reachability: AWSAppSyncReachability) {
         self.reachability = reachability
     }
 }
