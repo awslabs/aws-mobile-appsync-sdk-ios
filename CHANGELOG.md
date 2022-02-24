@@ -8,6 +8,7 @@ also includes support for offline operations.
 ### Misc. Updates
 
 - feat: Upgrade AppSyncRealTimeClient 1.7.0 for Starscream 4 ([PR #518](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/518))
+- AppSync SDK is now also released as an XCFramework
 
 ##  3.4.3
 
