@@ -10,13 +10,16 @@ xcodebuild archive -workspace AWSAppSyncClient.xcworkspace \
 					-scheme $framework \
 					-destination "generic/platform=iOS" \
 					-archivePath $ios_device_archive_path \
+					-quiet \
 					SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+					
 
 # archive for simulator
 xcodebuild archive -workspace AWSAppSyncClient.xcworkspace \
 					-scheme $framework \
 					-destination "generic/platform=iOS Simulator" \
 					-archivePath $ios_simulator_archive_path \
+					-quiet \
 					SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
 # create xcframework
@@ -25,7 +28,7 @@ xcodebuild -create-xcframework \
 	   -debug-symbols "$ios_device_archive_path.xcarchive/dSYMs/$framework.framework.dSYM" \
 	   -framework "$ios_simulator_archive_path.xcarchive/Products/Library/Frameworks/$framework.framework" \
 	   -debug-symbols "$ios_simulator_archive_path.xcarchive/dSYMs/$framework.framework.dSYM" \
-       -output "$xcframework_path"
+           -output "$xcframework_path"
 
 cd build && zip -q -r AWSAppSync.xcframework.zip  AWSAppSync.xcframework
 
