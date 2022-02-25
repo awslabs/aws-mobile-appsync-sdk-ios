@@ -81,7 +81,7 @@ public class AppSyncSubscriptionConnection: SubscriptionConnection, RetryableCon
 
         connectionProvider.addListener(identifier: subscriptionItem.identifier) { [weak self] event in
             guard let self = self else {
-                AppSyncLogger.debug("[AppSyncSubscriptionConnection] \(#function): Self is nil, listener is not called.")
+                AppSyncLogger.debug("[AppSyncSubscriptionConnection]: Subscription (Self) is nil, connection event is not handled.")
                 return
             }
             switch event {

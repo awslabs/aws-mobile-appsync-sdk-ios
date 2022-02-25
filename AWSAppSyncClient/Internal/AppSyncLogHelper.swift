@@ -6,6 +6,7 @@
 
 import Foundation
 import AWSCore
+import AppSyncRealTimeClient
 
 struct AppSyncLogHelper {
     
@@ -19,7 +20,6 @@ struct AppSyncLogHelper {
                            file: String,
                            function: String,
                            line: UInt) {
-        
         AWSDDLog.log(asynchronous: true,
                      level: AWSDDLog.sharedInstance.logLevel,
                      flag: flag,
@@ -30,5 +30,22 @@ struct AppSyncLogHelper {
                      tag: nil,
                      format: message,
                      arguments: getVaList([]))
+    }
+    
+    static var subscriptionLogLevel: AppSyncRealTimeClient.LogLevel {
+        switch AWSDDLog.sharedInstance.logLevel {
+        case .off, .error:
+            return .error
+        case .warning:
+            return .warn
+        case .info:
+            return .info
+        case .debug:
+            return .debug
+        case .verbose, .all:
+            return .verbose
+        @unknown default:
+            return .error
+        }
     }
 }
