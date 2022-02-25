@@ -53,7 +53,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
                 self?.handleConnectionAck(response: response)
             }
         case .error:
-            AppSyncLogger.debug("[RealtimeConnectionProvider] received error")
+            AppSyncLogger.verbose("[RealtimeConnectionProvider] received error")
             connectionQueue.async { [weak self] in
                 self?.handleError(response: response)
             }
@@ -62,7 +62,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
                 updateCallback(event: .data(appSyncResponse))
             }
         case .keepAlive:
-            AppSyncLogger.debug("[RealtimeConnectionProvider] received keepAlive")
+            AppSyncLogger.verbose("[RealtimeConnectionProvider] received keepAlive")
         }
     }
 
