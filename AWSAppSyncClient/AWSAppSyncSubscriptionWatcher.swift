@@ -179,12 +179,12 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     /// Specifically, this means that cancelling a subscription watcher will not invoke `statusChangeHandler` or
     /// `resultHandler`, although it will set the internal state of the watcher to `.disconnected`
     public func cancel() {
-        if !self.isCancelled {
-            if self.cancellationSource == .none {
-                self.cancellationSource = .user
-            }
-            self.performCleanUpTasksOnCancel()
+        guard !self.isCancelled else { return }
+        
+        if self.cancellationSource == .none {
+            self.cancellationSource = .user
         }
+        self.performCleanUpTasksOnCancel()
     }
     
     internal func performCleanUpTasksOnCancel() {
