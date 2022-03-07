@@ -28,6 +28,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     private var subscriptionItem: SubscriptionItem?
 
     private let handlerQueue: DispatchQueue
+    private let subscriptionsQueue: DispatchQueue
     private var resultHandler: SubscriptionResultHandler<Subscription>?
     private var connectedCallback: (() -> Void)?
     private var statusChangeHandler: SubscriptionStatusChangeHandler?
@@ -57,6 +58,7 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
                 resultHandler(result, transaction, error)
             }
         }
+        self.subscriptionsQueue = subscriptionsQueue
         subscriptionsQueue.async { [weak self] in
             guard let self = self else {return}
             if !self.isCancelled {
@@ -177,10 +179,12 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
     /// Specifically, this means that cancelling a subscription watcher will not invoke `statusChangeHandler` or
     /// `resultHandler`, although it will set the internal state of the watcher to `.disconnected`
     public func cancel() {
+        guard !self.isCancelled else { return }
+        
         if self.cancellationSource == .none {
             self.cancellationSource = .user
         }
-        performCleanUpTasksOnCancel()
+        self.performCleanUpTasksOnCancel()
     }
     
     internal func performCleanUpTasksOnCancel() {
@@ -188,11 +192,13 @@ public final class AWSAppSyncSubscriptionWatcher<Subscription: GraphQLSubscripti
         status = .disconnected
         resultHandler = nil
         statusChangeHandler = nil
-
-        if self.cancellationSource != .error, let item = subscriptionItem {
-            connection?.unsubscribe(item: item)
+        subscriptionsQueue.async { [weak self] in
+            guard let self = self else {return}
+            if self.cancellationSource != .error, let item = self.subscriptionItem {
+                self.connection?.unsubscribe(item: item)
+            }
+            self.connection = nil
         }
-        connection = nil
     }
 
 }
