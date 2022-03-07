@@ -5,6 +5,13 @@ pwd=$(pwd)
 ios_device_archive_path="$pwd/build/iOS/AWSAppSync"
 ios_simulator_archive_path="$pwd/build/Simulator/AWSAppSync"
 xcframework_path="$pwd/build/$framework.xcframework"
+
+if [ -d "$xcframework_path" ]
+then
+  echo "XCFramework exists already, skipping."
+  exit 0
+fi
+
 # archive for device
 xcodebuild archive -workspace AWSAppSyncClient.xcworkspace \
 					-scheme $framework \
