@@ -1,1 +1,1 @@
-pod trunk push AWSAppSync.podspec --allow-warnings
+bundle exec pod trunk push AWSAppSync.podspec --allow-warnings
