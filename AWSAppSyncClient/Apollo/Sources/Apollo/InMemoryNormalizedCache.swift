@@ -2,7 +2,16 @@ public final class InMemoryNormalizedCache: NormalizedCache {
   private var records: RecordSet
 
   public init(records: RecordSet = RecordSet()) {
-    self.records = records
+    if records.isEmpty {
+      // Prepopulate the InMemoryNormalizedCache record set with an empty QUERY_ROOT, to allow optimistic
+      // updates against empty caches to succeed. Otherwise, such an operation will fail with a "missingValue"
+      // error (#92)
+      let emptyQueryRootRecord = Record(key: AWSAppSyncClient.EmptyQuery.rootCacheKey, [:])
+      self.records = RecordSet(records: [emptyQueryRootRecord])
+    }
+    else {
+      self.records = records
+    }
   }
 
   public func loadRecords(forKeys keys: [CacheKey]) -> Promise<[Record?]> {
@@ -16,6 +25,13 @@ public final class InMemoryNormalizedCache: NormalizedCache {
 
   public func clear() -> Promise<Void> {
     records.clear()
+
+    // Prepopulate the InMemoryNormalizedCache record set with an empty QUERY_ROOT, to allow optimistic
+    // updates against empty caches to succeed. Otherwise, such an operation will fail with a "missingValue"
+    // error (#92)
+    let emptyQueryRootRecord = Record(key: AWSAppSyncClient.EmptyQuery.rootCacheKey, [:])
+    self.records = RecordSet(records: [emptyQueryRootRecord])
+
     return Promise(fulfilled: ())
   }
 }

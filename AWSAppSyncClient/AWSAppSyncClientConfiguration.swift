@@ -587,13 +587,7 @@ public class AWSAppSyncClientConfiguration {
         if let databaseURL = databaseURL, let cache = try? AWSSQLiteNormalizedCache(fileURL: databaseURL) {
             store = ApolloStore(cache: cache)
         } else {
-            // Prepopulate the InMemoryNormalizedCache record set with an empty QUERY_ROOT, to allow optimistic
-            // updates against empty caches to succeed. Otherwise, such an operation will fail with a "missingValue"
-            // error (#92)
-            let emptyQueryRootRecord = Record(key: AWSAppSyncClient.EmptyQuery.rootCacheKey, [:])
-            let records = RecordSet(records: [emptyQueryRootRecord])
-            let inMemoryCache = InMemoryNormalizedCache(records: records)
-            store = ApolloStore(cache: inMemoryCache)
+            store = ApolloStore(cache: InMemoryNormalizedCache())
         }
         return store
     }

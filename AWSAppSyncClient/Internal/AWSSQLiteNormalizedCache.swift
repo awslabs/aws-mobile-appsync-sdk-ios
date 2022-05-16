@@ -54,6 +54,13 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
     func clear() -> Promise<Void> {
         return Promise {
             try db.run(self.records.delete())
+            // Prepopulate the cache with an empty QUERY_ROOT, to allow optimistic updates of query results that have
+            // not yet been retrieved from the service. This works around Apollo's behavior of throwing an error if
+            // readObject find no records. (#92)
+            try db.run(self.records.insert(
+                key <- AWSSQLiteNormalizedCache.queryRootKey,
+                record <- "{}"
+            ))
         }
     }
 
