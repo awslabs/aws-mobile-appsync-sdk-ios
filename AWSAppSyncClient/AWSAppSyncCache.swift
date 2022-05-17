@@ -10,7 +10,6 @@ import Foundation
 public enum AWSAppSyncQueriesCacheError: Error {
     case invalidRecordEncoding(record: String)
     case invalidRecordShape(object: Any)
-    case invalidRecordValue(value: Any)
 }
 
 /// Errors thrown during creation or migration of AppSync caches
