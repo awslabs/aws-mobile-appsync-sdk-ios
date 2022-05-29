@@ -37,11 +37,19 @@ class MutationOptimisticUpdateTests: XCTestCase {
     }
 
     func testMutation_WithOptimisticUpdate_UpdatesEmptyPersistentCache() throws {
-        try doMutationWithOptimisticUpdate(usingBackingDatabase: true)
+        try doMutationWithOptimisticUpdate(usingBackingDatabase: true, afterClearingCaches: false)
     }
 
     func testMutation_WithOptimisticUpdate_UpdatesEmptyInMemoryCache() throws {
-        try doMutationWithOptimisticUpdate(usingBackingDatabase: false)
+        try doMutationWithOptimisticUpdate(usingBackingDatabase: false, afterClearingCaches: false)
+    }
+
+    func testMutation_WithOptimisticUpdate_UpdatesEmptyPersistentCacheAfterClearingCaches() throws {
+        try doMutationWithOptimisticUpdate(usingBackingDatabase: true, afterClearingCaches: true)
+    }
+
+    func testMutation_WithOptimisticUpdate_UpdatesEmptyInMemoryCacheAfterClearingCaches() throws {
+        try doMutationWithOptimisticUpdate(usingBackingDatabase: false, afterClearingCaches: true)
     }
 
     func testMutation_WithoutOptimisticUpdate_DoesNotUpdateEmptyCache() throws {
@@ -203,7 +211,8 @@ class MutationOptimisticUpdateTests: XCTestCase {
 
     // MARK - Utility methods
 
-    func doMutationWithOptimisticUpdate(usingBackingDatabase: Bool) throws {
+    func doMutationWithOptimisticUpdate(usingBackingDatabase: Bool,
+                                        afterClearingCaches: Bool) throws {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         // We will set up a response block that never actually invokes the completion handler. This allows us to
@@ -222,6 +231,10 @@ class MutationOptimisticUpdateTests: XCTestCase {
             : nil
 
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: resolvedCacheConfiguration)
+
+        if afterClearingCaches {
+            try appSyncClient.clearCaches()
+        }
 
         let newPost = ListPostsQuery.Data.ListPost(
             id: "TEMPORARY-\(UUID().uuidString)",

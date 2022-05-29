@@ -54,6 +54,7 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
     func clear() -> Promise<Void> {
         return Promise {
             try db.run(self.records.delete())
+            try insertEmptyQueryRoot()
         }
     }
 
@@ -70,14 +71,18 @@ final class AWSSQLiteNormalizedCache: NormalizedCache {
         let queryRootRecords = records.filter(key == AWSSQLiteNormalizedCache.queryRootKey)
         let recordCount = try db.scalar(queryRootRecords.count)
         if recordCount == 0 {
-            // Prepopulate the cache with an empty QUERY_ROOT, to allow optimistic updates of query results that have
-            // not yet been retrieved from the service. This works around Apollo's behavior of throwing an error if
-            // readObject find no records. (#92)
-            try db.run(records.insert(
-                key <- AWSSQLiteNormalizedCache.queryRootKey,
-                record <- "{}"
-            ))
+            try insertEmptyQueryRoot()
         }
+    }
+    
+    private func insertEmptyQueryRoot() throws {
+        // Prepopulate the cache with an empty QUERY_ROOT, to allow optimistic updates of query results that have
+        // not yet been retrieved from the service. This works around Apollo's behavior of throwing an error if
+        // readObject find no records. (#92)
+        try db.run(self.records.insert(
+            key <- AWSSQLiteNormalizedCache.queryRootKey,
+            record <- "{}"
+        ))
     }
 
     /// Decompose a cache key into path components to derive a list of keys that *might* be record
