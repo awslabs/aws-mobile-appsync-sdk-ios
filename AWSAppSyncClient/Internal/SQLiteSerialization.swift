@@ -45,7 +45,7 @@ final class SQLiteSerialization {
         switch fieldJSONValue {
         case let dictionary as JSONObject:
             guard let reference = dictionary[serializedReferenceKey] as? String else {
-                throw AWSAppSyncQueriesCacheError.invalidRecordValue(value: fieldJSONValue)
+                return fieldJSONValue
             }
             return Reference(key: reference)
         case let array as [JSONValue]:

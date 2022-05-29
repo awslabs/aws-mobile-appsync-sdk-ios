@@ -10,6 +10,7 @@ import Foundation
 public enum AWSAppSyncQueriesCacheError: Error {
     case invalidRecordEncoding(record: String)
     case invalidRecordShape(object: Any)
+    @available(*, deprecated, message: "No longer being used and will be removed in a future revision.")
     case invalidRecordValue(value: Any)
 }
 
