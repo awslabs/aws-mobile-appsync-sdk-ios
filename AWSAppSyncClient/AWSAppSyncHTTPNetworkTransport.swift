@@ -284,6 +284,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
 
             if let error = error {
                 completionHandler(.failure(AWSAppSyncClientError.requestFailed(data, nil, error)))
+                self.session.finishTasksAndInvalidate()
                 return
             }
 
@@ -293,26 +294,28 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
 
             if !httpResponse.isSuccessful {
                 completionHandler(.failure(AWSAppSyncClientError.requestFailed(data, httpResponse, error)))
-
+                self.session.finishTasksAndInvalidate()
                 return
             }
 
             guard let data = data else {
                 completionHandler(.failure(AWSAppSyncClientError.noData(httpResponse)))
-
+                self.session.finishTasksAndInvalidate()
                 return
             }
             do {
                 guard let body =  try self.serializationFormat.deserialize(data: data) as? JSONObject else {
                     completionHandler(.failure(AWSAppSyncClientError.parseError(data, httpResponse, nil)))
-
+                    self.session.finishTasksAndInvalidate()
                     return
                 }
                 completionHandler(.success(body))
+                self.session.finishTasksAndInvalidate()
+
             } catch {
                 completionHandler(.failure(AWSAppSyncClientError.parseError(data, httpResponse, error)))
+                self.session.finishTasksAndInvalidate()
             }
-
         })
 
         dataTask.resume()
