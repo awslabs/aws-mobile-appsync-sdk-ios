@@ -11,6 +11,7 @@ final class AWSPerformMutationQueue {
 
     private weak var appSyncClient: AWSAppSyncClient?
     private weak var networkClient: AWSNetworkTransport?
+    private weak var apolloStore: ApolloStore?
     private let persistentCache: AWSMutationCache?
 
     /// The OperationQueue onto which we enqueue mutations to perform
@@ -25,6 +26,7 @@ final class AWSPerformMutationQueue {
     init(
         appSyncClient: AWSAppSyncClient,
         networkClient: AWSNetworkTransport,
+        apolloStore: ApolloStore,
         reachabiltyChangeNotifier: NetworkReachabilityNotifier?,
         cacheFileURL: URL? = nil) {
 
@@ -32,6 +34,7 @@ final class AWSPerformMutationQueue {
 
         self.appSyncClient = appSyncClient
         self.networkClient = networkClient
+        self.apolloStore = apolloStore
 
         operationQueue = OperationQueue()
         operationQueue.name = "com.amazonaws.service.appsync.AWSPerformMutationQueue.operations"
@@ -62,6 +65,7 @@ final class AWSPerformMutationQueue {
 
     func add<Mutation: GraphQLMutation>(
         _ mutation: Mutation,
+        optimisticUpdate: OptimisticResponseBlock?,
         mutationConflictHandler: MutationConflictHandler<Mutation>?,
         mutationResultHandler: OperationResultHandler<Mutation>?,
         handlerQueue: DispatchQueue) -> Cancellable {
@@ -88,7 +92,17 @@ final class AWSPerformMutationQueue {
             self?.deleteOfflineMutation(withIdentifier: identifier)
         }
 
-        operationQueue.addOperation(operation)
+        if let store = apolloStore, let optimisticUpdate = optimisticUpdate {
+            store.withinReadWriteTransaction { transaction in
+                optimisticUpdate(transaction)
+            }.catch { error in
+                AppSyncLog.error("optimisticUpdate error: \(error)")
+            }.finally {
+                self.operationQueue.addOperation(operation)
+            }
+        } else {
+            operationQueue.addOperation(operation)
+        }
 
         return operation
     }
