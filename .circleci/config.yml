@@ -114,10 +114,10 @@ jobs:
       - check_bundle
       - run:
           name: Build AWSAppSyncClient
-          command: xcodebuild build-for-testing -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSyncClient -sdk iphonesimulator -destination "${destination}" | xcpretty
+          command: xcodebuild build-for-testing -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync -sdk iphonesimulator -destination "${destination}" | xcpretty
       - run:
           name: Test AWSAppSyncClient
-          command: xcodebuild test -enableThreadSanitizer NO -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSyncClient -sdk iphonesimulator -destination "${destination}" | xcpretty --simple --color --report junit
+          command: xcodebuild test -enableThreadSanitizer NO -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync -sdk iphonesimulator -destination "${destination}" | xcpretty --simple --color --report junit
       - store_test_results:
           path: build/reports
 
