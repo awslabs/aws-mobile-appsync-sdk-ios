@@ -1,0 +1,171 @@
+# .circleci/config.yml
+
+version: 2.1
+
+defaults: &defaults
+  macos:
+    xcode: "12.4.0"
+  working_directory: ~/aws-mobile-appsync-sdk-ios
+  environment:
+      BUNDLE_PATH: vendor/bundle
+
+references:
+  repo_cache_key: &repo_cache_key
+    v1-repo-{{ .Branch }}-{{ .Revision }}
+
+  restore_repo: &restore_repo
+    restore_cache:
+      keys:
+        - *repo_cache_key
+        - v1-repo-{{ .Branch }}
+        - v1-repo
+
+  pods_cache_key: &pods_cache_key
+    v1-dependency-pods-{{ checksum "~/aws-mobile-appsync-sdk-ios/Podfile" }}
+  
+  pods_backup_cache_key: &pods_backup_cache_key
+    v1-dependency-pods
+
+  restore_pods: &restore_pods
+    restore_cache:
+      keys:
+        - *pods_cache_key
+        - *pods_backup_cache_key
+
+  plugin_pods_cache_key: &plugin_pods_cache_key
+
+commands:
+  pre_start_simulator:
+    description: >-
+      pre start simulator, build may fail if simulator is not started
+    steps:
+      - run:
+          name: Pre-start simulator
+          command: bash ~/aws-mobile-appsync-sdk-ios/build-support/pre_start_simulator.sh
+
+  restore_gems:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-gems-{{ checksum "~/aws-mobile-appsync-sdk-ios/Gemfile.lock" }}
+            - v1-gems-
+
+  check_bundle:
+    steps:
+      - run:
+          name: Check bundle
+          command: bundle check --path $BUNDLE_PATH || bundle install --path $BUNDLE_PATH
+
+  save_plugin_pods:
+    parameters:
+      prefix:
+        type: string
+    steps:
+      - save_cache:
+          key: v1-<< parameters.prefix >>-dependency-pods-{{ checksum "Podfile" }}
+          paths:
+            - ./Pods 
+  
+  restore_plugin_pods:
+    parameters:
+      prefix:
+        type: string
+    steps:
+      - restore_cache:
+          keys: 
+            - v1-<< parameters.prefix >>-dependency-pods-{{ checksum "Podfile" }}
+            - v1-<< parameters.prefix >>-dependency-pods
+
+jobs:
+
+  checkout_code:
+    <<: *defaults
+    steps:
+      - *restore_repo
+      - checkout
+      - save_cache:
+          key: *repo_cache_key
+          paths: 
+            - ~/aws-mobile-appsync-sdk-ios
+  
+  install_gems:
+    <<: *defaults
+    steps:
+      - *restore_repo
+      - restore_gems
+      - run:
+          name: Bundle install
+          command: bundle check --path $BUNDLE_PATH || bundle install --path $BUNDLE_PATH
+          environment:
+            BUNDLE_JOBS: 4
+            BUNDLE_RETRY: 3
+      - save_cache:
+          key: v1-gems-{{ checksum "~/aws-mobile-appsync-sdk-ios/Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
+  build_test:
+    <<: *defaults
+    steps:
+      - *restore_repo
+      - pre_start_simulator
+      - run: pod install
+      - restore_gems
+      - check_bundle
+      - run:
+          name: Build AWSAppSyncClient
+          command: xcodebuild build-for-testing -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSyncClient -sdk iphonesimulator -destination "${destination}" | xcpretty
+      - run:
+          name: Test AWSAppSyncClient
+          command: xcodebuild test -enableThreadSanitizer NO -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSyncClient -sdk iphonesimulator -destination "${destination}" | xcpretty --simple --color --report junit
+      - store_test_results:
+          path: build/reports
+
+  deploy:
+    <<: *defaults
+    description: deploy pods to trunk
+    steps: 
+      - *restore_repo
+      - restore_gems
+      - check_bundle
+      - run:
+          name: Release pods
+          command: bundle exec fastlane release_pods
+
+  release_carthage:
+    <<: *defaults
+    steps:
+      - skip_job_unless_required
+      - checkout_with_cache
+      - pre_start_simulator
+      - update_brew
+      - run:
+          name: Install github-release
+          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install github-release
+      - restore_cache:
+          key: build_xcframeworks-result-{{ .Revision }}
+      - run:
+          name: Create Carthage archive
+          command: python3 ./build-support/create_carthage_archive.py
+          no_output_timeout: 20m
+      - run:
+          name: Upload Carthage archive to GitHub release
+          command: github-release upload -s ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -t ${CIRCLE_TAG} -f aws-mobile-appsync-sdk-ios-carthage.framework.zip -n AWSAppSync.framework.zip
+
+workflows:
+  build_test_deploy:
+    jobs:
+      - checkout_code
+      - install_gems:
+          requires:
+            - checkout_code
+      - build_test:
+          requires:
+            - install_gems
+      - deploy:
+          filters:
+            branches:
+              only:
+                - release
+          requires:
+            - build_test
