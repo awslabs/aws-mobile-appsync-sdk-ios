@@ -112,6 +112,9 @@ jobs:
       - restore_gems
       - check_bundle
       - run:
+          name: Add dummy configuration file
+          command: touch ~/aws-mobile-appsync-sdk-ios/AWSAppSyncIntegrationTests/appsync_test_credentials.json
+      - run: 
           name: Build AWSAppSyncClient
           command: xcodebuild build-for-testing -workspace AWSAppSyncClient.xcworkspace -scheme AWSAppSync -sdk iphonesimulator -destination "${destination}" | xcpretty
       - run:
