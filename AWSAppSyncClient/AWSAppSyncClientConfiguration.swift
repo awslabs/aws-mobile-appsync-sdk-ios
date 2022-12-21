@@ -134,7 +134,7 @@ public class AWSAppSyncClientConfiguration {
                             oidcAuthProvider: AWSOIDCAuthProvider? = nil,
                             userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil,
                             awsLambdaAuthProvider: AWSLambdaAuthProvider? = nil,
-                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.noCacheDefault,
                             cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
@@ -197,7 +197,7 @@ public class AWSAppSyncClientConfiguration {
                             oidcAuthProvider: AWSOIDCAuthProvider? = nil,
                             userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider? = nil,
                             awsLambdaAuthProvider: AWSLambdaAuthProvider? = nil,
-                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
+                            urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.noCacheDefault,
                             cacheConfiguration: AWSAppSyncCacheConfiguration? = nil,
                             connectionStateChangeHandler: ConnectionStateChangeHandler? = nil,
                             s3ObjectManager: AWSS3ObjectManager? = nil,
@@ -266,7 +266,7 @@ public class AWSAppSyncClientConfiguration {
                  userPoolsAuthProvider: AWSCognitoUserPoolsAuthProvider?,
                  awsLambdaAuthProvider: AWSLambdaAuthProvider? = nil,
                  oidcAuthProvider: AWSOIDCAuthProvider?,
-                 urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
+                 urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.noCacheDefault,
                  cacheConfiguration: AWSAppSyncCacheConfiguration?,
                  connectionStateChangeHandler: ConnectionStateChangeHandler?,
                  s3ObjectManager: AWSS3ObjectManager?,
@@ -606,4 +606,12 @@ public class AWSAppSyncClientConfiguration {
         return subscriptionMetadataCache
     }
 
+}
+
+extension URLSessionConfiguration {
+    public static var noCacheDefault: URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = nil
+        return configuration
+    }
 }
