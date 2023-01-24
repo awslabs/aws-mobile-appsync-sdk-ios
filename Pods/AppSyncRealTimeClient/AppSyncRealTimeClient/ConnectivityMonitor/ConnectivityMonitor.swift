@@ -33,7 +33,7 @@ class ConnectivityMonitor {
                 connectivityUpdatesQueue: connectivityUpdatesQueue,
                 onConnectivityUpdates: onUpdates
             )
-        } else if #available(iOS 12.0, *) {
+        } else if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.0, *) {
             let monitor = NetworkMonitor()
             self.monitor = monitor
             monitor.start(

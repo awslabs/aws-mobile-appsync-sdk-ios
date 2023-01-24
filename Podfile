@@ -8,7 +8,7 @@ AWS_SDK_VERSION = "2.27.0"
 target "AWSAppSync" do
   pod "AWSCore", "~> #{AWS_SDK_VERSION}"
   pod "SQLite.swift", "~> 0.12.2"
-  pod "AppSyncRealTimeClient", "~> 1.8"
+  pod "AppSyncRealTimeClient", :git => "https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git", :branch => "main"
 
   pod "SwiftLint"
 end
@@ -18,7 +18,7 @@ target "AWSAppSyncTestCommon" do
   # We directly access a database connection to verify certain initialization
   # setups
   pod "SQLite.swift", "~> 0.12.2"
-  pod "AppSyncRealTimeClient", "~> 1.8"
+  pod "AppSyncRealTimeClient", :git => "https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git", :branch => "main"
 end
 
 target "AWSAppSyncTestApp" do

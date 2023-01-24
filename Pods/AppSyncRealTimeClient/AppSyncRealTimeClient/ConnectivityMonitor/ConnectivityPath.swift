@@ -46,7 +46,7 @@ extension ConnectivityPath: CustomStringConvertible {
 }
 
 extension ConnectivityPath {
-    @available(iOS 12.0, *)
+    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.0, *)
     init(path: NWPath) {
         self.status = ConnectivityStatus(status: path.status)
         self.availableInterfaces = path.availableInterfaces.map { ConnectivityInterface(interface: $0) }
@@ -66,7 +66,7 @@ enum ConnectivityInterfaceType: String {
 }
 
 extension ConnectivityInterfaceType {
-    @available(iOS 12.0, *)
+    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.0, *)
     init(interfaceType: NWInterface.InterfaceType) {
         switch interfaceType {
         case .other:
@@ -95,7 +95,7 @@ struct ConnectivityInterface {
     }
 }
 extension ConnectivityInterface {
-    @available(iOS 12.0, *)
+    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.0, *)
     init(interface: NWInterface) {
         self.name = interface.name
         self.type = ConnectivityInterfaceType(interfaceType: interface.type)
@@ -109,7 +109,7 @@ enum ConnectivityStatus: String {
 }
 
 extension ConnectivityStatus {
-    @available(iOS 12.0, *)
+    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.0, *)
     init(status: NWPath.Status) {
         switch status {
         case .satisfied:

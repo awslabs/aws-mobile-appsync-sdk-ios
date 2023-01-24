@@ -1,5 +1,5 @@
 PODS:
-  - AppSyncRealTimeClient (1.9.0):
+  - AppSyncRealTimeClient (2.1.1):
     - Starscream (~> 4.0.4)
   - AWSAuthCore (2.27.1):
     - AWSCore (= 2.27.1)
@@ -23,7 +23,7 @@ PODS:
   - SwiftLint (0.46.3)
 
 DEPENDENCIES:
-  - AppSyncRealTimeClient (~> 1.8)
+  - AppSyncRealTimeClient (from `https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git`, branch `main`)
   - AWSCore (~> 2.27.0)
   - AWSMobileClient (~> 2.27.0)
   - AWSS3 (~> 2.27.0)
@@ -32,7 +32,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - AppSyncRealTimeClient
     - AWSAuthCore
     - AWSCognitoIdentityProvider
     - AWSCognitoIdentityProviderASF
@@ -43,8 +42,18 @@ SPEC REPOS:
     - Starscream
     - SwiftLint
 
+EXTERNAL SOURCES:
+  AppSyncRealTimeClient:
+    :branch: main
+    :git: https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git
+
+CHECKOUT OPTIONS:
+  AppSyncRealTimeClient:
+    :commit: 3e675c6e71db7b254004ea415d479890b735ffb0
+    :git: https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git
+
 SPEC CHECKSUMS:
-  AppSyncRealTimeClient: 147743ef36c99e25a47ecd3e8f7b6991ba7e3bdd
+  AppSyncRealTimeClient: 937360221f2b664c4c33ae142a60643e64f480cd
   AWSAuthCore: 9528c60ccdac6df6024fb0af1ed6a43782fd2d3d
   AWSCognitoIdentityProvider: 4de7f96340be72c1dca35c0ba835c6b9b69a28c0
   AWSCognitoIdentityProviderASF: 727f7c1c80d667a2da79e408c8c8745eac981d58
@@ -55,6 +64,6 @@ SPEC CHECKSUMS:
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftLint: ae76d82f056734f853c8cd0371503252c606c482
 
-PODFILE CHECKSUM: 5bba3c7fca3fcfb34ebed8f5c60815314242c652
+PODFILE CHECKSUM: 0170099490660fa1551c9de03930ca892447c49c
 
 COCOAPODS: 1.11.3

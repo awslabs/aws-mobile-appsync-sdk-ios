@@ -45,7 +45,9 @@ extension StarscreamAdapter: Starscream.WebSocketDelegate {
     }
 
     private func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
-        AppSyncLogger.verbose("[StarscreamAdapter] websocketDidDisconnect: \(error?.localizedDescription ?? "No error")")
+        AppSyncLogger.verbose(
+            "[StarscreamAdapter] websocketDidDisconnect: \(error?.localizedDescription ?? "No error")"
+        )
         serialQueue.async {
             self._isConnected = false
             self.delegate?.websocketDidDisconnect(provider: self, error: error)

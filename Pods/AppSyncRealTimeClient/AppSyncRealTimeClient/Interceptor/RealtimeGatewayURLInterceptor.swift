@@ -8,7 +8,7 @@
 import Foundation
 
 /// Connection interceptor for real time connection provider
-public class RealtimeGatewayURLInterceptor: ConnectionInterceptor {
+public class RealtimeGatewayURLInterceptor: ConnectionInterceptor, ConnectionInterceptorAsync {
     public init() {
         // Do nothing
     }

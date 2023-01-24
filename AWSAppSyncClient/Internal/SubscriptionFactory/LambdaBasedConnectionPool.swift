@@ -23,7 +23,7 @@ class LambdaBasedConnectionPool: SubscriptionConnectionPool {
         }
 
         let authInterceptor = LambdaAuthInterceptor(authTokenProvider: tokenProvider)
-        let connectionProvider = ConnectionProviderFactory.createConnectionProvider(for: url,
+        let connectionProvider = ConnectionProviderFactory.createConnectionProvider(for: URLRequest(url: url),
                                                                                     authInterceptor: authInterceptor,
                                                                                     connectionType: connectionType)
         endPointToProvider[url.absoluteString] = connectionProvider

@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if swift(>=5.5.2)
+
 import Foundation
 
 /// Consolidates usage and parameters passed to the `staleConnectionTimer` methods.
-extension RealtimeConnectionProvider {
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+extension RealtimeConnectionProviderAsync {
 
     /// Start a stale connection timer, first invalidating and destroying any existing timer
     func startStaleConnectionTimer() {
@@ -16,7 +19,7 @@ extension RealtimeConnectionProvider {
             "[RealtimeConnectionProvider] Starting stale connection timer for \(staleConnectionTimer.interval)s"
         )
 
-        staleConnectionTimer.start(interval: RealtimeConnectionProvider.staleConnectionTimeout) {
+        staleConnectionTimer.start(interval: RealtimeConnectionProviderAsync.staleConnectionTimeout) {
             self.disconnectStaleConnection()
         }
     }
@@ -34,7 +37,7 @@ extension RealtimeConnectionProvider {
 
     /// Handle updates from the ConnectivityMonitor
     func handleConnectivityUpdates(connectivity: ConnectivityPath) {
-        connectionQueue.async {[weak self] in
+        taskQueue.async { [weak self] in
             guard let self = self else {
                 return
             }
@@ -59,7 +62,7 @@ extension RealtimeConnectionProvider {
 
     /// Fired when the stale connection timer expires
     private func disconnectStaleConnection() {
-        connectionQueue.async {[weak self] in
+        taskQueue.async { [weak self] in
             guard let self = self else {
                 return
             }
@@ -71,3 +74,4 @@ extension RealtimeConnectionProvider {
         }
     }
 }
+#endif

@@ -5,9 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if swift(>=5.5.2)
+
 import Foundation
 
-extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+extension RealtimeConnectionProviderAsync: AppSyncWebsocketDelegate {
 
     public func websocketDidConnect(provider: AppSyncWebsocketProvider) {
         // Call the ack to finish the connection handshake
@@ -18,7 +21,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
     }
 
     public func websocketDidDisconnect(provider: AppSyncWebsocketProvider, error: Error?) {
-        connectionQueue.async { [weak self] in
+        taskQueue.async { [weak self] in
             guard let self = self else {
                 return
             }
@@ -49,17 +52,17 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
         switch response.responseType {
         case .connectionAck:
             AppSyncLogger.debug("[RealtimeConnectionProvider] received connectionAck")
-            connectionQueue.async { [weak self] in
+            taskQueue.async { [weak self] in
                 self?.handleConnectionAck(response: response)
             }
         case .error:
             AppSyncLogger.verbose("[RealtimeConnectionProvider] received error")
-            connectionQueue.async { [weak self] in
+            taskQueue.async { [weak self] in
                 self?.handleError(response: response)
             }
         case .connectionError:
             AppSyncLogger.verbose("[RealtimeConnectionProvider] received error")
-            connectionQueue.async { [weak self] in
+            taskQueue.async { [weak self] in
                 self?.handleError(response: response)
             }
         case .subscriptionAck, .unsubscriptionAck, .data:
@@ -116,36 +119,12 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
         }
 
         // If limit exceeded is for a particular subscription identifier, throttle using `limitExceededSubject`
-        if case .limitExceeded(let id) = error, id == nil, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+        if case .limitExceeded(let id) = error, id == nil {
             self.limitExceededSubject.send(error)
         } else {
             updateCallback(event: .error(error))
         }
     }
+
 }
-
-extension RealtimeConnectionProviderResponse {
-
-    func toAppSyncResponse() -> AppSyncResponse? {
-        guard let appSyncType = responseType.toAppSyncResponseType() else {
-            return nil
-        }
-        return AppSyncResponse(id: id, payload: payload, type: appSyncType)
-    }
-}
-
-extension RealtimeConnectionProviderResponseType {
-
-    func toAppSyncResponseType() -> AppSyncResponseType? {
-        switch self {
-        case .subscriptionAck:
-            return .subscriptionAck
-        case .unsubscriptionAck:
-            return .unsubscriptionAck
-        case .data:
-            return .data
-        default:
-            return nil
-        }
-    }
-}
+#endif
