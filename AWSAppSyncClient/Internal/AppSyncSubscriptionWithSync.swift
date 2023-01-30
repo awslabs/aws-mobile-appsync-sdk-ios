@@ -519,7 +519,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
             baseString += type(of: deltaQuery).requestString + variables
         }
 
-        return AWSSignatureSignerUtility.hash(baseString.data(using: .utf8)!).base64EncodedString()
+        return AWSSignatureSignerUtility.hashData(baseString.data(using: .utf8)!)!.base64EncodedString()
     }
     
     deinit {
