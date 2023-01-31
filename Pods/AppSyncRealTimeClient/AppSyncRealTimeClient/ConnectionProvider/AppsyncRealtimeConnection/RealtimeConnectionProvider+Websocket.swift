@@ -103,7 +103,7 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
     /// Resolves & dispatches errors from `response`.
     ///
     /// - Warning: This method must be invoked on the `connectionQueue`
-    private func handleError(response: RealtimeConnectionProviderResponse) {
+    func handleError(response: RealtimeConnectionProviderResponse) {
         // If we get an error in connection inprogress state, return back as connection error.
         guard status != .inProgress else {
             status = .notConnected
@@ -111,19 +111,38 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
             return
         }
 
-        // Return back as generic error if there is no identifier.
+        if response.isLimitExceededError() {
+            let limitExceedError = ConnectionProviderError.limitExceeded(response.id)
+
+            guard response.id == nil else {
+                updateCallback(event: .error(limitExceedError))
+                return
+            }
+
+            if #available(iOS 13.0, *) {
+                self.limitExceededSubject.send(limitExceedError)
+                return
+            } else {
+                updateCallback(event: .error(limitExceedError))
+                return
+            }
+        }
+
+        if response.isMaxSubscriptionReachedError() {
+            let limitExceedError = ConnectionProviderError.limitExceeded(response.id)
+            updateCallback(event: .error(limitExceedError))
+            return
+        }
+
+        // If the type of error is not handled (by checking `isLimitExceededError`, `isMaxSubscriptionReachedError`,
+        // etc), and is not for a specific subscription, then return a generic error
         guard let identifier = response.id else {
             let genericError = ConnectionProviderError.other
             updateCallback(event: .error(genericError))
             return
         }
 
-        if response.isMaxSubscriptionReachedError() {
-            let limitExceedError = ConnectionProviderError.limitExceeded(identifier)
-            updateCallback(event: .error(limitExceedError))
-            return
-        }
-
+        // Default scenario - return the error with subscription id and error payload.
         let subscriptionError = ConnectionProviderError.subscription(identifier, response.payload)
         updateCallback(event: .error(subscriptionError))
     }

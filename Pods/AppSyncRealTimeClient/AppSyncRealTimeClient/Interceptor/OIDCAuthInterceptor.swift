@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class OIDCAuthInterceptor: AuthInterceptor {
+public class OIDCAuthInterceptor: AuthInterceptor, AuthInterceptorAsync {
 
     let authProvider: OIDCAuthProvider
 

@@ -31,7 +31,9 @@ extension AppSyncSubscriptionConnection {
         else {
             return
         }
-        AppSyncLogger.debug("[AppSyncSubscriptionConnection]: Connection connected, start subscription \(subscriptionItem.identifier).")
+        AppSyncLogger.debug(
+            "[AppSyncSubscriptionConnection]: Connection connected, start subscription \(subscriptionItem.identifier)."
+        )
         subscriptionState = .inProgress
 
         guard let payload = convertToPayload(

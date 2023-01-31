@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// Appsync Real time connection that connects to subscriptions
 /// through websocket.
@@ -43,6 +44,20 @@ public class RealtimeConnectionProvider: ConnectionProvider {
     /// The serial queue on which status & message callbacks from the web socket are invoked.
     private let serialCallbackQueue: DispatchQueue
 
+    /// Throttle when AppSync sends LimitExceeded error. High rate of subscriptions requests will cause AppSync to send
+    /// connection level LimitExceeded errors for each subscribe made. A connection level error means that there is no
+    /// subscription id associated with the error. When handling these errors, all subscriptions will receive a message
+    /// for the error. Use this subject to send and throttle the errors on the client side.
+    var limitExceededThrottleSink: Any?
+    var iLimitExceededSubject: Any?
+    @available(iOS 13.0, *)
+    var limitExceededSubject: PassthroughSubject<ConnectionProviderError, Never> {
+        if iLimitExceededSubject == nil {
+            iLimitExceededSubject = PassthroughSubject<ConnectionProviderError, Never>()
+        }
+        return iLimitExceededSubject as! PassthroughSubject<ConnectionProviderError, Never> // swiftlint:disable:this force_cast line_length
+    }
+
     public convenience init(for url: URL, websocket: AppSyncWebsocketProvider) {
         self.init(url: url, websocket: websocket)
     }
@@ -60,20 +75,21 @@ public class RealtimeConnectionProvider: ConnectionProvider {
     ) {
         self.url = url
         self.websocket = websocket
-
         self.listeners = [:]
         self.status = .notConnected
         self.messageInterceptors = []
         self.connectionInterceptors = []
-
         self.staleConnectionTimer = CountdownTimer()
         self.isStaleConnection = false
-
         self.connectionQueue = connectionQueue
         self.serialCallbackQueue = serialCallbackQueue
-
         self.connectivityMonitor = connectivityMonitor
+
         connectivityMonitor.start(onUpdates: handleConnectivityUpdates(connectivity:))
+
+        if #available(iOS 13.0, *) {
+            subscribeToLimitExceededThrottle()
+        }
     }
 
     // MARK: - ConnectionProvider methods
@@ -153,7 +169,9 @@ public class RealtimeConnectionProvider: ConnectionProvider {
             self.listeners.removeValue(forKey: identifier)
 
             if self.listeners.isEmpty {
-                AppSyncLogger.debug("[RealtimeConnectionProvider] all subscriptions removed, disconnecting websocket connection.")
+                AppSyncLogger.debug(
+                    "[RealtimeConnectionProvider] all subscriptions removed, disconnecting websocket connection."
+                )
                 self.status = .notConnected
                 self.websocket.disconnect()
                 self.invalidateStaleConnectionTimer()
@@ -181,6 +199,30 @@ public class RealtimeConnectionProvider: ConnectionProvider {
                 allListeners.forEach { $0(event) }
             }
         }
+    }
+
+    @available(iOS 13.0, *)
+    func subscribeToLimitExceededThrottle() {
+        limitExceededThrottleSink = limitExceededSubject
+            .filter {
+                // Make sure the limitExceeded error is a connection level error (no subscription id present).
+                // When id is present, it is passed back directly subscription via `updateCallback`.
+                if case .limitExceeded(let id) = $0, id == nil {
+                    return true
+                }
+                return false
+            }
+            .throttle(for: .milliseconds(150), scheduler: connectionQueue, latest: true)
+            .sink { completion in
+                switch completion {
+                case .failure(let error):
+                    AppSyncLogger.verbose("limitExceededThrottleSink failed \(error)")
+                case .finished:
+                    AppSyncLogger.verbose("limitExceededThrottleSink finished")
+                }
+            } receiveValue: { result in
+                self.updateCallback(event: .error(result))
+            }
     }
 
     /// - Warning: This must be invoked from the `connectionQueue`
