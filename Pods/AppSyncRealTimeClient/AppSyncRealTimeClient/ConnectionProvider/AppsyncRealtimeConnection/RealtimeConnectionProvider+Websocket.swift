@@ -57,6 +57,11 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
             connectionQueue.async { [weak self] in
                 self?.handleError(response: response)
             }
+        case .connectionError:
+            AppSyncLogger.verbose("[RealtimeConnectionProvider] received error")
+            connectionQueue.async { [weak self] in
+                self?.handleError(response: response)
+            }
         case .subscriptionAck, .unsubscriptionAck, .data:
             if let appSyncResponse = response.toAppSyncResponse() {
                 updateCallback(event: .data(appSyncResponse))
@@ -104,49 +109,19 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
     ///
     /// - Warning: This method must be invoked on the `connectionQueue`
     func handleError(response: RealtimeConnectionProviderResponse) {
-        // If we get an error in connection inprogress state, return back as connection error.
-        guard status != .inProgress else {
+        // If we get an error while the connection was inProgress state,
+        let error = response.toConnectionProviderError(connectionState: status)
+        if status == .inProgress {
             status = .notConnected
-            updateCallback(event: .error(ConnectionProviderError.connection))
-            return
         }
 
-        if response.isLimitExceededError() {
-            let limitExceedError = ConnectionProviderError.limitExceeded(response.id)
-
-            guard response.id == nil else {
-                updateCallback(event: .error(limitExceedError))
-                return
-            }
-
-            if #available(iOS 13.0, *) {
-                self.limitExceededSubject.send(limitExceedError)
-                return
-            } else {
-                updateCallback(event: .error(limitExceedError))
-                return
-            }
+        // If limit exceeded is for a particular subscription identifier, throttle using `limitExceededSubject`
+        if case .limitExceeded(let id) = error, id == nil, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+            self.limitExceededSubject.send(error)
+        } else {
+            updateCallback(event: .error(error))
         }
-
-        if response.isMaxSubscriptionReachedError() {
-            let limitExceedError = ConnectionProviderError.limitExceeded(response.id)
-            updateCallback(event: .error(limitExceedError))
-            return
-        }
-
-        // If the type of error is not handled (by checking `isLimitExceededError`, `isMaxSubscriptionReachedError`,
-        // etc), and is not for a specific subscription, then return a generic error
-        guard let identifier = response.id else {
-            let genericError = ConnectionProviderError.other
-            updateCallback(event: .error(genericError))
-            return
-        }
-
-        // Default scenario - return the error with subscription id and error payload.
-        let subscriptionError = ConnectionProviderError.subscription(identifier, response.payload)
-        updateCallback(event: .error(subscriptionError))
     }
-
 }
 
 extension RealtimeConnectionProviderResponse {

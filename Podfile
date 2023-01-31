@@ -8,7 +8,7 @@ AWS_SDK_VERSION = "2.30.1"
 target "AWSAppSync" do
   pod "AWSCore", "~> #{AWS_SDK_VERSION}"
   pod "SQLite.swift", "~> 0.12.2"
-  pod "AppSyncRealTimeClient", "~> 1.8"
+  pod "AppSyncRealTimeClient", "~> 3.0.0"
 
   pod "SwiftLint"
 end
@@ -18,7 +18,7 @@ target "AWSAppSyncTestCommon" do
   # We directly access a database connection to verify certain initialization
   # setups
   pod "SQLite.swift", "~> 0.12.2"
-  pod "AppSyncRealTimeClient", "~> 1.8"
+  pod "AppSyncRealTimeClient", "~> 3.0.0"
 end
 
 target "AWSAppSyncTestApp" do

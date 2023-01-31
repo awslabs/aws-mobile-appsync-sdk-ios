@@ -9,7 +9,7 @@
 
 import Foundation
 
-@available(iOS 13.0.0, *)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension RealtimeConnectionProviderAsync: MessageInterceptableAsync {
     public func addInterceptor(_ interceptor: MessageInterceptorAsync) {
         messageInterceptors.append(interceptor)

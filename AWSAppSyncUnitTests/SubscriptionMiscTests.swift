@@ -118,7 +118,7 @@ class MockDelayedConnection: SubscriptionConnection {
                                             eventHandler: eventHandler)
         DispatchQueue.global().asyncAfter(deadline:  DispatchTime.now() + .seconds(secondsToWait)) {
 
-            self.subscriptionItem.subscriptionEventHandler(.failed(ConnectionProviderError.other),
+            self.subscriptionItem.subscriptionEventHandler(.failed(ConnectionProviderError.unknown(payload: nil)),
                                                            self.subscriptionItem)
         }
         return subscriptionItem

@@ -108,8 +108,10 @@ extension AppSyncSubscriptionConnection {
                 additionalInfo=\(String(describing: errorPayload))
                 """
             )
-        case .other:
-            AppSyncLogger.error("ConnectionProviderError.other")
+        case .unauthorized:
+            AppSyncLogger.error("ConnectionProviderError.unauthorized")
+        case .unknown:
+            AppSyncLogger.error("ConnectionProviderError.unknown")
         }
     }
 

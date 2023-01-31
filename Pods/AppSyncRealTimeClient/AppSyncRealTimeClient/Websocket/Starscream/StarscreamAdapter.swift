@@ -34,12 +34,16 @@ public class StarscreamAdapter: AppSyncWebsocketProvider {
         self.callbackQueue = callbackQueue
     }
 
-    public func connect(url: URL, protocols: [String], delegate: AppSyncWebsocketDelegate?) {
+    public func connect(urlRequest: URLRequest, protocols: [String], delegate: AppSyncWebsocketDelegate?) {
         serialQueue.async {
             AppSyncLogger.verbose("[StarscreamAdapter] connect. Connecting to url")
-            var urlRequest = URLRequest(url: url)
+            var urlRequest = urlRequest
+
+            urlRequest.setValue("no-store", forHTTPHeaderField: "Cache-Control")
+
             let protocolHeaderValue = protocols.joined(separator: ", ")
             urlRequest.setValue(protocolHeaderValue, forHTTPHeaderField: "Sec-WebSocket-Protocol")
+
             self.socket = WebSocket(request: urlRequest)
             self.delegate = delegate
             self.socket?.delegate = self
