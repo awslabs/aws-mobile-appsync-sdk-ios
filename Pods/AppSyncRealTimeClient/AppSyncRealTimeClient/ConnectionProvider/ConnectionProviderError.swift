@@ -23,6 +23,9 @@ public enum ConnectionProviderError: Error {
     /// payload in dictionary format.
     case subscription(String, [String: Any]?)
 
-    /// Any other error is identified by this type
-    case other
+    /// Caused when not authorized to establish the connection.
+    case unauthorized
+
+    /// Unknown error
+    case unknown(message: String? = nil, causedBy: Error? = nil, payload: [String: Any]?)
 }

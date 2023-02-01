@@ -14,12 +14,12 @@ let package = Package(
         .package(
             name: "AWSiOSSDKV2",
             url: "https://github.com/aws-amplify/aws-sdk-ios-spm.git",
-            .upToNextMinor(from: "2.27.0")
+            .upToNextMinor(from: "2.30.1")
         ),
         .package(
             name: "AppSyncRealTimeClient",
             url: "https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git",
-            from: "1.8.0"
+            from: "3.0.0"
         ),
         .package(
             url: "https://github.com/stephencelis/SQLite.swift.git",

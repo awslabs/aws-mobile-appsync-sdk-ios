@@ -111,7 +111,10 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
     // Returns cached credentials when all of the following conditions are true:
     // 1. The cached credentials are not nil.
     // 2. The credentials do not expire within 10 minutes.
-    return ([self.expiration compare:[NSDate dateWithTimeIntervalSinceNow:10 * 60]] == NSOrderedDescending);
+    return (self.accessKey != nil &&
+            self.secretKey != nil &&
+            self.sessionKey != nil &&
+            [self.expiration compare:[NSDate dateWithTimeIntervalSinceNow:10 * 60]] == NSOrderedDescending);
 }
 
 @end
@@ -414,7 +417,8 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
 
     // initialize keychain - name spaced by app bundle and identity pool id
     _keychain = [AWSUICKeyChainStore keyChainStoreWithService:[NSString stringWithFormat:@"%@.%@.%@", [NSBundle mainBundle].bundleIdentifier, [AWSCognitoCredentialsProvider class], identityProvider.identityPoolId]];
-
+    [_keychain migrateToCurrentAccessibility];
+    
     // If the identity provider has an identity id, use it
     if (identityProvider.identityId) {
         _keychain[AWSCredentialsProviderKeychainIdentityId] = identityProvider.identityId;

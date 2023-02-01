@@ -14,7 +14,7 @@ public protocol AppSyncWebsocketProvider {
     ///
     /// This is an async call. After the connection is succesfully established, the delegate
     /// will receive the callback on `websocketDidConnect(:)`
-    func connect(url: URL, protocols: [String], delegate: AppSyncWebsocketDelegate?)
+    func connect(urlRequest: URLRequest, protocols: [String], delegate: AppSyncWebsocketDelegate?)
 
     /// Disconnects the websocket.
     func disconnect()
