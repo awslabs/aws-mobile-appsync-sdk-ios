@@ -57,6 +57,11 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
             connectionQueue.async { [weak self] in
                 self?.handleError(response: response)
             }
+        case .connectionError:
+            AppSyncLogger.verbose("[RealtimeConnectionProvider] received error")
+            connectionQueue.async { [weak self] in
+                self?.handleError(response: response)
+            }
         case .subscriptionAck, .unsubscriptionAck, .data:
             if let appSyncResponse = response.toAppSyncResponse() {
                 updateCallback(event: .data(appSyncResponse))
@@ -103,31 +108,20 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
     /// Resolves & dispatches errors from `response`.
     ///
     /// - Warning: This method must be invoked on the `connectionQueue`
-    private func handleError(response: RealtimeConnectionProviderResponse) {
-        // If we get an error in connection inprogress state, return back as connection error.
-        guard status != .inProgress else {
+    func handleError(response: RealtimeConnectionProviderResponse) {
+        // If we get an error while the connection was inProgress state,
+        let error = response.toConnectionProviderError(connectionState: status)
+        if status == .inProgress {
             status = .notConnected
-            updateCallback(event: .error(ConnectionProviderError.connection))
-            return
         }
 
-        // Return back as generic error if there is no identifier.
-        guard let identifier = response.id else {
-            let genericError = ConnectionProviderError.other
-            updateCallback(event: .error(genericError))
-            return
+        // If limit exceeded is for a particular subscription identifier, throttle using `limitExceededSubject`
+        if case .limitExceeded(let id) = error, id == nil, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+            self.limitExceededSubject.send(error)
+        } else {
+            updateCallback(event: .error(error))
         }
-
-        if response.isMaxSubscriptionReachedError() {
-            let limitExceedError = ConnectionProviderError.limitExceeded(identifier)
-            updateCallback(event: .error(limitExceedError))
-            return
-        }
-
-        let subscriptionError = ConnectionProviderError.subscription(identifier, response.payload)
-        updateCallback(event: .error(subscriptionError))
     }
-
 }
 
 extension RealtimeConnectionProviderResponse {

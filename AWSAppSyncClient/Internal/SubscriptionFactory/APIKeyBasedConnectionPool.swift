@@ -20,7 +20,7 @@ class APIKeyBasedConnectionPool: SubscriptionConnectionPool {
     func connection(for url: URL, connectionType: SubscriptionConnectionType) -> SubscriptionConnection {
 
         let connectionProvider = endPointToProvider[url.absoluteString] ??
-            ConnectionProviderFactory.createConnectionProvider(for: url,
+            ConnectionProviderFactory.createConnectionProvider(for: URLRequest(url: url),
                                                                authInterceptor: APIKeyAuthInterceptor(apiKeyProvider.getAPIKey()),
                                                                connectionType: connectionType)
         endPointToProvider[url.absoluteString] = connectionProvider

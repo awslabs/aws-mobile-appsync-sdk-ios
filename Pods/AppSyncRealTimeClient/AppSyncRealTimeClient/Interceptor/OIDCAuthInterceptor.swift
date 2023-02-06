@@ -52,7 +52,14 @@ public class OIDCAuthInterceptor: AuthInterceptor {
         case .success(let token):
             jwtToken = token
         case .failure:
-            return request
+            // A user that is not signed in should receive an unauthorized error from the connection attempt. This code
+            // achieves this by always creating a valid request to AppSync even when the token cannot be retrieved. The
+            // request sent to AppSync will receive a response indicating the request is unauthorized. If we do not use
+            // empty token string and perform the remaining logic of the request construction then it will fail request
+            // validation at AppSync before the authorization check, which ends up being propagated back to the caller
+            // as a "bad request". Example of bad requests are when the header and payload query strings are missing
+            // or when the data is not base64 encoded.
+            jwtToken = ""
         }
 
         let authHeader = UserPoolsAuthenticationHeader(token: jwtToken, host: host)

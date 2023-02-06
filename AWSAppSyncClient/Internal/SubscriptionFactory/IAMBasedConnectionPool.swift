@@ -23,7 +23,7 @@ class IAMBasedConnectionPool: SubscriptionConnectionPool {
     func connection(for url: URL, connectionType: SubscriptionConnectionType) -> SubscriptionConnection {
 
         let connectionProvider = endPointToProvider[url.absoluteString] ??
-            ConnectionProviderFactory.createConnectionProvider(for: url,
+        ConnectionProviderFactory.createConnectionProvider(for: URLRequest(url: url),
                                                                authInterceptor: IAMAuthInterceptor(credentialProvider,
                                                                                                    region: regionType),
                                                                connectionType: connectionType)
