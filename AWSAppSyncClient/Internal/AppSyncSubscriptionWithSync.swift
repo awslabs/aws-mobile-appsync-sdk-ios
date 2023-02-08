@@ -420,7 +420,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
         var isSyncOperationSuccessful = false
 
         let baseQueryDispatchTime = DispatchTime.now()
-        
+        // swiftlint:disable:next todo
         // TODO: start subscription should happen outside initial delta sync setup. Depends on enhanced
         // subscription state tracking
         guard startSubscription() else {

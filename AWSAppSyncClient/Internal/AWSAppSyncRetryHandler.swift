@@ -15,6 +15,7 @@ struct AWSAppSyncRetryAdvice: RetryAdvice {
 
 // Current implementation has heavy coupling of retry strategy, appsync config and http transport.
 // The logic of shouldRetryRequest should be decoupled for different retryStrategies.
+// swiftlint:disable:next todo
 // TODO: Implement a protocol which accepts a standardized set of inputs, errorResponse, attemptNumber, etc.
 // and returns if retry should be done and after what duration.
 // We can also extend the `AWSAppSyncRetryStrategy` to accept a `custom` enum type which contains a class

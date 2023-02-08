@@ -319,6 +319,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         return dataTask
     }
 
+    // swiftlint:disable cyclomatic_complexity
     /// Updates the sendRequest with the appropriate authentication parameters
     /// In the case of a token retrieval error, the errorCallback is invoked
     private func updateRequestWithAuthInformation(mutableRequest: NSMutableURLRequest,
