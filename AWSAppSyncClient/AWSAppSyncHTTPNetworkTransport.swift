@@ -198,18 +198,14 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     func addDeviceId(request: inout URLRequest) {
         switch authProvider {
         case .apiKey(let provider):
-            let data = provider.getAPIKey().data(using: .utf8)
-            request.setValue(fetchDeviceId(for: sha256(data: data!)), forHTTPHeaderField: "x-amz-subscriber-id")
+            let apiKey = provider.getAPIKey()
+            let hash = AWSSignatureSignerUtility.hashString(apiKey)
+            request.setValue(fetchDeviceId(for: hash), forHTTPHeaderField: "x-amz-subscriber-id")
         default:
             break
         }
     }
-
-    func sha256(data: Data) -> String {
-        let hash = AWSSignatureSignerUtility.hashData(data)!
-        return hash.base64EncodedString()
-    }
-
+    
     /// Returns `deviceId` for the specified key from the keychain.
     /// If the key does not exist in keychain, a `deviceId` is generated, stored and returned.
     ///
