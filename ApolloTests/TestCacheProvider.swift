@@ -1,7 +1,7 @@
 import XCTest
 @testable import AWSAppSync
 
-public protocol TestCacheProvider: class {
+public protocol TestCacheProvider: AnyObject {
   static func withCache(initialRecords: RecordSet?, execute test: (NormalizedCache) throws -> ()) rethrows
 }
 

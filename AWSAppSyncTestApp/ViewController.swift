@@ -136,7 +136,7 @@ class ViewController: UIViewController {
         
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
         
-        self.appSyncClient?.perform(mutation: addPost, queue: ViewController.mutationQueue) { result, error in
+        self.appSyncClient?.perform(mutation: addPost, queue: ViewController.mutationQueue, resultHandler:  { result, error in
             DispatchQueue.main.async {
                 if let error = error {
                     self.resultLabel.text = "Failed IAM normal mutation. Queue size: \(self.appSyncClient!.queuedMutationCount!). \n \(error.localizedDescription)"
@@ -144,7 +144,7 @@ class ViewController: UIViewController {
                     self.resultLabel.text = "Success IAM normal mutation. Queue size: \(self.appSyncClient!.queuedMutationCount!)"
                 }
             }
-        }
+        })
     }
     
     // Uploads a local file as part of a mutation, then downloads it using the data retrieved from the AppSync query
@@ -180,7 +180,7 @@ class ViewController: UIViewController {
             file: s3ObjectInput)
         
         appSyncClient?.perform(mutation: createPostWithFile,
-                               queue: ViewController.mutationQueue) { result, error in
+                               queue: ViewController.mutationQueue, resultHandler:  { result, error in
             if let error = error {
                 DispatchQueue.main.async {
                     self.resultLabel.text = "Failed IAM normal mutation. Queue size: \(self.appSyncClient!.queuedMutationCount!). \n \(error.localizedDescription)"
@@ -196,7 +196,7 @@ class ViewController: UIViewController {
             DispatchQueue.main.async {
                 self.resultLabel.text = "S3 mutation done successfully. Queue size: \(self.appSyncClient!.queuedMutationCount!)."
             }
-        }
+        })
     }
     
     // MARK: - Utilities

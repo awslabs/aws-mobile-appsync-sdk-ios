@@ -144,11 +144,11 @@ class AWSAppSyncCognitoAuthTests: XCTestCase {
 
         var mutationResult: GraphQLResult<CreatePostWithFileUsingInputTypeMutation.Data>? = nil
         appSyncClient.perform(mutation: createPostWithFile,
-                              queue: AWSAppSyncCognitoAuthTests.mutationQueue) { result, error in
+                              queue: AWSAppSyncCognitoAuthTests.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error)
             mutationResult = result
             postCreated.fulfill()
-        }
+        })
 
         wait(for: [postCreated], timeout: AWSAppSyncCognitoAuthTests.networkOperationTimeout)
 

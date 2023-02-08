@@ -148,19 +148,19 @@ class SubscriptionStressTestHelper: XCTestCase {
         let postId = subscriptionTestStateHolder.postId!
         let mutation = UpvotePostMutation(id: postId)
 
-        appSyncClient.perform(mutation: mutation, queue: SubscriptionStressTestHelper.mutationQueue) { result, error in
+        appSyncClient.perform(mutation: mutation, queue: SubscriptionStressTestHelper.mutationQueue, resultHandler:  { result, error in
             XCTAssertNil(error, "Error should be nil")
-
+            
             guard
                 let result = result,
                 let _ = result.data?.upvotePost
-                else {
-                    XCTFail("Result & payload should not be nil")
-                    return
+            else {
+                XCTFail("Result & payload should not be nil")
+                return
             }
             print("Post upvoted \(subscriptionTestStateHolder.index) (\(subscriptionTestStateHolder.postId!))")
             subscriptionTestStateHolder.postUpvoted.fulfill()
-        }
+        })
 
     }
 

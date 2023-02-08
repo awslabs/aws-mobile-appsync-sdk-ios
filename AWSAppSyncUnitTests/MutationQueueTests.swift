@@ -33,10 +33,10 @@ class MutationQueueTests: XCTestCase {
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: AWSAppSyncCacheConfiguration())
 
         let mutationPerformed = expectation(description: "Post added")
-        appSyncClient.perform(mutation: addPost) { result, error in
+        appSyncClient.perform(mutation: addPost, resultHandler:  { result, error in
             XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
             mutationPerformed.fulfill()
-        }
+        })
 
         wait(for: [mutationPerformed], timeout: 1.0)
     }
@@ -50,10 +50,10 @@ class MutationQueueTests: XCTestCase {
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: nil)
 
         let mutationPerformed = expectation(description: "Post added")
-        appSyncClient.perform(mutation: addPost) { result, error in
+        appSyncClient.perform(mutation: addPost, resultHandler:  { result, error in
             XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
             mutationPerformed.fulfill()
-        }
+        })
 
         wait(for: [mutationPerformed], timeout: 1.0)
     }
@@ -96,9 +96,9 @@ class MutationQueueTests: XCTestCase {
         }
 
         // Based on our `responseBlock` configuration above, we don't expect the result handler to be invoked for about 1.0 sec
-        appSyncClient?.perform(mutation: addPost) { _, _ in }
+        appSyncClient?.perform(mutation: addPost, resultHandler:  { _, _ in })
 
-        appSyncClient?.perform(mutation: addPost) { _, _ in }
+        appSyncClient?.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         wait(for: [delayedMutationInvoked], timeout: 0.5)
 
@@ -112,7 +112,7 @@ class MutationQueueTests: XCTestCase {
     func testMutationIsAttemptedIfAddedWhileNoNetwork() throws {
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
@@ -131,7 +131,7 @@ class MutationQueueTests: XCTestCase {
 
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: nil)
 
-        appSyncClient.perform(mutation: addPost) { _, _ in }
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         wait(for: [sendWasInvoked], timeout: 0.5)
     }
@@ -151,11 +151,11 @@ class MutationQueueTests: XCTestCase {
         // Allow the result handler for the errored mutation to be invoked multiple times since it is retriable
         let attemptedMutationWithError = expectation(description: "Attempted mutation with error")
 
-        appSyncClient.perform(mutation: addPost) { result, error in
+        appSyncClient.perform(mutation: addPost, resultHandler:  { result, error in
             attemptedMutationWithError.fulfill()
             XCTAssertNil(result)
             XCTAssertEqual(error?.localizedDescription, addPostError.localizedDescription)
-        }
+        })
 
         wait(for: [attemptedMutationWithError], timeout: 1.0)
     }
@@ -182,24 +182,24 @@ class MutationQueueTests: XCTestCase {
 
         var expectedMutationIndex = 0
         for i in 0 ..< numberOfMutationsToPerform {
-            appSyncClient.perform(mutation: addPost) { result, error in
+            appSyncClient.perform(mutation: addPost, resultHandler:  { result, error in
                 guard let id = result?.data?.createPostWithoutFileUsingParameters?.id else {
                     XCTFail("Invalid result for mutation \(i): \(String(describing: result))")
                     return
                 }
-
+                
                 guard let indexFromId = Int(id) else {
                     XCTFail("Invalid id format for mutation \(i): \(id)")
                     return
                 }
-
+                
                 XCTAssertEqual(indexFromId,
                                expectedMutationIndex,
                                "Mutation invoked out of order. expectedMutationIndex=\(expectedMutationIndex); indexFromId=\(indexFromId)")
-
+                
                 mutationPerformedExpectations[indexFromId].fulfill()
                 expectedMutationIndex += 1
-            }
+            })
         }
 
         wait(for: mutationPerformedExpectations, timeout: 5.0)
@@ -257,10 +257,10 @@ class MutationQueueTests: XCTestCase {
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: nil)
 
         // Mutation 1 invokes the delayed response block
-        appSyncClient.perform(mutation: addPost) { _, _ in }
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         // Mutation 2 invokes the block to assert it has not been invoked too early
-        appSyncClient.perform(mutation: addPost) { _, _ in }
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         wait(for: [delayedMutationInvoked,
                    delayedMutationResponseDispatched,
@@ -273,7 +273,7 @@ class MutationQueueTests: XCTestCase {
         // Queue a mutation that will not be performed because network is not available
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
@@ -311,7 +311,7 @@ class MutationQueueTests: XCTestCase {
 
         // When this method returns, the mutation will be added to the operation queue, and should be added to the persistent
         // database.
-        appSyncClient.perform(mutation: addPost) { _, _ in }
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         networkStateHasBeenChanged = true
         reachability.connection = .wifi
@@ -391,13 +391,13 @@ class MutationQueueTests: XCTestCase {
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: nil)
 
         // Queue the delaying mutation
-        appSyncClient.perform(mutation: addPost) { _, _ in }
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         // Queue the asserting mutation
-        appSyncClient.perform(mutation: addPost) { _, _ in }
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         networkState = .disabledByTest
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         wait(for: [delayingResponseHandlerInvoked], timeout: 1.0)
 
@@ -418,7 +418,7 @@ class MutationQueueTests: XCTestCase {
         // Queue a mutation that will not be performed because network is not available
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
@@ -444,7 +444,7 @@ class MutationQueueTests: XCTestCase {
 
         // When this method returns, the mutation will be added to the operation queue, and should be added to the persistent
         // database.
-        appSyncClient?.perform(mutation: addPost) { _, _ in }
+        appSyncClient?.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         // Now we clear the existing client and recreate a new one with a valid network connection
         appSyncClient = nil
@@ -488,20 +488,20 @@ class MutationQueueTests: XCTestCase {
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: nil)
 
         // Queue mutation that has a delay built in
-        appSyncClient.perform(mutation: addPost) { _, _ in }
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
 
         // Queue mutation that will be cancelled after the delayed mutation is invoked but before it is fulfilled
         let cancelledMutationShouldNotBePerformed = expectation(description: "Cancelled mutation should not be performed")
         cancelledMutationShouldNotBePerformed.isInverted = true
-        let cancelTrigger = appSyncClient.perform(mutation: addPost) { _, _ in
+        let cancelTrigger = appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in
             cancelledMutationShouldNotBePerformed.fulfill()
-        }
+        })
 
         // Queue mutation to be performed after the cancelled one returns
         let queuedMutationShouldBePerformed = expectation(description: "Queued mutation should be performed")
-        appSyncClient.perform(mutation: addPost) { _, _ in
+        appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in
             queuedMutationShouldBePerformed.fulfill()
-        }
+        })
 
         wait(for: [delayedMutationInvoked], timeout: 0.5)
 
@@ -518,23 +518,23 @@ class MutationQueueTests: XCTestCase {
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: nil)
 
         let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
-        appSyncClient.perform(mutation: mutationWithoutParameters) { response, error in
+        appSyncClient.perform(mutation: mutationWithoutParameters, resultHandler:  { response, error in
             defer {
                 mutationWasPerformed.fulfill()
             }
-
+            
             guard error == nil else {
                 XCTFail("Error is not nil: \(error.debugDescription)")
                 return
             }
-
+            
             guard let response = response, let resultValue = response.data?.testMutationWithoutParameters else {
                 XCTFail("Response unexpectedly nil")
                 return
             }
-
+            
             XCTAssert(resultValue)
-        }
+        })
 
         wait(for: [mutationWasPerformed], timeout: 1.0)
     }
@@ -547,23 +547,23 @@ class MutationQueueTests: XCTestCase {
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: AWSAppSyncCacheConfiguration())
 
         let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
-        appSyncClient.perform(mutation: mutationWithoutParameters) { response, error in
+        appSyncClient.perform(mutation: mutationWithoutParameters, resultHandler:  { response, error in
             defer {
                 mutationWasPerformed.fulfill()
             }
-
+            
             guard error == nil else {
                 XCTFail("Error is not nil: \(error.debugDescription)")
                 return
             }
-
+            
             guard let response = response, let resultValue = response.data?.testMutationWithoutParameters else {
                 XCTFail("Response unexpectedly nil")
                 return
             }
-
+            
             XCTAssert(resultValue)
-        }
+        })
 
         wait(for: [mutationWasPerformed], timeout: 1.0)
     }
@@ -582,12 +582,12 @@ class MutationQueueTests: XCTestCase {
                                                                   cacheConfiguration: AWSAppSyncCacheConfiguration())
 
         let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
-        appSyncClient.perform(mutation: mutationWithoutParameters, queue: queue) { response, error in
+        appSyncClient.perform(mutation: mutationWithoutParameters, queue: queue, resultHandler:  { response, error in
             defer {
                 mutationWasPerformed.fulfill()
             }
             XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-        }
+        })
 
         wait(for: [mutationWasPerformed], timeout: 1.0)
     }
@@ -606,12 +606,12 @@ class MutationQueueTests: XCTestCase {
                                                                   cacheConfiguration: nil)
 
         let mutationWasPerformed = expectation(description: "Mutation without parameters was performed")
-        appSyncClient.perform(mutation: mutationWithoutParameters, queue: queue) { response, error in
+        appSyncClient.perform(mutation: mutationWithoutParameters, queue: queue, resultHandler:  { response, error in
             defer {
                 mutationWasPerformed.fulfill()
             }
             XCTAssertNotNil(DispatchQueue.getSpecific(key: key))
-        }
+        })
 
         wait(for: [mutationWasPerformed], timeout: 1.0)
     }
@@ -620,7 +620,7 @@ class MutationQueueTests: XCTestCase {
         
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
         
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
@@ -633,7 +633,7 @@ class MutationQueueTests: XCTestCase {
         let persistentCache = try AWSMutationCache(fileURL: cacheConfiguration.offlineMutations!)
         let n0 = try persistentCache.getStoredMutationRecordsInQueue().await().count
         let appSyncClient = try UnitTestHelpers.makeAppSyncClient(using: mockHTTPTransport, cacheConfiguration: cacheConfiguration)
-        let cancellable = appSyncClient.perform(mutation: addPost) { _, _ in }
+        let cancellable = appSyncClient.perform(mutation: addPost, resultHandler:  { _, _ in })
         let n1 = try persistentCache.getStoredMutationRecordsInQueue().await().count
         XCTAssertEqual(n0, n1 - 1 )
         cancellable.cancel()
@@ -668,19 +668,19 @@ class MutationQueueTests: XCTestCase {
         // time to queue up more mutations behind it, which we will then cancel.
         let mutationPerformed = expectation(description: "Post added")
         mutationExpectations.append(mutationPerformed)
-        appSyncClient.perform(mutation: addPost) { result, error in
+        appSyncClient.perform(mutation: addPost, resultHandler:  { result, error in
             XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
             mutationPerformed.fulfill()
-        }
+        })
 
 
         for i in 0...9 {
             let queuedMutationShouldNotBeInvoked = expectation(description: "Queued mutation \(i) should not be invoked")
             queuedMutationShouldNotBeInvoked.isInverted = true
             mutationExpectations.append(queuedMutationShouldNotBeInvoked)
-            appSyncClient.perform(mutation: addPost) { result, error in
+            appSyncClient.perform(mutation: addPost, resultHandler:  { result, error in
                 queuedMutationShouldNotBeInvoked.fulfill()
-            }
+            })
         }
 
         try appSyncClient.clearCaches(options: ClearCacheOptions(clearMutations: true))
@@ -693,10 +693,10 @@ class MutationQueueTests: XCTestCase {
 
         // Test 2
         let furtherMutationPerformed = expectation(description: "Further post added")
-        appSyncClient.perform(mutation: addPost) { result, error in
+        appSyncClient.perform(mutation: addPost, resultHandler:  { result, error in
             XCTAssertEqual(result?.data?.createPostWithoutFileUsingParameters?.id, "TestPostID")
             furtherMutationPerformed.fulfill()
-        }
+        })
 
         wait(for: [furtherMutationPerformed], timeout: 1.0)
     }

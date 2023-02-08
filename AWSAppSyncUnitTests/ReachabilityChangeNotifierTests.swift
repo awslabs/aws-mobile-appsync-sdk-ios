@@ -17,7 +17,7 @@ class ReachabilityChangeNotifierTests: XCTestCase {
     func testDispatchesNotification() throws {
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
@@ -37,7 +37,7 @@ class ReachabilityChangeNotifierTests: XCTestCase {
     func testNotifiesSingleWatcher() throws {
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
@@ -57,7 +57,7 @@ class ReachabilityChangeNotifierTests: XCTestCase {
     func testNotifiesMultipleWatchers() throws {
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
@@ -84,7 +84,7 @@ class ReachabilityChangeNotifierTests: XCTestCase {
     func testClearSharedRemovesWatchers() throws {
         let reachability = MockReachabilityProvidingFactory.instance
         try reachability.startNotifier()
-        reachability.connection = .none
+        reachability.connection = .unavailable
 
         NetworkReachabilityNotifier.setupShared(
             host: "http://www.amazon.com",
