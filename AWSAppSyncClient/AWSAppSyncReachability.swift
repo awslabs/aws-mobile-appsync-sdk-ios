@@ -45,8 +45,8 @@ public extension Notification.Name {
 
 public class AWSAppSyncReachability {
 
-    public typealias NetworkReachable = (AWSAppSyncReachability) -> ()
-    public typealias NetworkUnreachable = (AWSAppSyncReachability) -> ()
+    public typealias NetworkReachable = (AWSAppSyncReachability) -> Void
+    public typealias NetworkUnreachable = (AWSAppSyncReachability) -> Void
 
     @available(*, unavailable, renamed: "Connection")
     public enum NetworkStatus: CustomStringConvertible {
@@ -267,11 +267,14 @@ fileprivate extension AWSAppSyncReachability {
         }
     }
     
-
     func notifyReachabilityChanged() {
         let notify = { [weak self] in
             guard let self = self else { return }
-            self.connection != .unavailable ? self.whenReachable?(self) : self.whenUnreachable?(self)
+            if self.connection != .unavailable {
+                self.whenReachable?(self)
+            } else {
+                self.whenUnreachable?(self)
+            }
             self.notificationCenter.post(name: .reachabilityChanged, object: self)
         }
 
