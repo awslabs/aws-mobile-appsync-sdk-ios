@@ -99,14 +99,14 @@ class AWSAppSyncLambdaAuthTests: XCTestCase {
         let addPost = DefaultTestPostData.defaultCreatePostWithoutFileUsingParametersMutation
 
         var idHolder: GraphQLID?
-        client?.perform(mutation: addPost, queue: Self.subscriptionAndFetchQueue) { result, error in
+        client?.perform(mutation: addPost, queue: Self.subscriptionAndFetchQueue, resultHandler:  { result, error in
             print("CreatePost result handler invoked")
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.createPostWithoutFileUsingParameters?.id)
             XCTAssertEqual(result!.data!.createPostWithoutFileUsingParameters?.author, DefaultTestPostData.author)
             idHolder = result?.data?.createPostWithoutFileUsingParameters?.id
             postCreated.fulfill()
-        }
+        })
         wait(for: [postCreated], timeout: Self.networkOperationTimeout)
 
         guard let id = idHolder else {
@@ -149,13 +149,13 @@ class AWSAppSyncLambdaAuthTests: XCTestCase {
 
         let upvotePerformed = expectation(description: "Upvote mutation performed")
         let upvoteMutation = UpvotePostMutation(id: id)
-        client?.perform(mutation: upvoteMutation, queue: Self.mutationQueue) {
+        client?.perform(mutation: upvoteMutation, queue: Self.mutationQueue, resultHandler:  {
             result, error in
             print("Received upvote mutation response.")
             XCTAssertNil(error)
             XCTAssertNotNil(result?.data?.upvotePost?.id)
             upvotePerformed.fulfill()
-        }
+        })
 
         wait(for: [upvotePerformed, subscriptionResultHandlerInvoked], timeout: Self.networkOperationTimeout)
     }

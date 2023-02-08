@@ -53,7 +53,7 @@ class AWSAppSyncRetryHandlerTests: XCTestCase {
                                            statusCode: 500,
                                            httpVersion: "1.1",
                                            headerFields: [:])!
-        let data = Data(bytes: [])
+        let data = Data([])
         let error = AWSAppSyncClientError.parseError(data, httpResponse, nil)
         let retryAdvice = retryHandler.shouldRetryRequest(for: error)
         XCTAssert(retryAdvice.shouldRetry)

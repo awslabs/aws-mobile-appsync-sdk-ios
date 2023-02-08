@@ -131,7 +131,6 @@ class MutationOptimisticUpdateTests: XCTestCase {
                 return
             }
 
-            let foo = result?.data?.listPosts
         }
 
         wait(for: [initialQueryPerformed], timeout: 1.0)
