@@ -1876,7 +1876,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/SwiftLint/swiftlint\" --config \"${SRCROOT}/.swiftlint.yml\" --path \"${SRCROOT}/AWSAppSyncClient\"\n";
+			shellScript = "\"${PODS_ROOT}/SwiftLint/swiftlint\" --config \"${SRCROOT}/.swiftlint.yml\" \"${SRCROOT}/AWSAppSyncClient\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
