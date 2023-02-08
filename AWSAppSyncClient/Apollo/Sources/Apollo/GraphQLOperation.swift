@@ -1,4 +1,4 @@
-public protocol GraphQLOperation: class {
+public protocol GraphQLOperation: AnyObject {
   static var rootCacheKey: String { get }
   
   static var operationString: String { get }

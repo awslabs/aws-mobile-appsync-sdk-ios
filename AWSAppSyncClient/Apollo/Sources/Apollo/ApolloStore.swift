@@ -4,7 +4,7 @@ import Dispatch
 public typealias CacheKeyForObject = (_ object: JSONObject) -> JSONValue?
 public typealias DidChangeKeysFunc = (Set<CacheKey>, UnsafeMutableRawPointer?) -> Void
 
-protocol ApolloStoreSubscriber: class {
+protocol ApolloStoreSubscriber: AnyObject {
   func store(_ store: ApolloStore, didChangeKeys changedKeys: Set<CacheKey>, context: UnsafeMutableRawPointer?)
 }
 

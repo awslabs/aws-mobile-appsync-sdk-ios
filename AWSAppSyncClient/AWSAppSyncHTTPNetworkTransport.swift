@@ -206,7 +206,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     }
 
     func sha256(data: Data) -> String {
-        let hash = AWSSignatureSignerUtility.hash(data)
+        let hash = AWSSignatureSignerUtility.hashData(data)!
         return hash.base64EncodedString()
     }
 
