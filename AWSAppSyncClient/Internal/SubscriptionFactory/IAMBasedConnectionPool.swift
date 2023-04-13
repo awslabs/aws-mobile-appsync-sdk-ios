@@ -13,6 +13,10 @@ class IAMBasedConnectionPool: SubscriptionConnectionPool {
     private let credentialProvider: AWSCredentialsProvider
     private let regionType: AWSRegionType
     var endPointToProvider: [String: ConnectionProvider]
+    
+    private let queue = DispatchQueue(label: "com.amazonaws.connectionPool.IAMBased.concurrentQueue",
+                                      attributes: .concurrent,
+                                      target:.global(qos: .userInitiated))
 
     init(_ credentialProvider: AWSCredentialsProvider, region: AWSRegionType) {
         self.credentialProvider = credentialProvider
@@ -21,15 +25,16 @@ class IAMBasedConnectionPool: SubscriptionConnectionPool {
     }
 
     func connection(for url: URL, connectionType: SubscriptionConnectionType) -> SubscriptionConnection {
-
-        let connectionProvider = endPointToProvider[url.absoluteString] ??
-        ConnectionProviderFactory.createConnectionProvider(for: URLRequest(url: url),
+        queue.sync(flags: .barrier) {
+            let connectionProvider = endPointToProvider[url.absoluteString] ??
+            ConnectionProviderFactory.createConnectionProvider(for: URLRequest(url: url),
                                                                authInterceptor: IAMAuthInterceptor(credentialProvider,
                                                                                                    region: regionType),
                                                                connectionType: connectionType)
-
-        endPointToProvider[url.absoluteString] = connectionProvider
-        let connection = AppSyncSubscriptionConnection(provider: connectionProvider)
-        return connection
+            
+            endPointToProvider[url.absoluteString] = connectionProvider
+            let connection = AppSyncSubscriptionConnection(provider: connectionProvider)
+            return connection
+        }
     }
 }
