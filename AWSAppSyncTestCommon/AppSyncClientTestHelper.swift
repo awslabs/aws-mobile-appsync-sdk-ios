@@ -126,9 +126,7 @@ public class AppSyncClientTestHelper: NSObject {
         appSyncClient = try DeinitNotifiableAppSyncClient(appSyncConfig: appSyncConfig, reachabilityFactory: reachabilityFactory)
 
         // Set id as the cache key for objects
-        guard let apolloClient = appSyncClient.apolloClient else {
-            throw TestHelperError.apolloError("Unable to retrieve Apollo client from appSyncClient")
-        }
+        let apolloClient = appSyncClient.apolloClient
 
         apolloClient.cacheKeyForObject = { $0["id"] }
 
