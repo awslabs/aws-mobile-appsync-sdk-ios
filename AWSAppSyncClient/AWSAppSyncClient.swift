@@ -33,8 +33,8 @@ public class AWSAppSyncClient {
     static var prefixTracker: [String: (String, Int)] = [:]
     static var prefixTrackerQueue: DispatchQueue = DispatchQueue(label: "com.amazonaws.appsync.AWSAppSyncClient.clientDatabasePrefixTrackerQueue")
 
-    public let apolloClient: ApolloClient?
-    public let store: ApolloStore?
+    public let apolloClient: ApolloClient
+    public let store: ApolloStore
     public let presignedURLClient: AWSS3ObjectPresignedURLGenerator?
     public let s3ObjectManager: AWSS3ObjectManager?
 
@@ -169,7 +169,6 @@ public class AWSAppSyncClient {
     /// - Returns: Promise
     @available(*, deprecated, message: "Use the clearCaches method that optionally takes in ClearCacheOptions")
     public func clearCache() -> Promise<Void> {
-        guard let store = store else { return Promise(fulfilled: ()) }
         return store.clearCache()
     }
 
@@ -181,7 +180,7 @@ public class AWSAppSyncClient {
         var map: [CacheType: Error] = [:]
         do {
             if options.clearQueries {
-                try store?.clearCache().await()
+                try store.clearCache().await()
             }
         } catch {
             map[.query] = error
@@ -218,7 +217,7 @@ public class AWSAppSyncClient {
     /// - Returns: An object that can be used to cancel an in progress fetch.
     @discardableResult public func fetch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: OperationResultHandler<Query>? = nil) -> Cancellable {
         AppSyncLog.verbose("Fetching: \(query)")
-        return apolloClient!.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+        return apolloClient.fetch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
 
     /// Watches a query by first fetching an initial result from the server or from the local cache, depending on the current contents of the cache and the specified cache policy. After the initial fetch, the returned query watcher object will get notified whenever any of the data the query result depends on changes in the local cache, and calls the result handler again with the new result.
@@ -233,7 +232,7 @@ public class AWSAppSyncClient {
     /// - Returns: A query watcher object that can be used to control the watching behavior.
     public func watch<Query: GraphQLQuery>(query: Query, cachePolicy: CachePolicy = .returnCacheDataElseFetch, queue: DispatchQueue = DispatchQueue.main, resultHandler: @escaping OperationResultHandler<Query>) -> GraphQLQueryWatcher<Query> {
 
-        return apolloClient!.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
+        return apolloClient.watch(query: query, cachePolicy: cachePolicy, queue: queue, resultHandler: resultHandler)
     }
 
     public func subscribe<Subscription: GraphQLSubscription>(subscription: Subscription,
@@ -242,7 +241,7 @@ public class AWSAppSyncClient {
                                                              resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
         let connection = self.subscriptionConnectionFactory?.connection(connectionType: .appSyncRealtime)
         return AWSAppSyncSubscriptionWatcher(connection: connection!,
-                                             store: self.store!,
+                                             store: self.store,
                                              subscriptionsQueue: self.subscriptionsQueue,
                                              subscription: subscription,
                                              handlerQueue: queue,
@@ -256,7 +255,7 @@ public class AWSAppSyncClient {
                                                                                   resultHandler: @escaping SubscriptionResultHandler<Subscription>) throws -> AWSAppSyncSubscriptionWatcher<Subscription>? {
         let connection = self.subscriptionConnectionFactory?.connection(connectionType: .appSyncRealtime)
         return AWSAppSyncSubscriptionWatcher(connection: connection!,
-                                             store: self.store!,
+                                             store: self.store,
                                              subscriptionsQueue: self.subscriptionsQueue,
                                              subscription: subscription,
                                              handlerQueue: queue,
@@ -288,7 +287,7 @@ public class AWSAppSyncClient {
 
         if let optimisticUpdate = optimisticUpdate {
             do {
-                _ = try store?.withinReadWriteTransaction { transaction in
+                _ = try store.withinReadWriteTransaction { transaction in
                     optimisticUpdate(transaction)
                 }.await()
             } catch {
