@@ -66,6 +66,7 @@ AWSCognitoUserPoolInternalDelegate {
 
     static var serviceConfiguration: CognitoServiceConfiguration? = nil
 
+    
     public override init() {
         super.init()
         if (AWSInfo.default().defaultServiceInfo("CognitoUserPool") != nil) {
