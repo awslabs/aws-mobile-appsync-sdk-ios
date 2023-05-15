@@ -194,7 +194,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
 
 @property (nonatomic, strong) AWSSTS *sts;
 @property (nonatomic, strong) AWSUICKeyChainStore *keychain;
-@property (atomic, strong) AWSCredentials *internalCredentials;
+@property (nonatomic, strong) AWSCredentials *internalCredentials;
 
 @end
 
@@ -267,26 +267,22 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
 #pragma mark -
 
 - (AWSCredentials *)internalCredentials {
-    @synchronized (self) {
-        if (! _internalCredentials) {
-            _internalCredentials = [[AWSCredentials alloc] initFromKeychain:self.keychain];
-        }
-        return _internalCredentials;
+    if (! _internalCredentials) {
+        _internalCredentials = [[AWSCredentials alloc] initFromKeychain:self.keychain];
     }
+    return _internalCredentials;
 }
 
 - (void)setInternalCredentials:(AWSCredentials *)internalCredentials {
-    @synchronized (self) {
-        _internalCredentials = internalCredentials;
+    _internalCredentials = internalCredentials;
 
-        self.keychain[AWSCredentialsProviderKeychainAccessKeyId] = internalCredentials.accessKey;
-        self.keychain[AWSCredentialsProviderKeychainSecretAccessKey] = internalCredentials.secretKey;
-        self.keychain[AWSCredentialsProviderKeychainSessionToken] = internalCredentials.sessionKey;
-        if (internalCredentials.expiration) {
-            self.keychain[AWSCredentialsProviderKeychainExpiration] = [NSString stringWithFormat:@"%f", [internalCredentials.expiration timeIntervalSince1970]];
-        } else {
-            self.keychain[AWSCredentialsProviderKeychainExpiration] = nil;
-        }
+    self.keychain[AWSCredentialsProviderKeychainAccessKeyId] = internalCredentials.accessKey;
+    self.keychain[AWSCredentialsProviderKeychainSecretAccessKey] = internalCredentials.secretKey;
+    self.keychain[AWSCredentialsProviderKeychainSessionToken] = internalCredentials.sessionKey;
+    if (internalCredentials.expiration) {
+        self.keychain[AWSCredentialsProviderKeychainExpiration] = [NSString stringWithFormat:@"%f", [internalCredentials.expiration timeIntervalSince1970]];
+    } else {
+        self.keychain[AWSCredentialsProviderKeychainExpiration] = nil;
     }
 }
 
@@ -302,9 +298,9 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
 @property (nonatomic, strong) AWSExecutor *refreshExecutor;
 @property (nonatomic, strong) dispatch_semaphore_t semaphore;
 @property (atomic, assign) BOOL useEnhancedFlow;
-@property (atomic, strong) AWSCredentials *internalCredentials;
+@property (nonatomic, strong) AWSCredentials *internalCredentials;
 @property (atomic, assign, getter=isRefreshingCredentials) BOOL refreshingCredentials;
-@property (atomic, strong) NSDictionary<NSString *, NSString *> *cachedLogins;
+@property (nonatomic, strong) NSDictionary<NSString *, NSString *> *cachedLogins;
 // This is a temporary solution to bypass the requirement of protocol check for `AWSIdentityProviderManager`.
 @property (nonatomic, strong) NSString *customRoleArnOverride;
 
@@ -663,8 +659,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
             // 2. The cached credentials is nil.
             // 3. The credentials expire within 10 minutes.
             credentials = self.internalCredentials.copy;
-            NSDictionary<NSString *, NSString *> *cachedLogins = self.cachedLogins;
-            if ((!cachedLogins || [cachedLogins isEqualToDictionary:logins])
+            if ((!self.cachedLogins || [self.cachedLogins isEqualToDictionary:logins])
                 && credentials
                 && credentials.isValid) {
                 return [AWSTask taskWithResult:credentials];
@@ -684,8 +679,7 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
                 return [AWSTask cancelledTask];
             }
             credentials = self.internalCredentials.copy;
-            cachedLogins = self.cachedLogins;
-            if ((!cachedLogins || [cachedLogins isEqualToDictionary:logins])
+            if ((!self.cachedLogins || [self.cachedLogins isEqualToDictionary:logins])
                 && credentials
                 && credentials.isValid) {
                 return [AWSTask taskWithResult:credentials];
@@ -812,39 +806,30 @@ static NSString *const AWSCredentialsProviderKeychainIdentityId = @"identityId";
     if (identityId) {
         return identityId;
     }
-
-    @synchronized (self) {
-        return [self.keychain stringForKey:AWSCredentialsProviderKeychainIdentityId];
-    }
+    return [self.keychain stringForKey:AWSCredentialsProviderKeychainIdentityId];
 }
 
 - (void)setIdentityId:(NSString *)identityId {
-    @synchronized (self) {
-        self.keychain[AWSCredentialsProviderKeychainIdentityId] = identityId;
-    }
+    self.keychain[AWSCredentialsProviderKeychainIdentityId] = identityId;
 }
 
 - (AWSCredentials *)internalCredentials {
-    @synchronized (self) {
-        if (!_internalCredentials) {
-            _internalCredentials = [[AWSCredentials alloc] initFromKeychain:self.keychain];
-        }
-        return _internalCredentials;
+    if (! _internalCredentials) {
+        _internalCredentials = [[AWSCredentials alloc] initFromKeychain:self.keychain];
     }
+    return _internalCredentials;
 }
 
 - (void)setInternalCredentials:(AWSCredentials *)internalCredentials {
-    @synchronized (self) {
-        _internalCredentials = internalCredentials;
+    _internalCredentials = internalCredentials;
 
-        self.keychain[AWSCredentialsProviderKeychainAccessKeyId] = internalCredentials.accessKey;
-        self.keychain[AWSCredentialsProviderKeychainSecretAccessKey] = internalCredentials.secretKey;
-        self.keychain[AWSCredentialsProviderKeychainSessionToken] = internalCredentials.sessionKey;
-        if (internalCredentials.expiration) {
-            self.keychain[AWSCredentialsProviderKeychainExpiration] = [NSString stringWithFormat:@"%f", [internalCredentials.expiration timeIntervalSince1970]];
-        } else {
-            self.keychain[AWSCredentialsProviderKeychainExpiration] = nil;
-        }
+    self.keychain[AWSCredentialsProviderKeychainAccessKeyId] = internalCredentials.accessKey;
+    self.keychain[AWSCredentialsProviderKeychainSecretAccessKey] = internalCredentials.secretKey;
+    self.keychain[AWSCredentialsProviderKeychainSessionToken] = internalCredentials.sessionKey;
+    if (internalCredentials.expiration) {
+        self.keychain[AWSCredentialsProviderKeychainExpiration] = [NSString stringWithFormat:@"%f", [internalCredentials.expiration timeIntervalSince1970]];
+    } else {
+        self.keychain[AWSCredentialsProviderKeychainExpiration] = nil;
     }
 }
 
