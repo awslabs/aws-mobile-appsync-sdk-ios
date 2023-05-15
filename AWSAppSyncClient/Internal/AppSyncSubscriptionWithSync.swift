@@ -300,7 +300,7 @@ final class AppSyncSubscriptionWithSync<Subscription: GraphQLSubscription, BaseQ
                 }
             } else {
                 do {
-                    try appSyncClient?.store.withinReadWriteTransaction { transaction in
+                    try appSyncClient?.store?.withinReadWriteTransaction { transaction in
                         handlerQueue.async {
                             subscriptionHandler(result, transaction, nil)
                         }
