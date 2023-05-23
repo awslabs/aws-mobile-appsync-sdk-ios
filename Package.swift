@@ -24,11 +24,6 @@ let package = Package(
         .package(
             url: "https://github.com/stephencelis/SQLite.swift.git",
             from: "0.12.0"
-        ),
-        .package(
-            name: "Reachability",
-            url: "https://github.com/ashleymills/Reachability.swift.git",
-            from: "5.0.0"
         )
     ],
     targets: [
@@ -38,7 +33,6 @@ let package = Package(
                 
                 .product(name: "SQLite", package: "SQLite.swift"),
                 .product(name: "AppSyncRealTimeClient", package: "AppSyncRealTimeClient"),
-                .product(name: "Reachability", package: "Reachability"),
                 .product(name: "AWSCore", package: "AWSiOSSDKV2")
             ],
             path: "AWSAppSyncClient",
