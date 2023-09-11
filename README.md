@@ -1,3 +1,6 @@
+# ⚠️ AWS AppSync SDK for iOS is in Maintenance Mode
+
+For more information, including how to upgrade to using AWS Amplify API Category, see [AWS Amplify > API (GraphQL) > Upgrade guide from AppSync SDK](https://docs.amplify.aws/lib/graphqlapi/upgrade-guide/q/platform/ios/)
 ## Recommendation: Use [Amplify](https://aws-amplify.github.io/) clients to connect to AppSync
 
 For front-end web and mobile development, we recommend using the [Amplify](https://aws-amplify.github.io/) clients which are optimized to connect to the AppSync backend.
