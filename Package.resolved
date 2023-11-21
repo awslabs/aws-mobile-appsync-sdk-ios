@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/aws-amplify/aws-sdk-ios-spm.git",
         "state": {
           "branch": null,
-          "revision": "660739a0b5376d72d196e173ce67ce7881d6ed8f",
-          "version": "2.32.0"
+          "revision": "b48edebc0728a000f55e300b74fbce516d9a85de",
+          "version": "2.33.5"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/daltoniam/Starscream",
         "state": {
           "branch": null,
-          "revision": "df8d82047f6654d8e4b655d1b1525c64e1059d21",
-          "version": "4.0.4"
+          "revision": "ac6c0fc9da221873e01bd1a0d4818498a71eef33",
+          "version": "4.0.6"
         }
       }
     ]
