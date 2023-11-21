@@ -53,6 +53,7 @@ typedef NS_ENUM(NSInteger, AWSSTSErrorType) {
 @class AWSSTSGetSessionTokenRequest;
 @class AWSSTSGetSessionTokenResponse;
 @class AWSSTSPolicyDescriptorType;
+@class AWSSTSProvidedContext;
 @class AWSSTSTag;
 
 /**
@@ -80,6 +81,11 @@ typedef NS_ENUM(NSInteger, AWSSTSErrorType) {
  <p>The Amazon Resource Names (ARNs) of the IAM managed policies that you want to use as managed session policies. The policies must exist in the same account as the role.</p><p>This parameter is optional. You can provide up to 10 managed policy ARNs. However, the plaintext that you use for both inline and managed session policies can't exceed 2,048 characters. For more information about ARNs, see <a href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces</a> in the Amazon Web Services General Reference.</p><note><p>An Amazon Web Services conversion compresses the passed inline session policy, managed policy ARNs, and session tags into a packed binary format that has a separate limit. Your request can fail for this limit even if your plaintext meets the other requirements. The <code>PackedPolicySize</code> response element indicates by percentage how close the policies and tags for your request are to the upper size limit.</p></note><p>Passing policies to this operation returns new temporary credentials. The resulting session's permissions are the intersection of the role's identity-based policy and the session policies. You can use the role's temporary credentials in subsequent Amazon Web Services API calls to access resources in the account that owns the role. You cannot use session policies to grant more permissions than those allowed by the identity-based policy of the role that is being assumed. For more information, see <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session">Session Policies</a> in the <i>IAM User Guide</i>.</p>
  */
 @property (nonatomic, strong) NSArray<AWSSTSPolicyDescriptorType *> * _Nullable policyArns;
+
+/**
+ <p>Reserved for future use.</p>
+ */
+@property (nonatomic, strong) NSArray<AWSSTSProvidedContext *> * _Nullable providedContexts;
 
 /**
  <p>The Amazon Resource Name (ARN) of the role to assume.</p>
@@ -211,7 +217,7 @@ typedef NS_ENUM(NSInteger, AWSSTSErrorType) {
 @property (nonatomic, strong) NSString * _Nullable issuer;
 
 /**
- <p>A hash value based on the concatenation of the following:</p><ul><li><p>The <code>Issuer</code> response value.</p></li><li><p>The Amazon Web Services account ID.</p></li><li><p>The friendly name (the last part of the ARN) of the SAML provider in IAM.</p></li></ul><p>The combination of <code>NameQualifier</code> and <code>Subject</code> can be used to uniquely identify a federated user.</p><p>The following pseudocode shows how the hash value is calculated:</p><p><code>BASE64 ( SHA1 ( "https://example.com/saml" + "123456789012" + "/MySAMLIdP" ) )</code></p>
+ <p>A hash value based on the concatenation of the following:</p><ul><li><p>The <code>Issuer</code> response value.</p></li><li><p>The Amazon Web Services account ID.</p></li><li><p>The friendly name (the last part of the ARN) of the SAML provider in IAM.</p></li></ul><p>The combination of <code>NameQualifier</code> and <code>Subject</code> can be used to uniquely identify a user.</p><p>The following pseudocode shows how the hash value is calculated:</p><p><code>BASE64 ( SHA1 ( "https://example.com/saml" + "123456789012" + "/MySAMLIdP" ) )</code></p>
  */
 @property (nonatomic, strong) NSString * _Nullable nameQualifier;
 
@@ -274,7 +280,7 @@ typedef NS_ENUM(NSInteger, AWSSTSErrorType) {
 @property (nonatomic, strong) NSString * _Nullable roleSessionName;
 
 /**
- <p>The OAuth 2.0 access token or OpenID Connect ID token that is provided by the identity provider. Your application must get this token by authenticating the user who is using your application with a web identity provider before the application makes an <code>AssumeRoleWithWebIdentity</code> call. </p>
+ <p>The OAuth 2.0 access token or OpenID Connect ID token that is provided by the identity provider. Your application must get this token by authenticating the user who is using your application with a web identity provider before the application makes an <code>AssumeRoleWithWebIdentity</code> call. Only tokens with RSA algorithms (RS256) are supported.</p>
  */
 @property (nonatomic, strong) NSString * _Nullable webIdentityToken;
 
@@ -480,7 +486,7 @@ typedef NS_ENUM(NSInteger, AWSSTSErrorType) {
 
 
 /**
- <p>The duration, in seconds, that the session should last. Acceptable durations for federation sessions range from 900 seconds (15 minutes) to 129,600 seconds (36 hours), with 43,200 seconds (12 hours) as the default. Sessions obtained using Amazon Web Services account root user credentials are restricted to a maximum of 3,600 seconds (one hour). If the specified duration is longer than one hour, the session obtained by using root user credentials defaults to one hour.</p>
+ <p>The duration, in seconds, that the session should last. Acceptable durations for federation sessions range from 900 seconds (15 minutes) to 129,600 seconds (36 hours), with 43,200 seconds (12 hours) as the default. Sessions obtained using root user credentials are restricted to a maximum of 3,600 seconds (one hour). If the specified duration is longer than one hour, the session obtained by using root user credentials defaults to one hour.</p>
  */
 @property (nonatomic, strong) NSNumber * _Nullable durationSeconds;
 
@@ -575,6 +581,24 @@ typedef NS_ENUM(NSInteger, AWSSTSErrorType) {
  <p>The Amazon Resource Name (ARN) of the IAM managed policy to use as a session policy for the role. For more information about ARNs, see <a href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces</a> in the <i>Amazon Web Services General Reference</i>.</p>
  */
 @property (nonatomic, strong) NSString * _Nullable arn;
+
+@end
+
+/**
+ <p>Reserved for future use.</p>
+ */
+@interface AWSSTSProvidedContext : AWSModel
+
+
+/**
+ <p>Reserved for future use.</p>
+ */
+@property (nonatomic, strong) NSString * _Nullable contextAssertion;
+
+/**
+ <p>Reserved for future use.</p>
+ */
+@property (nonatomic, strong) NSString * _Nullable providerArn;
 
 @end
 
