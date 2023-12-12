@@ -5,6 +5,10 @@ also includes support for offline operations.
 
 ## 3.6.3
 
+### Bug Fixes
+
+- subscribe function is not thread safe and causes crashes ([PR #569](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/569))
+
 ### Misc.
   - Update Podspec
 
