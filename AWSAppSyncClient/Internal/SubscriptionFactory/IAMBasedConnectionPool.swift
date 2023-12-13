@@ -16,7 +16,7 @@ class IAMBasedConnectionPool: SubscriptionConnectionPool {
     
     private let queue = DispatchQueue(label: "com.amazonaws.connectionPool.IAMBased.concurrentQueue",
                                       attributes: .concurrent,
-                                      target:.global(qos: .userInitiated))
+                                      target: .global(qos: .userInitiated))
 
     init(_ credentialProvider: AWSCredentialsProvider, region: AWSRegionType) {
         self.credentialProvider = credentialProvider
