@@ -80,7 +80,14 @@ public class RealtimeConnectionProviderAsync: ConnectionProvider {
         self.serialCallbackQueue = serialCallbackQueue
         self.connectivityMonitor = connectivityMonitor
 
+        // On a physical watchOS device, it is showing "unsatisfied" despite connected to the internet
+        // according to https://developer.apple.com/forums/thread/729568
+        // To avoid an incorrect network status state for the system, do not use connectivity monitor
+        // for watchOS apps.
+        #if !os(watchOS)
         connectivityMonitor.start(onUpdates: handleConnectivityUpdates(connectivity:))
+        #endif
+        
         subscribeToLimitExceededThrottle()
     }
 

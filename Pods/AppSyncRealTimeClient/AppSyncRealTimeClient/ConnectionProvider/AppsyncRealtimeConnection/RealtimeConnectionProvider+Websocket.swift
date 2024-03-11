@@ -116,7 +116,9 @@ extension RealtimeConnectionProvider: AppSyncWebsocketDelegate {
         }
 
         // If limit exceeded is for a particular subscription identifier, throttle using `limitExceededSubject`
-        if case .limitExceeded(let id) = error, id == nil, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+        if case .limitExceeded(let id) = error,
+           id == nil,
+           #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
             self.limitExceededSubject.send(error)
         } else {
             updateCallback(event: .error(error))
