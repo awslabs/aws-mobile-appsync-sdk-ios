@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => 'https://github.com/awslabs/aws-mobile-appsync-sdk-ios.git',
                      :tag => s.version }
   s.requires_arc = true
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '11.0'
   s.swift_version = '5.5.2'
 
   s.dependency 'AWSCore', '~> 2.34.0'
