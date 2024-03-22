@@ -30,4 +30,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          gh issue comment $ISSUE_NUMBER --repo aws-amplify/amplify-swift -b "This issue was opened by a maintainer of this repository; updates will be posted here. If you are also experiencing this issue, please comment here with any relevant information so that we're aware and can prioritize accordingly."
+          gh issue comment $ISSUE_NUMBER --repo awslabs/aws-mobile-appsync-sdk-ios -b "This issue was opened by a maintainer of this repository; updates will be posted here. If you are also experiencing this issue, please comment here with any relevant information so that we're aware and can prioritize accordingly."
