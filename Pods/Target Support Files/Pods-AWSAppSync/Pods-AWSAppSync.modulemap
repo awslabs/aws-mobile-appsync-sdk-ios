@@ -1,6 +1,0 @@
-framework module Pods_AWSAppSync {
-  umbrella header "Pods-AWSAppSync-umbrella.h"
-
-  export *
-  module * { export * }
-}
