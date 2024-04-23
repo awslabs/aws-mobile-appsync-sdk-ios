@@ -3,6 +3,15 @@
 The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and perform operations like `Queries`, `Mutations` and `Subscriptions`. The SDK
 also includes support for offline operations.
 
+## 3.6.5
+
+### Bug Fixes
+- fix AppSyncRealTimClient dependency version defined in podspec and podfile([PR #591](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/591))
+
+### Misc.
+- updating AWS SDK dependency to 2.36.0([PR #590](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/590))
+
+
 ## 3.6.4
 
 ### Bug Fixes
@@ -26,18 +35,18 @@ also includes support for offline operations.
 ### Misc.
   - Update SDK dependency to 2.30.1 and AppSyncRealTimeClient dependency to 3.0.0 (https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/561)
 
-## 3.6.1 
+## 3.6.1
 
 ### Misc.
   - chore: skip build xcframework when build for cocoapods  https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/524
   - chore: Update the gemfile to pin to version  https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/530
 
-## 3.6.0 
+## 3.6.0
 
 ### Features
 
 - feat: Upgrade AppSyncRTClient 1.8.0 and enable logs ([PR #519](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/519))
- 
+
 ### Bug Fixes
 
 - fix: Thread safe subscription watcher cancel ([PR #523](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/523))
@@ -251,17 +260,17 @@ This release is deprecated due to errors. Please use 3.0.2 or greater.
 
 - **Breaking API Changes**
   - Added support for connecting to AWS AppSync using pure WebSockets for GraphQL subscriptions.
-    - Selection set filtering will be done per client as each client can define their own selection set. 
- In this case the subscription selection set must be a subset of the mutation selection set. For example, 
- a subscription `addedPost{author title}` linked to the mutation `addPost(...){id author title url version}` 
- would receive only the author and the title of the post and none of the other fields. 
- However, if the mutation didn't have the author in its selection set the subscriber would get a `null` 
+    - Selection set filtering will be done per client as each client can define their own selection set.
+ In this case the subscription selection set must be a subset of the mutation selection set. For example,
+ a subscription `addedPost{author title}` linked to the mutation `addPost(...){id author title url version}`
+ would receive only the author and the title of the post and none of the other fields.
+ However, if the mutation didn't have the author in its selection set the subscriber would get a `null`
  value for the author field (or an error in case the author field is defined as required/not-null in the schema).
-    
-    - In the earlier SDK version, if you didn’t configure the associated subscription selection set with the required fields 
-and relied on the mutation fields to push data to subscribed client, the behavior will change when you move to this version  
-that use pure WebSockets. In the example above, a subscription without the "author" field defined in its selection set 
-would still return the author name with MQTT over WebSockets as the field is defined in the mutation, the same behavior 
+
+    - In the earlier SDK version, if you didn’t configure the associated subscription selection set with the required fields
+and relied on the mutation fields to push data to subscribed client, the behavior will change when you move to this version
+that use pure WebSockets. In the example above, a subscription without the "author" field defined in its selection set
+would still return the author name with MQTT over WebSockets as the field is defined in the mutation, the same behavior
 won’t apply for pure WebSockets. The subscription selection set is essential when using pure WebSockets: if a field is
 not explicitly defined in the subscription it won't be returned by AWS AppSync.
 
@@ -297,7 +306,7 @@ not explicitly defined in the subscription it won't be returned by AWS AppSync.
 
 - Fixed a bug where data less than 128 bytes would cause a crash if logging were enabled.
   See issues [#258](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/258) and
-  [#216](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/216), and 
+  [#216](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/216), and
   [PR #259](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/pull/259). Thanks @johnmurphy01! 🎉
 
 ### Misc. Updates
@@ -384,7 +393,7 @@ This release has invalid dependency declaration in the AWSAppSync.podspec. Pleas
 * Improved internal handling of subscription cancellation and disconnect.
   - With this update, the cancellation behavior for subscription is more robust in both cases - when developer issues `cancel` and when SDK notifies `connectionError` in the `statusChangeHandler` and `resultHandler`
   - As a best practice, we recommend that if you do not want to receive any more callbacks on the `statusChangeHandler` and `resultHandler` for the subscription, issue a `cancel` which would immediately stop all communication to the watcher.
-  - Once `cancel` is issued, no notifications or error callbacks will be given to the watcher. If the watcher object is not reference from application code, it will internally issue a `cancel` and ensure that no callbacks are given. 
+  - Once `cancel` is issued, no notifications or error callbacks will be given to the watcher. If the watcher object is not reference from application code, it will internally issue a `cancel` and ensure that no callbacks are given.
 
 ## 2.12.0
 
@@ -470,7 +479,7 @@ This release has invalid dependency declaration in the AWSAppSync.podspec. Pleas
     ```
   Please note that `verbose` logging is quite verbose, and there is a significant difference between `verbose` and `debug`. We will be making
   `debug` more useful as we go. (See [Issue #145](https://github.com/awslabs/aws-mobile-appsync-sdk-ios/issues/145))
-  
+
   As always, we recommend turning off logging when deploying to production.
 - Added some verbose logging around mutation queue handling and subscription connections; minor log additions elsewhere
 - Minor dead code removal & miscellaneous cleanup
