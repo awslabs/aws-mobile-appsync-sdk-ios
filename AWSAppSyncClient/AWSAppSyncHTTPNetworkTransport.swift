@@ -39,7 +39,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     private let authProvider: AppSyncAuthProvider
     private let sendOperationIdentifiers: Bool
     private var retryStrategy: AWSAppSyncRetryStrategy
-    
+
     private let activeTimersQueue = DispatchQueue(label: "AWSAppSyncHTTPNetworkTransport.activeTimers")
     private var activeTimers: [String: DispatchSourceTimer] = [:]
 
@@ -140,7 +140,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             retryStrategy: retryStrategy
         )
     }
-    
+
     /// Creates a network transport with the specified server URL and session configuration.
     ///
     /// - Parameters:
@@ -191,7 +191,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         request.httpMethod = "POST"
         request.setValue(NSDate().aws_stringValue(AWSDateISO8601DateFormat2), forHTTPHeaderField: "X-Amz-Date")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("aws-sdk-ios/3.6.4 AppSyncClient", forHTTPHeaderField: "User-Agent")
+        request.setValue("aws-sdk-ios/3.6.5 AppSyncClient", forHTTPHeaderField: "User-Agent")
         addDeviceId(request: &request)
     }
 
@@ -205,7 +205,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
             break
         }
     }
-    
+
     /// Returns `deviceId` for the specified key from the keychain.
     /// If the key does not exist in keychain, a `deviceId` is generated, stored and returned.
     ///
@@ -374,7 +374,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")
                 completionHandler(.success(()))
             }
-        
+
         case .awsLambda(let provider):
             guard let asyncProvider = provider as? AWSLambdaAuthProviderAsync else {
                 mutableRequest.setValue(provider.getLatestAuthToken(), forHTTPHeaderField: "authorization")

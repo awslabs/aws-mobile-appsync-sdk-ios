@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'AWSAppSync'
-  s.version      = '3.6.4'
+  s.version      = '3.6.5'
   s.author       = 'AWS'
   s.homepage     = 'http://aws.amazon.com/mobile/sdk'
   s.license      = { :type => 'Amazon Software License', :file => 'LICENSE' }
@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'AWSCore', '~> 2.36.0'
   s.dependency 'SQLite.swift', '~> 0.12.2'
-  s.dependency 'AppSyncRealTimeClient', '~> 3'
+  s.dependency 'AppSyncRealTimeClient', '~> 3.2.0'
 
   s.source_files = 'AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/*.swift', 'AWSAppSyncClient/Internal/**/*.{h,m,swift}', 'AWSAppSyncClient/Apollo/Sources/Apollo/*.swift'
   s.public_header_files = ['AWSAppSyncClient/AWSAppSync.h', 'AWSAppSyncClient/AWSAppSync-Swift.h', 'AWSAppSyncClient/Internal/AppSyncLogHelper.h']

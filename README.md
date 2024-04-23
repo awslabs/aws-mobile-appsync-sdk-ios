@@ -45,7 +45,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
 1. Add the following line to your Podfile:
 
     ```ruby
-    pod 'AWSAppSync', '~> 3.6.4'
+    pod 'AWSAppSync', '~> 3.6.5'
     ```
 
     Example:
@@ -59,7 +59,7 @@ The AWS AppSync SDK for iOS enables you to access your AWS AppSync backend and p
       use_frameworks!
 
       # Pods for EventsApp
-      pod 'AWSAppSync', '~> 3.6.4'
+      pod 'AWSAppSync', '~> 3.6.5'
     end
     ```
 
@@ -84,18 +84,18 @@ Carthage supports XCFrameworks in Xcode 12 or above. Follow the steps below to c
     ```
 
 3. Then run the following command:
-    
+
         $ carthage update --use-xcframeworks
 
 4. On your application targets’ General settings tab, in the Embedded Binaries section, drag and drop each xcframework you want to use from the Carthage/Build folder on disk.
 
 > Note: If you are using XCFrameworks (i.e., either Carthage or Dynamic Frameworks), the module `AWSMobileClient` is named as `AWSMobileClientXCF` to work around a [Swift issue](https://bugs.swift.org/browse/SR-11704). To use `AWSMobileClient`, import it as:
-        
+
         import AWSMobileClientXCF
 
 and use it your app code without the `XCF` suffix.
 
-        AWSMobileClient.default.initialize() 
+        AWSMobileClient.default.initialize()
 
 ##### Frameworks with "fat libraries" (not recommended)
 
@@ -205,7 +205,7 @@ You can get the backend setup by following the steps below:
         - `AppSyncMultiAuthAPIKey`
 1. Create another CloudFormation Stack following step 1-6 above with `API Key` as the Auth type (we'll change that later)
    1. Create a Lambda function using the template provided in this project at `AWSAppSyncIntegrationTests/ConsoleResources/appsync-lambda-authorize
-r.js` 
+r.js`
    1. Once the stack is complete click on the __Outputs__ tab
    1. Copy the appropriate values to the test configuration file `AppSyncIntegrationTests/appsync_test_credentials.json`:
         - `AppSyncEndpointAPIKeyLambda`
