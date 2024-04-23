@@ -1,6 +1,6 @@
 PODS:
-  - AppSyncRealTimeClient (3.0.0):
-    - Starscream (~> 4.0.4)
+  - AppSyncRealTimeClient (3.1.2):
+    - Starscream (= 4.0.4)
   - AWSAuthCore (2.35.0):
     - AWSCore (= 2.35.0)
   - AWSCognitoIdentityProvider (2.35.0):
@@ -23,7 +23,7 @@ PODS:
   - SwiftLint (0.51.0)
 
 DEPENDENCIES:
-  - AppSyncRealTimeClient (~> 3.0.0)
+  - AppSyncRealTimeClient (~> 3.1.0)
   - AWSCore (~> 2.35.0)
   - AWSMobileClient (~> 2.35.0)
   - AWSS3 (~> 2.35.0)
@@ -44,7 +44,7 @@ SPEC REPOS:
     - SwiftLint
 
 SPEC CHECKSUMS:
-  AppSyncRealTimeClient: ec19a24f635611b193eb98a2da573abcf98b793b
+  AppSyncRealTimeClient: 36ff2f65f330bce7f1d0d2157a4ae5d255483dac
   AWSAuthCore: aa5090b8d86389f958c5b916f14dc218b0c20f8e
   AWSCognitoIdentityProvider: b4c4d7d78782d62636cb3edfed71472dffe5e6d6
   AWSCognitoIdentityProviderASF: 295cac5c59c71c1494a3bac437f4c6284b9a73d3
@@ -55,6 +55,6 @@ SPEC CHECKSUMS:
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftLint: 1b7561918a19e23bfed960e40759086e70f4dba5
 
-PODFILE CHECKSUM: 9feff1c8c761826da553ff061352e1d8b723378e
+PODFILE CHECKSUM: 4274fcb3deaee92953e6a57b22eea5f821c5d4c1
 
 COCOAPODS: 1.15.2
