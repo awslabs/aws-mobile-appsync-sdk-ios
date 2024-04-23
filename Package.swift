@@ -19,11 +19,11 @@ let package = Package(
         .package(
             name: "AppSyncRealTimeClient",
             url: "https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git",
-            from: "3.0.0"
+            .upToNextMinor(from: "3.1.0")
         ),
         .package(
             url: "https://github.com/stephencelis/SQLite.swift.git",
-            from: "0.12.0"
+            .upToNextMinor(from: "0.12.0")
         )
     ],
     targets: [
