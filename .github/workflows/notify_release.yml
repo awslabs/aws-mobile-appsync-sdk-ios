@@ -1,0 +1,20 @@
+name: Notify Release
+
+on:
+  release:
+    types: [released]
+
+permissions: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run webhook curl command
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}
+          VERSION: ${{github.event.release.html_url}}
+          REPO_NAME: ${{github.event.repository.name}}
+          ACTION_NAME: ${{github.event.action}}
+        shell: bash
+        run: echo $VERSION | xargs -I {} curl -s POST "$WEBHOOK_URL" -H "Content-Type:application/json" --data '{"action":"'$ACTION_NAME'", "repo":"'$REPO_NAME'", "version":"{}"}'
