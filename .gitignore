@@ -6,3 +6,4 @@ xcuserdata
 Carthage
 .build/
 build/
+Pods/

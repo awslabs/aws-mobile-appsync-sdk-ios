@@ -1,6 +1,0 @@
-framework module AWSAuthCore {
-  umbrella header "AWSAuthCore-umbrella.h"
-
-  export *
-  module * { export * }
-}
