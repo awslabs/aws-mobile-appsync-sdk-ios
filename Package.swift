@@ -19,7 +19,7 @@ let package = Package(
         .package(
             name: "AppSyncRealTimeClient",
             url: "https://github.com/aws-amplify/aws-appsync-realtime-client-ios.git",
-            .upToNextMinor(from: "3.1.0")
+            .upToNextMinor(from: "3.2.0")
         ),
         .package(
             url: "https://github.com/stephencelis/SQLite.swift.git",
@@ -30,7 +30,7 @@ let package = Package(
         .target(
             name: "AWSAppSync",
             dependencies: [
-                
+
                 .product(name: "SQLite", package: "SQLite.swift"),
                 .product(name: "AppSyncRealTimeClient", package: "AppSyncRealTimeClient"),
                 .product(name: "AWSCore", package: "AWSiOSSDKV2")
