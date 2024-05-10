@@ -29,7 +29,7 @@ class SubscriptionTests: XCTestCase {
         super.setUp()
 
         AWSDDLog.sharedInstance.logLevel = .warning
-        AWSDDTTYLogger.sharedInstance.logFormatter = AWSAppSyncClientLogFormatter()
+        AWSDDTTYLogger.sharedInstance?.logFormatter = AWSAppSyncClientLogFormatter()
         AWSDDLog.sharedInstance.add(AWSDDTTYLogger.sharedInstance)
 
         do {
@@ -130,7 +130,7 @@ class SubscriptionTests: XCTestCase {
 
     func testSubscriptionReceivesConnectedMessage() throws {
         AWSDDLog.sharedInstance.logLevel = .verbose
-        AWSDDTTYLogger.sharedInstance.logFormatter = AWSAppSyncClientLogFormatter()
+        AWSDDTTYLogger.sharedInstance?.logFormatter = AWSAppSyncClientLogFormatter()
         AWSDDLog.sharedInstance.add(AWSDDTTYLogger.sharedInstance)
 
         let statusChangedToConnected = expectation(description: "Subscription received status change notification to 'connected'")

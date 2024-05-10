@@ -48,7 +48,7 @@ class AppSyncLogHelperTests: XCTestCase {
 class MockLogger: NSObject, AWSDDLogger {
     var loggedMessage = ""
     
-    var logFormatter: AWSDDLogFormatter = AWSAppSyncClientLogFormatter()
+    var logFormatter: AWSDDLogFormatter? = AWSAppSyncClientLogFormatter()
     
     func log(message logMessage: AWSDDLogMessage) {
         loggedMessage = logMessage.message

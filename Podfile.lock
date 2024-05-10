@@ -1,21 +1,21 @@
 PODS:
   - AppSyncRealTimeClient (3.2.0):
     - Starscream (= 4.0.8)
-  - AWSAuthCore (2.36.0):
-    - AWSCore (= 2.36.0)
-  - AWSCognitoIdentityProvider (2.36.0):
-    - AWSCognitoIdentityProviderASF (= 2.36.0)
-    - AWSCore (= 2.36.0)
-  - AWSCognitoIdentityProviderASF (2.36.0):
-    - AWSCore (= 2.36.0)
-  - AWSCore (2.36.0)
-  - AWSMobileClient (2.36.0):
-    - AWSAuthCore (= 2.36.0)
-    - AWSCognitoIdentityProvider (= 2.36.0)
-    - AWSCognitoIdentityProviderASF (= 2.36.0)
-    - AWSCore (= 2.36.0)
-  - AWSS3 (2.36.0):
-    - AWSCore (= 2.36.0)
+  - AWSAuthCore (2.36.1):
+    - AWSCore (= 2.36.1)
+  - AWSCognitoIdentityProvider (2.36.1):
+    - AWSCognitoIdentityProviderASF (= 2.36.1)
+    - AWSCore (= 2.36.1)
+  - AWSCognitoIdentityProviderASF (2.36.1):
+    - AWSCore (= 2.36.1)
+  - AWSCore (2.36.1)
+  - AWSMobileClient (2.36.1):
+    - AWSAuthCore (= 2.36.1)
+    - AWSCognitoIdentityProvider (= 2.36.1)
+    - AWSCognitoIdentityProviderASF (= 2.36.1)
+    - AWSCore (= 2.36.1)
+  - AWSS3 (2.36.1):
+    - AWSCore (= 2.36.1)
   - SQLite.swift (0.12.2):
     - SQLite.swift/standard (= 0.12.2)
   - SQLite.swift/standard (0.12.2)
@@ -45,12 +45,12 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   AppSyncRealTimeClient: 35c0d2ae28234a9f5daba5dc31402acf45ad802f
-  AWSAuthCore: 16ad51c6cf9a5a556049401851498f6c0a3aebb7
-  AWSCognitoIdentityProvider: 454b162e1bf1a10d9fec5cacd9291c021ecbdd22
-  AWSCognitoIdentityProviderASF: 556ffdfa7ccd0626bc59f784e938b49bccfe3180
-  AWSCore: 6a3038e6c0b13be3d1fbb4746f98aab44f750e4d
-  AWSMobileClient: 161fe6a17f872e2e94d88d275c47dd87907beb23
-  AWSS3: f073fbcd77d59baf4bdaf7a9732747dca477fb3b
+  AWSAuthCore: 517263c65847c7ca44b04a15880e3bd2eeb1e26f
+  AWSCognitoIdentityProvider: 5cc7bd177d75192c52131aa24dbd4a4d86044d5a
+  AWSCognitoIdentityProviderASF: 2d023e2ec5c9d2664effcd0689944f9de874b8db
+  AWSCore: afcf0018ca1bf8d8e42d1010252bbfd45a2d43e4
+  AWSMobileClient: 4ad6d9c6c6a9babee53eae23e1938f3a0c94ba67
+  AWSS3: 85770c01ec07d1c6297da0049b585003e78c1fcb
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
   SwiftLint: c1de071d9d08c8aba837545f6254315bc900e211
