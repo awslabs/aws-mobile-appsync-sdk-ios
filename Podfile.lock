@@ -1,26 +1,26 @@
 PODS:
   - AppSyncRealTimeClient (3.2.0):
     - Starscream (= 4.0.8)
-  - AWSAuthCore (2.36.1):
-    - AWSCore (= 2.36.1)
-  - AWSCognitoIdentityProvider (2.36.1):
-    - AWSCognitoIdentityProviderASF (= 2.36.1)
-    - AWSCore (= 2.36.1)
-  - AWSCognitoIdentityProviderASF (2.36.1):
-    - AWSCore (= 2.36.1)
-  - AWSCore (2.36.1)
-  - AWSMobileClient (2.36.1):
-    - AWSAuthCore (= 2.36.1)
-    - AWSCognitoIdentityProvider (= 2.36.1)
-    - AWSCognitoIdentityProviderASF (= 2.36.1)
-    - AWSCore (= 2.36.1)
-  - AWSS3 (2.36.1):
-    - AWSCore (= 2.36.1)
+  - AWSAuthCore (2.36.2):
+    - AWSCore (= 2.36.2)
+  - AWSCognitoIdentityProvider (2.36.2):
+    - AWSCognitoIdentityProviderASF (= 2.36.2)
+    - AWSCore (= 2.36.2)
+  - AWSCognitoIdentityProviderASF (2.36.2):
+    - AWSCore (= 2.36.2)
+  - AWSCore (2.36.2)
+  - AWSMobileClient (2.36.2):
+    - AWSAuthCore (= 2.36.2)
+    - AWSCognitoIdentityProvider (= 2.36.2)
+    - AWSCognitoIdentityProviderASF (= 2.36.2)
+    - AWSCore (= 2.36.2)
+  - AWSS3 (2.36.2):
+    - AWSCore (= 2.36.2)
   - SQLite.swift (0.12.2):
     - SQLite.swift/standard (= 0.12.2)
   - SQLite.swift/standard (0.12.2)
   - Starscream (4.0.8)
-  - SwiftLint (0.54.0)
+  - SwiftLint (0.55.0)
 
 DEPENDENCIES:
   - AppSyncRealTimeClient (~> 3.2.0)
@@ -45,16 +45,16 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   AppSyncRealTimeClient: 35c0d2ae28234a9f5daba5dc31402acf45ad802f
-  AWSAuthCore: 517263c65847c7ca44b04a15880e3bd2eeb1e26f
-  AWSCognitoIdentityProvider: 5cc7bd177d75192c52131aa24dbd4a4d86044d5a
-  AWSCognitoIdentityProviderASF: 2d023e2ec5c9d2664effcd0689944f9de874b8db
-  AWSCore: afcf0018ca1bf8d8e42d1010252bbfd45a2d43e4
-  AWSMobileClient: 4ad6d9c6c6a9babee53eae23e1938f3a0c94ba67
-  AWSS3: 85770c01ec07d1c6297da0049b585003e78c1fcb
+  AWSAuthCore: 0cb5d14bba49eaac2c4f470c3363a0dc93cbd5f0
+  AWSCognitoIdentityProvider: 8c04f76b85b8c6e3463a36f01a2d3980404efc46
+  AWSCognitoIdentityProviderASF: 39f47443203aefdc90d7758bad98fbecf9afbe8d
+  AWSCore: 389e60725f6cd23873ffa6a6292c8f38a940fe11
+  AWSMobileClient: aad2c8dfeea9806e72000d2be187f2680073a400
+  AWSS3: eb7863c11386653894f722f27f540efb310db04c
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
-  SwiftLint: c1de071d9d08c8aba837545f6254315bc900e211
+  SwiftLint: c5b49076d727b772434318c236548f0a1110c299
 
 PODFILE CHECKSUM: 5e218425b76767a14793a18c26000168492e6ce0
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.12.1
