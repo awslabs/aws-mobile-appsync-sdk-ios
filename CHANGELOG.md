@@ -9,7 +9,7 @@ also includes support for offline operations.
 - Making APIKeyBasedConnectionPool thread-safe to prevent crashes (#596)
 
 ### Misc.
-- update missing sdk dependencies to 2.36.0 (#597)
+- update missing sdk dependencies to 2.36.2 (#597)
 - bump rexml from 3.2.5 to 3.2.8 (#598)
 
 ## 3.7.0
