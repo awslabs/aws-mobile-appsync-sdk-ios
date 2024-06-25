@@ -6,6 +6,7 @@
 
 import Foundation
 import SQLite
+import struct SQLite.Expression
 
 final class AWSSubscriptionMetaDataCache {
     

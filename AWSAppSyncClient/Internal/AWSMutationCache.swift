@@ -6,6 +6,7 @@
 
 import Foundation
 import SQLite
+import struct SQLite.Expression
 
 /// Although this class is currently public, it is not intended to be used by clients, and will be marked "internal" in
 /// a future release of AppSync.
