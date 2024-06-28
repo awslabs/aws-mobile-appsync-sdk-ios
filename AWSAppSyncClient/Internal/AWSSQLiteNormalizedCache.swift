@@ -5,6 +5,7 @@
 
 import Foundation
 import SQLite
+import struct SQLite.Expression
 
 /*
  The "timeout" method is used to control how long the SQLite library will wait for locks to clear before giving up on a database transaction. The default timeout is 0 millisecond. (In other words, the default behavior is not to wait at all.)
