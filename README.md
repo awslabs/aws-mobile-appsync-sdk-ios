@@ -1,4 +1,4 @@
-# ⚠️ AWS AppSync SDK for iOS is in Maintenance Mode
+# :alert: AWS AppSync SDK for iOS is Deprecated.
 
 For more information, including how to upgrade to using AWS Amplify API Category, see [AWS Amplify > API (GraphQL) > Upgrade guide from AppSync SDK](https://docs.amplify.aws/lib/graphqlapi/upgrade-guide/q/platform/ios/)
 ## Recommendation: Use [Amplify](https://aws-amplify.github.io/) clients to connect to AppSync
